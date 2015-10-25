@@ -1,0 +1,31 @@
+CRON
+https://www.pantz.org/software/cron/croninfo.html
+http://stackoverflow.com/questions/1382634/how-to-set-cronjob-for-2-days
+
+cat /etc/crontab
+cat /var/log/cron
+crontab -e
+crontab -l
+
+(http://www.tecmint.com/11-cron-scheduling-task-examples-in-linux/)
+
+
+SOSNA
+python path: #!/usr/local/bin/python2.7
+
+import: mysql -u jonas -p --default-character-set=utf8mb4 fin_analyzer < dumps/fyt_dump.sql
+export: mysqldump -u jonas -p --default-character-set=utf8mb4 fin_analyzer > sosna_dump.sql
+(https://www.siteground.com/kb/importexport_mysql_database/)
+
+kopirovani: scp xpetrovs@akela.mendelu.cz:/home/xpetrovs/public_html/diplomka/file.txt sosna_file.txt
+
+ls -l --block-size=M
+
+RUN TIMES
+fb_update: 10:55-11:03 ... 20 min.
+fb_new: 10:20-11:23 ... 1h:00
+yahoo_update: 11:40-13:08 ... 1h:30
+yahoo_new: 13:30-14:57...1h:30
+
+LOCALHOST
+import db: C:\Program Files\MySQL\MySQL Server 5.6\bin>mysql -u root -p --default-character-set=utf8mb4 fin_analyzer < C:\Users\Jontes\Documents\sosna_0915.sql

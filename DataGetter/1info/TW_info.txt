@@ -1,0 +1,51 @@
+Twitter stahování dat
+
+=====Jaká data=====
+
+- tweety profilu: v�echny info
+-> replies na tweet v rámci search
+- search "nazev firmy", "@firma"
+
+
+=====Twitter API=====
+Stačí mi OAUTH2 (read-only)
+docs: https://dev.twitter.com/rest/public
+apps: https://apps.twitter.com/
+console: https://dev.twitter.com/rest/tools/console
+
+tweet description: https://dev.twitter.com/overview/api/tweets
+
+Timeline (statuses/user_timeline): Max. 3200 tweetů do minulosti. V jednom requestu max. 200 tweetů.
+Search (search/tweets): max. 1 týden staré tweety. V jednom requestu max. 100 tweetů. Max. 450 requestů / 15 min.
+
+Intel twitter: @intel
+
+Search queries: 
+to:CocaCola ... replies to @CocaCola
+coca cola -@CocaCola ... tweets containing coca cola
+
+===GEO===
+{u'country_code': u'IN', u'url': u'https://api.twitter.com/1.1/geo/id/56f5c20f1acb9473.json', u'country': u'India', u'place_type': u'city', u'bounding_box': {u'type': u'Polygon', u'coordinates': [[[73.7289743, 15.4902517], [73.9066671, 15.4902517], [73.9066671, 15.6841696], [73.7289743, 15.6841696]]]}, u'contained_within': [], u'full_name': u'Bardes, Goa', u'attributes': {}, u'id': u'56f5c20f1acb9473', u'name': u'Bardes'}
+
+
+=====Links=====
+http://www.alchemyapi.com/developers/getting-started-guide/twitter-sentiment-analysis
+http://stackoverflow.com/questions/19320197/twython-search-api-with-next-results
+http://bogdanrau.com/blog/collecting-tweets-using-r-and-the-twitter-search-api/
+http://stats.seandolinar.com/collecting-twitter-data-getting-started/
+http://www.havlena.net/en/business-analytics-intelligence/an-example-how-to-collect-analyze-and-visualize-social-media-data-with-jaql-and-hadoop/
+https://kaiv.wordpress.com/2007/07/19/faster-insert-for-multiple-rows/
+
+=====SDKs======
+http://stackoverflow.com/questions/2322149/preferred-python-twitter-api
+
+https://github.com/ryanmcgrath/twython
+https://twython.readthedocs.org/en/latest/
+
+
+Twython get RAW JSON
+https://gist.github.com/inactivist/5263501
+http://www.hongliangjie.com/2012/04/04/hack-tweepy-to-get-raw-json/
+http://willsimm.co.uk/saving-tweepy-output-to-mongodb/
+
+http://stackoverflow.com/questions/19309731/python-json-loads-expecting-property-name-line-1-column-2-char-2

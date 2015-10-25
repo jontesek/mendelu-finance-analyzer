@@ -1,0 +1,23 @@
+DOC string
+https://www.python.org/dev/peps/pep-0257/
+
+
+DATES
+http://pymotw.com/2/datetime/
+http://stackoverflow.com/questions/14516792/what-is-the-time-format-used-in-facebook-created-date
+http://strftime.org/
+http://stackoverflow.com/questions/7703865/going-from-twitter-date-to-python-datetime-date
+http://stackoverflow.com/questions/13897246/python-time-subtraction
+http://haridas.in/playing-with-timezone-using-pytz.html
+http://stackoverflow.com/questions/3694487/python-initialize-a-datetime-object-with-seconds-since-epoch
+
+EXCEPTIONS
+http://stackoverflow.com/questions/666022/what-errors-exceptions-do-i-need-to-handle-with-urllib2-request-urlopen
+
+MYSQL
+try:
+    cursor.execute(sql, (arg1, arg2))
+    connection.commit()
+except:
+    print(cursor._last_executed)
+    raise

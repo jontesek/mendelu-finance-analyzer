@@ -1,0 +1,35 @@
+﻿TW skript
+
+První spuštění
+- původní velikost datové složky: 1, 41 MB (prázdné soubory)
+- velikost po 1. spuštění: 29 MB
+- doba trvání 1. spuštění: 35 | 48 s ... 40 s
+
+Další spuštění po 15 minutách
+- velikost po 2. spuštění: 35,5 MB
+- doba trvání 2. spuštění: 20 | 30 s ... 25 s
+
+Nárůst velikosti: 7 MB
+
+
+Statistika č.2
+
+Výchozí stav: velikost 0 bajtů
+
+1. spuštění
+- čas: 38 s
+- velikost: 2,5 MB
+
+2. spuštění (za 20 minut)
+- čas: 22 s
+- velikost: 3,24 MB
+
+Zhodnocení
+- nárůst velikosti:  0.75 MB
+
+3. spuštění (za 15 minut)
+- čas: 23 s
+- velikost: 3,86 MB
+
+nárůst: 0,6 MB  
+

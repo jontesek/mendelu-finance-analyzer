@@ -1,0 +1,14 @@
+Stock price
+
+problems while downloading the prices
+only european companies:
+not found: http://real-chart.finance.yahoo.com/table.csv?s=MWV&a=9&b=1&c=2013&d=9&e=1&f=2015&g=d&ignore=.csv
+not found: http://real-chart.finance.yahoo.com/table.csv?s=BIR.IR&a=9&b=1&c=2013&d=9&e=1&f=2015&g=d&ignore=.csv
+not found: http://real-chart.finance.yahoo.com/table.csv?s=BAER.VX&a=9&b=1&c=2013&d=9&e=1&f=2015&g=d&ignore=.csv
+not found: http://real-chart.finance.yahoo.com/table.csv?s=NOVN.VX&a=9&b=1&c=2013&d=9&e=1&f=2015&g=d&ignore=.csv
+not found: http://real-chart.finance.yahoo.com/table.csv?s=RTL.DE&a=9&b=1&c=2013&d=9&e=1&f=2015&g=d&ignore=.csv
+not found: http://real-chart.finance.yahoo.com/table.csv?s=SOONE.SW&a=9&b=1&c=2013&d=9&e=1&f=2015&g=d&ignore=.csv
+not found: http://real-chart.finance.yahoo.com/table.csv?s=SREN.VX&a=9&b=1&c=2013&d=9&e=1&f=2015&g=d&ignore=.csv
+not found: http://real-chart.finance.yahoo.com/table.csv?s=RIGN.VX&a=9&b=1&c=2013&d=9&e=1&f=2015&g=d&ignore=.csv
+not found: http://real-chart.finance.yahoo.com/table.csv?s=UBSN.SW&a=9&b=1&c=2013&d=9&e=1&f=2015&g=d&ignore=.csv
+not found: http://real-chart.finance.yahoo.com/table.csv?s=ZURN.VX&a=9&b=1&c=2013&d=9&e=1&f=2015&g=d&ignore=.csv

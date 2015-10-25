@@ -1,0 +1,36 @@
+<?php
+// company pages IDs: https://www.facebook.com/<ID>
+// graph API: https://graph.facebook.com/<ID>
+// array: ID => <number>_<company name>
+
+$ids = array();
+$ids['20531316728'] = '01_Facebook';
+$ids['40796308305'] = '02_CocaCola';
+$ids['50245567013'] = '03_McDonalds';
+$ids['159616034235'] = '04_WalMart';
+$ids['22707976849'] = '05_Intel';
+$ids['9465008123'] = '06_Amazon';
+$ids['117058896692'] = '07_SamsungUSA';
+$ids['131085780304822'] = '08_LVMH';
+$ids['215138065124'] = '08_LouisVuitton';
+$ids['104958162837'] = '09_Google';
+//$ids['137947732957611'] = '10_Apple'; 			// Apple Inc.
+$ids['8576093908'] = '11_ATT';
+$ids['200969413280005'] = '12_Shell'; 			// Stránka Royal Dutch Shell byla slouèena s touto stránkou.
+$ids['170971049602363'] = '13_Bradesco';
+$ids['191187460289'] = '14_HP';					// Hewlett-Packard
+$ids['197052454200'] = '15_Toyota';				// Toyota USA
+$ids['24496278123'] = '16_Unilever';
+$ids['201881730533'] = '17_Johnson';
+$ids['138602119541424'] = '18_GE'; 				// General electric
+$ids['179590995428478'] = '19_BankofAmerica';
+$ids['24287259392'] = '20_Nestle';
+$ids['154423787905266'] = '21_UPS';				// United Parcel Service
+$ids['67884984384'] = '22_VodafoneUK';
+$ids['152789358067261'] = '23_WellsFargo';
+$ids['152431441489088'] = '24_Citi';			// Stránka Citigroup, Inc. byla slouèena s touto stránkou.
+$ids['97279934919'] = '25_BPAmerica';			// BP Plc.
+
+$page_ids = $ids;
+
+//$page_ids = array_slice($ids,0,5);

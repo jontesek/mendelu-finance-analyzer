@@ -1,0 +1,65 @@
+Saving data options
+
+===DB sloupce hodnoty===
+tweet_type: 1 ... mentions, 2...search by name, 3...replies to company tweets, 4...timeline tweets
+
+===SQL příkazy===
+naplnit last_download:  INSERT INTO last_download (company_id, fb_post_timestamp) SELECT id, 1 FROM company
+update last download: UPDATE last_download SET article_newest_saved = '1970-01-02 00:01:00' WHERE company_id <> 57480
+komplet: 
+INSERT INTO last_download (company_id, fb_post_timestamp, article_timestamp, article_last_saved, tw_mention_id, tw_reply_id, tw_search_name_id, tw_timeline_id) SELECT id, 1, '1970-01-02 05:00:00', '1970-01-02 05:00:00', 1, 1, 1, 1 FROM company
+
+reset twitter: update last_download set tw_reply_id=1, tw_mention_id=1,tw_timeline_id=1,tw_search_name_id=1 where company_id<>74788
+
+reset all: 
+update last_download set fb_post_timestamp = 1, article_newest_saved = '1970-01-02 00:00:00', tw_reply_id=1, tw_mention_id=1,tw_timeline_id=1,tw_search_name_id=1 where company_id<>747887
+
+tw duplicate: select tw_id, company_id, text, count(*) c from tw_status group by tw_id having c > 1
+
+
+===MySQL===
+MySQL zabírá méně místa na disku.
+http://postgresql.nabble.com/High-Disk-write-and-space-taken-by-PostgreSQL-td5720029.html
+http://info.prelert.com/blog/mysql-versus-postgresql
+
+Performance
+http://dev.mysql.com/doc/refman/5.1/en/using-explain.html
+http://code.openark.org/blog/mysql/7-ways-to-convince-mysql-to-use-the-right-index
+
+SIzes
+http://stackoverflow.com/questions/2023481/mysql-large-varchar-vs-text
+
+Timestamps: 
+http://stackoverflow.com/questions/7029127/using-mysqls-timestamp-vs-storing-timestamps-directly
+http://gpshumano.blogs.dri.pt/2009/07/06/mysql-datetime-vs-timestamp-vs-int-performance-and-benchmarking-with-innodb/
+http://www.epochconverter.com/programming/mysql-from-unixtime.php
+
+Data storage requirements:
+https://dev.mysql.com/doc/refman/5.0/en/storage-requirements.html
+
+
+===Connector/Python===
+executemany: http://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlcursor-executemany.html
+API reference: http://dev.mysql.com/doc/connector-python/en/connector-python-reference.html
+examples: http://dev.mysql.com/doc/connector-python/en/connector-python-examples.html
+
+===Kódování===
+http://stackoverflow.com/questions/1168036/how-to-fix-incorrect-string-value-errors
+http://dev.mysql.com/doc/refman/5.5/en/charset-unicode-utf8mb4.html
+https://mathiasbynens.be/notes/mysql-utf8mb4
+
+
+
+
+
+=====PostgreSQL=====
+Lze použít typ JSON.
+http://www.postgresql.org/docs/devel/static/datatype-json.html
+http://dba.stackexchange.com/questions/90482/export-postgres-table-as-json
+http://www.gistutor.com/postgresqlpostgis/10-intermediate-postgresqlpostgis-tutorials/39-how-to-import-or-export-a-csv-file-using-postgresql-copy-to-and-copy-from-queries.html
+http://clarkdave.net/2013/06/what-can-you-do-with-postgresql-and-json/
+https://functionwhatwhat.com/json-in-postgresql/
+http://michael.otacoo.com/postgresql-2/postgres-9-3-feature-highlight-json-data-generation/
+https://blog.compose.io/is-postgresql-your-next-json-database/
+http://stormatics.com/howto-use-json-functionality-in-postgresql/
+https://blog.interlinked.org/tutorials/postgresql.html

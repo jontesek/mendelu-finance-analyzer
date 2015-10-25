@@ -1,0 +1,5 @@
+
+===Databáze
+MySQL
+schema: fin_analyzer
+root: auto

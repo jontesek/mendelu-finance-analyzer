@@ -1,0 +1,65 @@
+===FB===
+
+===717: 449588948506111==== OK
+Page ID 449588948506111 was migrated to page ID 612861008745063.  Please update your API calls to the new ID
+
+====634: Holcim====
+cursor.execute(query, com) on line 56
+mysql.connector.errors.DataError: 1406 (22001): Data too long for column 'id' at row 1
+
+====436: cocacola====
+MYER Please reduce the amount of data you're asking for, then retry your request
+
+==YAHOO==
+
+===3: ABBV====
+time data '21 minutes ago' does not match format '%B %d, %Y %I:%M %p'
+http://finance.yahoo.com/news/inplay-briefing-com-055139997.html#abbv
+
+====259: KRFT==== OK
+KRFT is no longer valid. It has changed to KHC. 
+
+
+
+
+
+
+
+
+
+-------------------------
+======FB errors======
+
+111: consolenergy====get
+201: Goodyear====Unsupported get request. 
+205: Hanesbrands Inc. (HBI): má být hanes
+====480: WD====
+(#803) Some of the aliases you requested do not exist: WD -> WesternDigital
+AnheuserBusch====
+Unsupported get request.
+====563: Carlsberg====
+Unsupported get request.
+====630: heineken====
+Unsupported get request.
+====718: sabmiller====
+Unsupported get request.
+
+========YAHOO errors
+
+====549: CBLT.L====
+not exists -> BLT.L
+
+====591: DNBHF.PK====
+not exists -> ??? dal jsem DNBHF
+
+====600: AENI.MI====
+====627: HNR.DE====
+====636: BOS.DE====
+====648: AISP.MI====
+====673: MKS.LE====
+====698: PAH.DE====
+====725: ESG.PA====
+====726: SGSN.VT====
+====729: SCHP.VT====
+====749: SWED.ST====
+

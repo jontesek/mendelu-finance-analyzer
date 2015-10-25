@@ -1,0 +1,8 @@
+====Text processing====
+
+word tokenization:
+http://stackoverflow.com/questions/6181763/converting-a-string-to-a-list-of-words
+nltk.download('punkt')
+https://gist.github.com/ameyavilankar/10347201#file-preprocess-py-L1
+http://stackoverflow.com/questions/26126442/combining-text-stemming-and-removal-of-punctuation-in-nltk-and-scikit-learn
+

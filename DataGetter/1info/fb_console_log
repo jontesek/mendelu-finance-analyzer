@@ -1,0 +1,20 @@
+
+
+==limit 100==
+====111: consolenergy====
+MYER Unsupported get request. Please read the Graph API documentation at https://developers.facebook.com/docs/graph-api
+Problem with company consolenergy
+====201: Goodyear====
+MYER {u'error': {u'message': u'Unsupported get request. Please read the Graph API documentation at https://developers.facebook.com/docs/graph-api', u'code': 100, u'type': u'GraphMethodException'}}
+====436: cocacola====
+MYER {u'error': {u'message': u"Please reduce the amount of data you're asking for, then retry your request", u'code': -3}}
+====523: AnheuserBusch====
+MYER {u'error': {u'message': u'Unsupported get request. Please read the Graph API documentation at https://developers.facebook.com/docs/graph-api', u'code': 100, u'type': u'GraphMethodException'}}
+====563: Carlsberg====
+MYER {u'error': {u'message': u'Unsupported get request. Please read the Graph API documentation at https://developers.facebook.com/docs/graph-api', u'code': 100, u'type': u'GraphMethodException'}}
+====630: heineken====
+MYER {u'error': {u'message': u'Unsupported get request. Please read the Graph API documentation at https://developers.facebook.com/docs/graph-api', u'code': 100, u'type': u'GraphMethodException'}}
+====718: sabmiller====
+MYER {u'error': {u'message': u'Unsupported get request. Please read the Graph API documentation at https://developers.facebook.com/docs/graph-api', u'code': 100, u'type': u'GraphMethodException'}}
+====749: swedbanksverige====
+MYER {u'error': {u'message': u'An unknown error occurred', u'code': 1}}

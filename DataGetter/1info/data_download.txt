@@ -1,0 +1,14 @@
+FB download
+
+1. limit = 250:
+-> comments=100 OK,90 OK,80 OK,70 OK, 60 OK,50 OK,40 OK,30 OK, OK no 
+
+2. limit = 100:
+-> comments=100 OK, 90 OK, 80 OK, 70 OK, 60 OK, 50 OK, 40 OK, 30 OK, OK no 
+
+3. coca cola 436
+limit = 90 OK, 80 OK, 70, 60, 50, 40, 30 THIS, 20
+comments = 50 
+
+4. all: limit = 90, comments = 100 OK
+

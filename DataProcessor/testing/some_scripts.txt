@@ -1,0 +1,2 @@
+texts = ['Ahoj žluťoučký Kůň!','Zdravím Vespolek']
+print unicode(texts[0],'utf8').lower()

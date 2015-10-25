@@ -1,0 +1,47 @@
+¨Various scripts
+
+===Datetime===
+import time
+import datetime
+
+# Current timestamp
+timestamp = int(time.time())
+
+# Date to timestamp
+dt = datetime.datetime(2014, 2, 25, 11, 5)
+ts = int(time.mktime(dt.timetuple()))
+
+
+
+for li in headlines:
+            url = li.a['href']
+            title = li.a.text.strip()
+            server = li.cite.contents[0].strip()
+            # Select server name
+            if server[0:2] == 'at':
+                s_name = server[3:]
+            else:
+                s_name = server
+            # Parse article
+            new_article = self.__parse_article(s_name, url)
+            # Save article
+            if new_article:
+                self.__save_article(new_article)
+            if s_name == 'Marketwired':
+                break
+            break
+            
+            
+def __parse_recent_time(self, time_string, h_date):
+        """Create datetime from recent article time."""
+        # Get time data data from string
+        print time_string
+        at_match = self.h_time_p.match(time_string)
+        if not at_match:
+            return False
+        # Get time object from string
+        article_time = datetime.datetime.strptime(at_match.group(1), '%I:%M%p')
+        # Add acquired time to heading datetime 
+        article_time = datetime.datetime(h_date.year, h_date.month, h_date.day) + datetime.timedelta(hours=article_time.hour) + datetime.timedelta(minutes=article_time.minute)
+        # result
+        return article_time

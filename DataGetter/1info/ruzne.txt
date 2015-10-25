@@ -1,0 +1,31 @@
+
+CSV company
+nahradit: https?://www.facebook.com/([\d|\w]+)
+za: \1
+
+
+EMAILS
+http://stackoverflow.com/questions/10012303/why-cant-i-send-a-mail-to-myself-using-python-smtplib
+
+Links
+http://stackoverflow.com/questions/26911122/python-looping-requests-get-json-and-getting-the-value
+http://stackoverflow.com/questions/5214578/python-print-string-to-text-file
+http://stackoverflow.com/questions/1898656/remove-whitespace-in-python-using-string-whitespace
+
+
+YAHOO PARSING DATES
+http://stackoverflow.com/questions/19774709/use-python-to-find-out-if-a-timezone-currently-in-daylight-savings-time
+http://www.timeanddate.com/time/zone/usa/new-york
+
+test 1: http://finance.yahoo.com/news/second-day-put-selling-adt-111445278.html
+Eastern Daylight Time (EDT) is 4 hours behind Coordinated Universal Time (UTC)
+
+test 2: http://finance.yahoo.com/news/amd-misses-earnings-sees-drop-215609719.html
+Fri, Jul 17, 2015, 9:19AM EDT -> 15 hours ago
+shown: July 16, 2015 5:56 PM
+
+test 3: http://finance.yahoo.com/news/second-day-put-selling-adt-111445278.html
+Fri, Jul 17, 2015, 11:41 AM EDT -> 4 hours ago -> 7:41 AM
+source: http://www.optionmonster.com/news/article.php?page=second_day_of_put_selling_in_adt_105539.html
+date: July 17, 2015  Fri 5:14 AM CT -> + 2 hours, ale má být + 1 hour
+

@@ -1,0 +1,66 @@
+Facebook data downloading
+
+=====Jaká data=====
+
+Fanpage firem:
+- checkins, likes, talking about count
+- příspěvky na stráncee: ID, text, čas, liky, shares
+-> komentáře k příspěvkům: ID, text, čas, autor, liky
+
+======Graph API======
+
+API URL: https://graph.facebook.com/query
+Získat fan page Intelu: https://graph.facebook.com/22707976849
+
+Graph API documentation: https://developers.facebook.com/docs/graph-api
+Graph API explorer: https://developers.facebook.com/tools/explorer/
+
+http://stackoverflow.com/questions/10027805/how-to-see-get-all-wall-posts-of-a-specific-facebook-page
+Jde získávat data z historie.
+
+DATA
+1. posts: limit = 250	https://developers.facebook.com/docs/graph-api/reference/v2.3/page/feed
+2. comments: limit = ?	https://developers.facebook.com/docs/graph-api/reference/v2.3/object/comments
+3. comment replies	stejné jako 2 - nebudu řešit
+
+posts - 22707976849_10152902688716850: ???
+
+Přijde to seřazené od nejaktuálnějšího.
+query: Intel/posts?date_format=U&limit=5&fields=id,created_time,message,shares,likes.limit(0).summary(true),comments.summary(true)
+
+query psot: /22707976849_10152885483571850?date_format=U&fields=shares,likes.limit(0).summary(true),comments.summary(true)
+
+Používání API
+https://developers.facebook.com/docs/graph-api/using-graph-api/v2.3
+
+Stránkování
+- info: https://developers.facebook.com/docs/graph-api/using-graph-api/v2.3#paging
+- dle času: ?since=<unix_timestamp> 
+- likes count: 
+
+Limity
+https://developers.facebook.com/docs/marketing-api/api-rate-limiting
+
+POSTS
+Některé firmy mají přístupné jenom tyto pole: message, id, created_time
+
+=====Unofficial SDKs=====
+http://stackoverflow.com/questions/10778018/accessing-facebook-api-data-with-python
+
+1. PythonForFacebook:
+http://www.pythonforfacebook.com/
+https://github.com/pythonforfacebook/facebook-sdk
+https://facebook-sdk.readthedocs.org/en/latest/
+
+https://github.com/pythonforfacebook/facebook-sdk/blob/master/facebook/__init__.py
+
+2. FacePy:
+https://github.com/jgorset/facepy
+dokumentace: http://facepy.readthedocs.org/en/latest/usage/graph-api.html
+
+===Getting access token===
+http://stackoverflow.com/questions/28124078/get-latest-facebook-posts-of-page-with-php-sdk
+
+===Getting data===
+http://stackoverflow.com/questions/17755753/how-to-get-likes-count-when-searching-facebook-graph-api-with-search-xxx
+

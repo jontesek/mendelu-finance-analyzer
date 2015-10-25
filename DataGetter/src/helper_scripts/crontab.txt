@@ -1,0 +1,11 @@
+# CRON for data getter
+# cron format: min hour day month year user command
+
+# Yahoo
+30 6 * * * jonas /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_yahoo_new.py		# každý den v 6:30
+20 3 * * * jonas /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_yahoo_update.py	# každý den v 3:20 (musí být předtím)
+# Facebook
+0 2 * * * jonas /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_fb_new.py			# každý den v 2:00
+20 0 * * * jonas /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_fb_update.py		# každý den v 0:20 (musí být předtím)
+# Twitter
+0 */6 * * * jonas /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_tw.py				# každých 6 hodin (0,6,12,18)

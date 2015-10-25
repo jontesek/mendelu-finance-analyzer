@@ -1,0 +1,10 @@
+App uses following modules
+
+===Python===
+pip install <name>
+
+twython
+lxml
+beautifulsoup4
+facebook-sdk (https://facebook-sdk.readthedocs.org/en/latest/)
+mysql-connector (oficiální MySQL ovladače od oracle: MySQL Connector/Python)

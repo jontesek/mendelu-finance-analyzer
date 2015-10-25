@@ -1,0 +1,20 @@
+ARTICLES
+===Parse HTML===
+Scrapy
+http://stackoverflow.com/questions/11709079/parsing-html-python
+
+YAHOO parsing
+<div id="mediacontentcomments"
+http://finance.yahoo.com/news/amd-misses-earnings-sees-drop-215609719.html
+nejsou v serverovém HTML
+
+
+===Cesta headlines===
+html > body > div[screen] > div[rightcol] > table[yfncsumtab] > tbody > tr[1] > td[0] > div > ul[1:] 
+
+
+===Get FB and TW count
+http://www.quora.com/Is-there-a-way-to-count-how-many-likes-tweets-+1s-etc-a-given-URL-has
+http://stackoverflow.com/questions/4775578/is-there-a-way-to-get-the-twitter-share-count-for-a-specific-url
+
+Přidání <p>: 26.8.2015

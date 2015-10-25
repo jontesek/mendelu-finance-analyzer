@@ -1,0 +1,14 @@
+
+Python connector
+http://dev.mysql.com/doc/connector-python/en/connector-python-example-connecting.html
+
+INDEXES
+http://dba.stackexchange.com/questions/19316/mysql-5-5-8-innodb-foreign-key-join-performance
+
+DATES
+http://dba.stackexchange.com/questions/20217/mysql-set-utc-time-as-default-timestamp
+
+DUPLICATES
+SELECT address, count(id) as cnt FROM list GROUP BY address HAVING cnt > 1
+
+mysqldump: C:\Program Files\MySQL\MySQL Server 5.6\bin>mysqldump.exe -u root -p fin_analyzer > C:\Zdrojaky\fa.sql

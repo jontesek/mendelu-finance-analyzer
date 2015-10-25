@@ -1,0 +1,35 @@
+26, 122, 125, 210 - unsupported get rquest
+
+365 - cannot query user by their username OK
+
+
+===487: xerox==== OK
+(#803) Some of the aliases you requested do not exist: xerox
+
+===523: AnheuserBusch==== delete fb page
+Unsupported get request. Please read the Graph API documentation at https://developers.facebook.com/docs/graph-api
+
+=563: Carlsberg====
+Unsupported get request. Please read the Graph API documentation at https://developers.facebook.com/docs/graph-api
+
+===632: heineken====
+Unsupported get request. Please read the Graph API documentation at https://developers.facebook.com/docs/graph-api
+
+=704: raiffeisenbank==== NO PAGE
+(#803) Cannot query users by their username (raiffeisenbank)
+
+====718: vorweggehen====
+unsupported
+
+634 hen3.de fb deleted
+
+746 sse.l fb deleted
+
+
+
+YAHOO errors
+
+AYE není ticker ->smazáno: původní id 15. asi to zkrachovalo.
+AW - krach
+ABK - změněno na AMBC
+
