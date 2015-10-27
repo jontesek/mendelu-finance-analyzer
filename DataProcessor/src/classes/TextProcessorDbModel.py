@@ -14,7 +14,7 @@ class TextProcessorDbModel(DbModel):
 
     def get_fb_posts_for_company(self, company_id, from_date):
         cursor = self.dbcon.cursor(dictionary=True)
-        from_date_timestamp = long(time.mktime(from_date.timetuple()))
+        from_date_timestamp = self._from_date_to_timestamp(from_date)
         query = "SELECT id, created_timestamp, text FROM fb_post WHERE company_id = %s AND created_timestamp >= %s"
         cursor.execute(query, [company_id, from_date_timestamp])
         return cursor
@@ -38,6 +38,11 @@ class TextProcessorDbModel(DbModel):
         query = 'SELECT date, close FROM stock_price WHERE company_id = %s AND date >= %s'
         cursor.execute(query, (company_id, from_date))
         return cursor.fetchall()
+
+    #### HELPERS
+
+    def _from_date_to_timestamp(self, input_date):
+        return long(time.mktime(input_date.timetuple()))
 
 
 

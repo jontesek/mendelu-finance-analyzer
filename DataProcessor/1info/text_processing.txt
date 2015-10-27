@@ -1,0 +1,23 @@
+====Text processing====
+
+- Word tokenization:
+http://stackoverflow.com/questions/6181763/converting-a-string-to-a-list-of-words
+nltk.download('punkt')
+https://gist.github.com/ameyavilankar/10347201#file-preprocess-py-L1
+http://stackoverflow.com/questions/26126442/combining-text-stemming-and-removal-of-punctuation-in-nltk-and-scikit-learn
+- Stop words removal:
+http://stackoverflow.com/questions/19130512/stopword-removal-with-nltk
+
+- Twitter:
+http://stackoverflow.com/questions/13896056/how-to-remove-user-mentions-and-urls-in-a-tweet-string-using-python
+- URL removal:
+http://blog.mattheworiordan.com/post/13174566389/url-regular-expression-for-links-with-or-without
+http://stackoverflow.com/questions/11331982/how-to-remove-any-url-within-a-string-in-python
+http://code.tutsplus.com/tutorials/8-regular-expressions-you-should-know--net-6149
+
+===Duplicates removal in DB===
+SELECT id, count(*) c FROM fin_analyzer.fb_comment group by fb_id having c>1; ... 800
+post ... 21
+
+===Price movements===
+Možnost: předpočítat to v DB

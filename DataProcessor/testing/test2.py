@@ -1,11 +1,11 @@
-import datetime
-import time
+import re
 
-dt = datetime.datetime(2015,10,15,0,0,0)
+text = '#Soldiers need defense equipment & #transportation they can count on. #LifeWith3M http://s.3m.com/bdwqw ahoj'
+text2 = re.sub(r'#.+ ', '', text)
+text3 = re.sub(r'www\..+\..+ ', '', text)
+print text2
 
-print long(time.mktime(dt.timetuple()))
-
-unix = 1444860000
-dt = datetime.datetime.utcfromtimestamp(unix)
-print dt
+num = 3
+for i in range(1,3):
+    print i
 
