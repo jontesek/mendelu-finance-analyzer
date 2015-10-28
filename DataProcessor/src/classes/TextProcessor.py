@@ -7,6 +7,7 @@ import nltk
 from TextProcessorDbModel import TextProcessorDbModel
 from TextWriter import TextWriter
 
+
 class TextProcessor(object):
 
     def __init__(self, file_paths):
@@ -47,8 +48,7 @@ class TextProcessor(object):
             #print new_list
         # Send the data to TextWriter object.
         file_name = 'fb_post_%s_%s_%s' % (company_id, from_date.strftime('%Y-%m-%d'), str(days_delay))
-        self.text_writer.set_params('\t','csv')
-        self.text_writer.write_file(file_name, new_posts_list)
+        self.text_writer.write_file_for_vectorization(file_name, new_posts_list)
 
     def set_stock_movements(self, company_id, from_date):
         """Get relative stock movement for days from given date to present day.
