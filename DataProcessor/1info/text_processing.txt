@@ -21,3 +21,11 @@ post ... 21
 
 ===Price movements===
 Možnost: předpočítat to v DB
+
+===NTLK quick tutorials===
+http://www.slideshare.net/japerk/nltk-in-20-minutes
+http://pythonprogramming.net/tokenizing-words-sentences-nltk-tutorial/
+
+
+http://text-processing.com/demo/tokenize/
+

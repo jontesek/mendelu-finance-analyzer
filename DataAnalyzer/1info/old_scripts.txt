@@ -1,0 +1,27 @@
+===removing unicode punctation
+
+translate_table = dict((ord(char), None) for char in string.punctuation if char != "'")
+edited_string = input_string.translate(translate_table)
+print edited_string
+
+===test sentiment
+import nltk
+import string
+
+input_string = u"today we're celebrating 75 years of road safety innovation. one notable example is the evolution of the stop sign. since the 1930s, 3m technologies have increased sign brightness and improved durability."
+tokens = nltk.word_tokenize(input_string.lower())
+tokens = [i for i in tokens if i not in string.punctuation]
+
+afinn = dict(map(lambda (k,v): (k,int(v)),
+                     [ line.split('\t') for line in open("../input_sources/sentiment_dicts/AFINN-111.txt") ]))
+sum = 0
+for token in tokens:
+    sum += afinn.get(token, 0)
+    print afinn.get(token, 0),
+print sum
+
+sent_sum = sum(map(lambda token: afinn.get(token, 0), tokens))
+#print sent_sum
+
+
+

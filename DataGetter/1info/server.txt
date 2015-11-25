@@ -12,14 +12,19 @@ crontab -l
 
 SOSNA
 python path: #!/usr/local/bin/python2.7
+přihlášení: ssh jonas@sosna
 
 import: mysql -u jonas -p --default-character-set=utf8mb4 fin_analyzer < dumps/fyt_dump.sql
-export: mysqldump -u jonas -p --default-character-set=utf8mb4 fin_analyzer > sosna_dump.sql
+export: mysqldump -u jonas -p --default-character-set=utf8mb4 fin_analyzer > sosna_11_2015.sql
 (https://www.siteground.com/kb/importexport_mysql_database/)
 
 kopirovani: scp xpetrovs@akela.mendelu.cz:/home/xpetrovs/public_html/diplomka/file.txt sosna_file.txt
 
 ls -l --block-size=M
+
+spuštění manuálně:
+python2.7 FinanceAnalyzer/DataGetter/src/run_fb_new.py
+
 
 RUN TIMES
 fb_update: 10:55-11:03 ... 20 min.

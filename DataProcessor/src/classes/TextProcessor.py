@@ -10,7 +10,7 @@ from TextWriter import TextWriter
 
 class TextProcessor(object):
 
-    def __init__(self, file_paths):
+    def __init__(self, file_paths = {'output'}):
         self.dbmodel = TextProcessorDbModel()
         self.file_paths = file_paths
         #self.stop_words = self._read_stopwords(file_paths['stopwords'])
@@ -120,7 +120,6 @@ class TextProcessor(object):
         # Remove hyper links
         text = re.sub('https?:\/\/.* ?', '', text)
         # Remove hash tags - but they are sometimes parts of a sentence. -> remove the last occurence???
-
         # Lowercase the text
         #text = unicode(text,'utf-8').lower()
         text = text.lower()
