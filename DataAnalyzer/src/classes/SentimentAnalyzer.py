@@ -29,7 +29,7 @@ class SentimentAnalyzer(object):
             s_dict = self._get_subjclues_dictionary()
         elif s_dictionary_name == 'sentiwordnet':
             s_dict = self._get_sentiwordnet_dictionary()
-        elif s_dictionary_name == 'binglexicon':
+        elif s_dictionary_name == 'bing':
             s_dict = self._get_bing_dictionary()
         elif s_dictionary_name == 'senticnet':
             s_dict = self._get_senticnet_dictionary()
@@ -39,9 +39,17 @@ class SentimentAnalyzer(object):
             s_dict = self._get_labmt_dictionary()
         elif s_dictionary_name == 'warriner':
             s_dict = self._get_warriner_dictionary()
+        elif s_dictionary_name == 'mcdonald':
+            s_dict = self._get_mcdonald_dictionary()
+        elif s_dictionary_name == 'henry':
+            s_dict = self._get_henry_dictionary()
+        elif s_dictionary_name == 'hajek':
+            s_dict = self._get_hajek_dictionary()
+        else:
+            return False
         # Tokenize text
         tokens = nltk.word_tokenize(input_text.lower())
-        # Remove punctation
+        # Remove punctation and digits
         tokens = [i for i in tokens if i not in string.punctuation]
         # Calculate sentiment
         sentiment_sum = 0
@@ -252,3 +260,63 @@ class SentimentAnalyzer(object):
         # result
         dict_file.close()
         return warriner
+
+    def _get_mcdonald_dictionary(self):
+        # Open file
+        dict_file = open(self.file_paths['input']+"sentiment_dicts/LoughranMcDonald_MasterDictionary_2014.csv", 'r')
+        mcdonald = {}
+        # Skip header line
+        dict_file.readline()
+        # Read all words
+        for line in dict_file:
+            # Get values
+            values = line.split(';')
+            word = values[0].strip().lower()
+            # Has the word any polarity?
+            neg_val = int(values[7])
+            pos_val = int(values[8])
+            if pos_val > 0:
+                polarity = 1
+            elif neg_val > 0:
+                polarity = -1
+            else:
+                polarity = None
+            # If it has, save it to tje mcdonald dict.
+            if polarity:
+                mcdonald[word] = polarity
+        # result
+        dict_file.close()
+        return mcdonald
+
+    def _get_henry_dictionary(self):
+        henry = {}
+        # Read positive words
+        dict_file = open(self.file_paths['input']+"sentiment_dicts/henry-word-list/positive_lines.txt", 'r')
+        for line in dict_file:
+            henry[line.strip()] = 1
+        dict_file.close()
+        # Read negative words
+        dict_file = open(self.file_paths['input']+"sentiment_dicts/henry-word-list/negative_lines.txt", 'r')
+        for line in dict_file:
+            henry[line.strip()] = -1
+        dict_file.close()
+        # result
+        return henry
+
+    def _get_hajek_dictionary(self):
+        hajek = {}
+        # Read positive words
+        dict_file = open(self.file_paths['input']+"sentiment_dicts/hajek-multi-list/positivni.txt", 'r')
+        for line in dict_file:
+            # Get term word(s)
+            line_words = line.strip().split(' ')
+            # Create term key
+            if len(line_words) == 1:
+                term_key = line_words[0].strip()
+            else:
+                term_key = tuple(word.strip() for word in line_words)
+            # Save term to dict
+            hajek[term_key] = 1
+        # result
+        dict_file.close()
+        return hajek
