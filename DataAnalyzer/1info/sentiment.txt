@@ -30,6 +30,7 @@ http://keenformatics.blogspot.co.uk/2015/07/sentiment-analysis-lexicons-and-data
 - General Inquier: http://www.wjh.harvard.edu/~inquirer/homecat.htm
 - OpinionFinder's Subjectivity Lexicon: subjectivity_clues_hltemnlp05
 - Vader: https://github.com/cjhutto/vaderSentiment/blob/master/vaderSentiment/vader_sentiment_lexicon.txt
+- Lexicoder: http://www.lexicoder.com/
 
 AFFECTIVE DICTIONARIES:
 - Warriner: http://crr.ugent.be/archives/1003
@@ -44,8 +45,34 @@ For each word, we report the overall mean (Mean.Sum), standard deviation (SD.Sum
 TIPS:
 https://github.com/kevincobain2000/sentiment_classifier
 https://www.quora.com/I-have-a-list-of-positive-and-negative-words-How-do-I-proceed-to-do-a-sentiment-analysis-of-Tweets-on-Python-using-the-said-list
+https://www.quora.com/What-is-the-best-way-to-do-Sentiment-Analysis-with-Python-1
+https://www.quora.com/What-are-the-most-powerful-open-source-sentiment-analysis-tools
+https://www.youtube.com/watch?v=eObouMO2qSE
+https://github.com/kylehg/sentiment-analysis/blob/master/src/mpqa.py
 
+STUFF:
+http://nlp.stanford.edu/sentiment/
+http://nlp.stanford.edu/courses/NAACL2013/
+http://help.sentiment140.com/for-students
 
+CORPORA:
+http://stackoverflow.com/questions/24605702/good-dataset-for-sentimental-analysis
+http://stackoverflow.com/questions/5570681/what-training-data-sources-could-be-used-for-sentiment-classification-models
+http://www.researchgate.net/post/Are_there_any_twitter_corpora_available_on_the_web_for_text_opinion_mining_research
+http://stackoverflow.com/questions/7551262/training-data-for-sentiment-analysis
+http://www.researchgate.net/post/Are_there_any_twitter_corpora_available_on_the_web_for_text_opinion_mining_research
+https://www.cs.york.ac.uk/semeval-2013/task2/index.php%3Fid=data.html
 
+https://corplinguistics.wordpress.com/2012/01/25/cyberemotions/
 
+http://www.crowdflower.com/data-for-everyone
 
+AFFIN working
+https://finnaarupnielsen.wordpress.com/2011/06/20/simplest-sentiment-analysis-in-python-with-af/
+
+Facebook
+http://people.sabanciuniv.edu/berrin/share/LDA/Stanford-NLP-Course-termproject-ssoriajr-kanej.pdf
+https://lindat.mff.cuni.cz/repository/xmlui/handle/11858/00-097C-0000-0022-FE82-7
+
+Finance News
+XBank

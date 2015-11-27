@@ -1,3 +1,7 @@
 
 
 ngrams: http://stackoverflow.com/questions/24347029/python-nltk-bigrams-trigrams-fourgrams
+http://www.nltk.org/howto/sentiment.html
+https://github.com/nltk/nltk/wiki/Sentiment-Analysis
+http://textminingonline.com/dive-into-nltk-part-i-getting-started-with-nltk
+

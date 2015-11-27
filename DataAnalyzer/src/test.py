@@ -14,7 +14,4 @@ input_string3 = u"today we're celebrating 75 years of road safety innovation. on
 
 
 sa = SentimentAnalyzer()
-print sa.calculate_simple_sentiment('vader', input_string)
-
-
-
+print sa.calculate_simple_sentiment('micrownop', input_string2)

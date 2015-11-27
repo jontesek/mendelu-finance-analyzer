@@ -45,11 +45,15 @@ class SentimentAnalyzer(object):
             s_dict = self._get_henry_dictionary()
         elif s_dictionary_name == 'hajek':
             s_dict = self._get_hajek_dictionary()
+        elif s_dictionary_name == 'lsd':
+            s_dict = self._get_lsd_dictionary()
+        elif s_dictionary_name == 'micrownop':
+            s_dict = self._get_micrownop_dictionary()
         else:
             return False
         # Tokenize text
         tokens = nltk.word_tokenize(input_text.lower())
-        # Remove punctation and digits
+        # Remove punctation
         tokens = [i for i in tokens if i not in string.punctuation]
         # Calculate sentiment
         sentiment_sum = 0
@@ -60,8 +64,8 @@ class SentimentAnalyzer(object):
                 sentiment_sum += s_dict[token]
         # count number of found tokens
         percent_tokens_found = (found_tokens_count / len(tokens)) * 100
-        # return
-        return (round(sentiment_sum,3), round(percent_tokens_found,3))
+        # result
+        return round(sentiment_sum, 3), round(percent_tokens_found, 3)
 
     def _get_afinn_dictionary(self):
         """
@@ -317,6 +321,82 @@ class SentimentAnalyzer(object):
                 term_key = tuple(word.strip() for word in line_words)
             # Save term to dict
             hajek[term_key] = 1
+        dict_file.close()
+        # Read negative words
+        dict_file = open(self.file_paths['input']+"sentiment_dicts/hajek-multi-list/negativni.txt", 'r')
+        for line in dict_file:
+            # Get term word(s)
+            line_words = line.strip().split(' ')
+            # Create term key
+            if len(line_words) == 1:
+                term_key = line_words[0].strip()
+            else:
+                term_key = tuple(word.strip() for word in line_words)
+            # Save term to dict
+            hajek[term_key] = -1
         # result
         dict_file.close()
         return hajek
+
+    def _get_lsd_dictionary(self):
+        # Open file
+        dict_file = open(self.file_paths['input']+"sentiment_dicts/LSD2015.lc3", 'r')
+        lsdlexicon = {}
+        # Read file
+        for line_n, line_content in enumerate(dict_file):
+            # Save negative terms
+            if line_n > 1 and line_n < 2860:
+                term_key = self._create_term_key_from_line(line_content)
+                lsdlexicon[term_key] = -1
+                continue
+            # Save positive terms
+            if line_n > 2860:
+                term_key = self._create_term_key_from_line(line_content)
+                lsdlexicon[term_key] = 1
+        # result
+        dict_file.close()
+        return lsdlexicon
+
+    def _create_term_key_from_line(self, line):
+        # Get term word(s)
+        line_words = line.strip().split(' ')
+        # Create term key
+        if len(line_words) == 1:
+            term_key = line_words[0].strip()
+        else:
+            term_key = tuple(word.strip() for word in line_words)
+        # result
+        return term_key
+
+    def _get_micrownop_dictionary(self):
+        # NOT WORKING ON GROUP 1, 2
+        # Open file
+        dict_file = open(self.file_paths['input']+"sentiment_dicts/Micro-WNOp-data.txt", 'r')
+        micrownop = {}
+        regexp_term = re.compile('^(.+)#.+')
+        # Read file
+        for line in dict_file:
+            # skip comment lines
+            if line.startswith('#'):
+                continue
+            # Get values from line
+            values = line.split('\t')
+            # Choose synset polarity
+            pos_score = float(values[0])
+            neg_score = float(values[1])
+            if pos_score > 0.0:
+                polarity = pos_score
+            elif neg_score > 0.0:
+                polarity = - neg_score
+            else:
+                polarity = 0.0
+            # Get individual terms
+            terms = values[2].split(' ')
+            for term in terms:
+                # Get term string.
+                term_string = regexp_term.match(term).group(1)
+                # Add term to the sentiwordnet dict.
+                micrownop[term_string] = polarity
+        # result
+        dict_file.close()
+        return micrownop
