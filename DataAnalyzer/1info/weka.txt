@@ -1,0 +1,11 @@
+
+WEKA INFO
+http://machinelearningmastery.com/how-to-run-your-first-classifier-in-weka/
+http://wiki.pentaho.com/display/DATAMINING/Handling+Large+Data+Sets+with+Weka
+http://weka.wikispaces.com/Can+I+use+WEKA+from+Python%3F
+http://weka.wikispaces.com/Frequently+Asked+Questions
+
+COMMANDS
+java -cp weka.jar; weka.core.Instances C:\text_mining\data\fb_posts_all_2005-08-05_1.arff
+
+java -Xmx8g -XX:-UseGCOverheadLimit -jar weka.jar
