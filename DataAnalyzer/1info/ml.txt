@@ -1,0 +1,8 @@
+
+TRAINING
+http://stats.stackexchange.com/questions/51490/how-large-a-training-set-is-needed
+https://www.quora.com/How-big-should-the-training-set-be-in-the-Naive-Bayes-text-classification
+
+1 odtstavec = 1 minuta
+1 hodina = 50 odstavců
+1 den = 8 * 50 = 400

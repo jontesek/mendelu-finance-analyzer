@@ -12,3 +12,6 @@ DUPLICATES
 SELECT address, count(id) as cnt FROM list GROUP BY address HAVING cnt > 1
 
 mysqldump: C:\Program Files\MySQL\MySQL Server 5.6\bin>mysqldump.exe -u root -p fin_analyzer > C:\Zdrojaky\fa.sql
+
+BUFFERING
+https://geert.vanderkelen.org/2010/buffering-results-with-mysql-connectorpython/

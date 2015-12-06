@@ -10,16 +10,20 @@ from TextWriter import TextWriter
 
 class TextProcessor(object):
 
-    def __init__(self, file_paths = {'output'}):
+    def __init__(self, file_paths):
         self.dbmodel = TextProcessorDbModel()
         self.file_paths = file_paths
-        #self.stop_words = self._read_stopwords(file_paths['stopwords'])
+        # self.stop_words = self._read_stopwords(file_paths['stopwords'])
         self.stock_movements = {'company_id': None, 'ratios': {}}
         # regexp patterns
         self.pattern_http = re.compile('https?:\/\/.* ')
-        self.const_boundaries = (-0.5,0.5)
+        self.const_boundaries = (-0.5, 0.5)
         # writing text files
         self.text_writer = TextWriter(os.path.abspath(file_paths['output_dir']))
+        # count variables
+        self.documents_count = 0
+        self.documents_per_file = 50000
+        self.files_count = 1
 
     # MAIN PROCESSING
 
@@ -27,17 +31,24 @@ class TextProcessor(object):
         articles = self.dbmodel.get_articles_for_company(company_id)
         print articles.fetchone()
 
-    def process_fb_posts_for_company(self, company_id, from_date, days_delay):
+    def process_fb_posts_for_company(self, company_id, from_date, days_delay, total_file_name=False):
+        # Set stock movements
+        self.set_stock_movements(company_id, from_date)
         # Get posts from DB
         fb_posts = self.dbmodel.get_fb_posts_for_company(company_id, from_date)
         # Process posts and create a list for writing to a file
         new_posts_list = []
         for post in fb_posts:
-            #print post['id'],
-            # Get price movement
+            # print post['id'],
+            # Get existing data for price lookup
             post_date = datetime.datetime.utcfromtimestamp(post['created_timestamp']).date()
             lookup_date = post_date + datetime.timedelta(days=days_delay)
             working_date = self._get_working_date(lookup_date)
+            # If the company was not on the stock exchange on this date, skip the post.
+            if not working_date:
+                continue
+            self.documents_count += 1
+            # Calculate price movement
             price_movement = self.stock_movements['ratios'][working_date]
             movement_direction = self._format_stock_movement(price_movement, self.const_boundaries)
             # Edit text
@@ -45,13 +56,39 @@ class TextProcessor(object):
             # Add selected data to the list.
             new_list = [movement_direction, post_text]
             new_posts_list.append(new_list)
-            #print new_list
-        # Send the data to TextWriter object.
-        file_name = 'fb_post_%s_%s_%s' % (company_id, from_date.strftime('%Y-%m-%d'), str(days_delay))
-        self.text_writer.write_file_for_vectorization(file_name, new_posts_list)
+            # print new_list
+        # Choose the correct file name.
+        if total_file_name:
+            file_name = total_file_name
+            file_mode = 'a'
+        else:
+            file_name = 'fb_post_%s_%s_%s' % (company_id, from_date.strftime('%Y-%m-%d'), str(days_delay))
+            file_mode = 'w'
+        # Write data to the file
+        self.text_writer.write_file_for_vectorization(file_name, new_posts_list, file_mode)
+
+    def process_all_fb_posts(self, from_date, days_delay):
+        # Create file name
+        file_name = 'fb_posts_all_%s_%s' % (from_date.strftime('%Y-%m-%d'), str(days_delay))
+        # Remove old file with the same name.
+        # os.remove('%s/%s.%s' % (self.file_paths['output_dir'], file_name, 'txt'))
+        # Process all companies
+        for comp in self.dbmodel.get_companies():
+            print('===Company %d===') % comp[0]
+            # Check if the file should be ended.
+            if self.documents_count > self.documents_per_file:
+                print('>>>NEW FILE')
+                self.files_count += 1
+                self.documents_count = 0
+                file_name += '_' + str(self.files_count)
+            # Process and write data for one company.
+            self.process_fb_posts_for_company(comp[0], from_date, days_delay, file_name)
+
+    # STOCK MOVEMENTS
 
     def set_stock_movements(self, company_id, from_date):
-        """Get relative stock movement for days from given date to present day.
+        """
+        Get relative stock movement for days from given date to present day.
 
         Args:
             company_id (int): Company ID
@@ -73,10 +110,10 @@ class TextProcessor(object):
             self.stock_movements['ratios'][price_date] = ratio*100
         # return list
         self.stock_movements['company_id'] = company_id
-        print self.stock_movements
 
     def _format_stock_movement(self, percentage_change, const_boundaries):
-        """Get string representation of a size of stock movement.
+        """
+        Get string representation of a size of stock movement.
 
         :param percentage_change: percentage change
         :type float
@@ -93,7 +130,8 @@ class TextProcessor(object):
             return 'const'
 
     def _get_working_date(self, lookup_date):
-        """Gheck if given date is a working day. If not, return minus one or minus two days date.
+        """
+        Check if given date is a working day. If not, return minus one or minus two days date.
 
         Args:
             lookup_date (Datetime)
@@ -112,7 +150,6 @@ class TextProcessor(object):
                 return date_minus
         # nothing found
         return False
-
 
     def _process_facebook_text(self, text):
         # Remove whitespace

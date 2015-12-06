@@ -31,6 +31,12 @@ class TextProcessorDbModel(DbModel):
         cursor.execute(query, [post_id])
         return cursor
 
+    def get_companies(self):
+        cursor = self.dbcon.cursor(buffered=True)
+        query = 'SELECT id FROM COMPANY ORDER BY id ASC'
+        cursor.execute(query)
+        return cursor
+
     #### READ stock prices
 
     def get_stock_prices(self, company_id, from_date):

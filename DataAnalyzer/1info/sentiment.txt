@@ -1,3 +1,10 @@
+====INFO====
+
+http://neuro.imm.dtu.dk/cgi-bin/brede_str_nmf
+The sentiment analysis via the AFINN word list. The sentiment of a topic is found by summing sentiment of the individual texts weighted by the number of texts in the topic.
+The sentiment of each individual text is found by summing the sentiment strength of each word weighted by the number of words. The weighting is by the square root.
+A word list excludes common English words ("stopwords")
+
 
 WORDSTAT
 Actually, sentiment is not measured with those two lists of words and word patterns but instead with two sets of rules that attempt to take into account negations that may precede those words. For example, negative sentiment is measured by using the following two rules:
@@ -49,6 +56,7 @@ https://www.quora.com/What-is-the-best-way-to-do-Sentiment-Analysis-with-Python-
 https://www.quora.com/What-are-the-most-powerful-open-source-sentiment-analysis-tools
 https://www.youtube.com/watch?v=eObouMO2qSE
 https://github.com/kylehg/sentiment-analysis/blob/master/src/mpqa.py
+https://github.com/vivekn/sentiment/
 
 STUFF:
 http://nlp.stanford.edu/sentiment/
