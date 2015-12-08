@@ -9,3 +9,5 @@ COMMANDS
 java -cp weka.jar; weka.core.Instances C:\text_mining\data\fb_posts_all_2005-08-05_1.arff
 
 java -Xmx8g -XX:-UseGCOverheadLimit -jar weka.jar
+
+java -Xmx8g -XX:-UseGCOverheadLimit -cp weka.jar; weka.core.Instances C:\text_mining\data\fb_posts_all_2005-08-05_1.arff

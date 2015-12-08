@@ -6,3 +6,7 @@ https://www.quora.com/How-big-should-the-training-set-be-in-the-Naive-Bayes-text
 1 odtstavec = 1 minuta
 1 hodina = 50 odstavců
 1 den = 8 * 50 = 400
+
+VECTOR NORMA
+http://stackoverflow.com/questions/19410270/vector-space-model-cosine-similarity-vs-euclidean-distance
+http://stackoverflow.com/questions/11681591/why-should-we-perform-cosine-normalization-for-svm-feature-vectors

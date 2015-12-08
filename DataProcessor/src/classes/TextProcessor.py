@@ -32,7 +32,7 @@ class TextProcessor(object):
 
     def process_articles_for_company(self, company_id, from_date, days_delay, total_file_name=False):
         # Set stock movements
-        self.stock_processor.set_stock_movements(company_id, from_date)
+        self.stock_processor.set_stock_prices(company_id, from_date)
         # Get posts from DB
         articles = self.db_model.get_articles_for_company(company_id, from_date)
         # Process posts and create a list for writing to a file.
@@ -85,7 +85,7 @@ class TextProcessor(object):
 
     def process_fb_comments_for_company(self, company_id, from_date, days_delay, total_file_name=False):
         # Set stock movements
-        self.stock_processor.set_stock_movements(company_id, from_date)
+        self.stock_processor.set_stock_prices(company_id, from_date)
         # Get posts from DB
         fb_comments = self.db_model.get_fb_comments_for_company(company_id, from_date)
         # Process posts and create a list for writing to a file.
@@ -137,22 +137,23 @@ class TextProcessor(object):
             self.process_fb_comments_for_company(comp[0], from_date, days_delay, file_name)
 
     def process_fb_posts_for_company(self, company_id, from_date, days_delay, total_file_name=False):
-        # Set stock movements
-        self.stock_processor.set_stock_movements(company_id, from_date)
+        # Set stock prices for given company
+        prices = self.stock_processor.set_stock_prices(company_id, from_date)
+        if not prices:
+            return False
         # Get posts from DB
         fb_posts = self.db_model.get_fb_posts_for_company(company_id, from_date)
         # Process posts and create a list for writing to a file.
         new_posts_list = []
         for post in fb_posts:
             # print post['id'],
-            # Get existing data for price lookup
+            # Get document publication date
             post_date = datetime.datetime.utcfromtimestamp(post['created_timestamp']).date()
-            working_date = self.stock_processor.create_lookup_and_find_working_date(post_date, days_delay)
-            # If the company was not on the stock exchange on this date, skip the post.
-            if not working_date:
-                continue
             # Get stock price movement direction
-            movement_direction = self.stock_processor.get_stock_direction(working_date)
+            movement_direction = self.stock_processor.get_price_movement_with_delay(post_date, days_delay)
+            # If the company was not on the stock exchange on this date, skip the post.
+            if not movement_direction:
+                continue
             # Skip constant direction
             if movement_direction == 'const':
                 continue
@@ -186,7 +187,7 @@ class TextProcessor(object):
                 print('>>>NEW FILE')
                 self.files_count += 1
                 self.documents_count = 0
-                file_name += '_' + str(self.files_count)
+                file_name += '-' + str(self.files_count)
             # Process and write data for one company.
             self.process_fb_posts_for_company(comp[0], from_date, days_delay, file_name)
 
