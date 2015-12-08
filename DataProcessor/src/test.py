@@ -14,11 +14,11 @@ delay = 1
 company_id = 1
 
 # Individual files
-#tp.process_fb_posts_for_company(company_id, from_date, delay)
-#tp.process_fb_comments_for_company(1, from_date, 1)
-#tp.process_articles_for_company(1, from_date, 1)
+#tp.process_documents_for_company('fb_post', company_id, from_date, delay)
+#tp.process_documents_for_company('fb_comment', company_id, from_date, delay)
+#tp.process_documents_for_company('article', company_id, from_date, delay)
 
 # Total files
-tp.process_all_fb_posts(from_date, delay)
-# tp.process_all_fb_comments(from_date, delay)
-#tp.process_all_articles(from_date, delay)
+tp.process_documents_for_all_companies('fb_post', from_date, delay)
+#tp.process_documents_for_all_companies('fb_comment', from_date, delay)
+#tp.process_documents_for_all_companies('article', from_date, delay)
