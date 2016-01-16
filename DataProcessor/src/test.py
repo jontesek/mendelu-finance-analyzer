@@ -17,8 +17,10 @@ company_id = 1
 #tp.process_documents_for_company('fb_post', company_id, from_date, delay)
 #tp.process_documents_for_company('fb_comment', company_id, from_date, delay)
 #tp.process_documents_for_company('article', company_id, from_date, delay)
+#tp.process_documents_for_company('tweet', company_id, from_date, delay)
 
 # Total files
-tp.process_documents_for_all_companies('fb_post', from_date, delay)
+#tp.process_documents_for_all_companies('fb_post', from_date, delay)
 #tp.process_documents_for_all_companies('fb_comment', from_date, delay)
 #tp.process_documents_for_all_companies('article', from_date, delay)
+#tp.process_documents_for_all_companies('tweet', from_date, delay)

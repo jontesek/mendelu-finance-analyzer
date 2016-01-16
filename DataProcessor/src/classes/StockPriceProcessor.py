@@ -46,7 +46,7 @@ class StockPriceProcessor(object):
             float: stock price movement as percentage change
         """
         ratio = (self.stock_prices[second_date] / self.stock_prices[first_date]) - 1
-        # print first_date, second_date, ratio*100
+        #print first_date, second_date, ratio*100
         return ratio*100
 
     def get_price_movement_with_delay(self, document_date, days_delay):

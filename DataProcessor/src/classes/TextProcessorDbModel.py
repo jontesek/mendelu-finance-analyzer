@@ -32,6 +32,13 @@ class TextProcessorDbModel(DbModel):
         cursor.execute(query, [post_id])
         return cursor
 
+    def get_tweets_for_company(self, company_id, from_date):
+        cursor = self.dbcon.cursor(dictionary=True)
+        query = "SELECT created_at, text FROM tw_status WHERE company_id = %s AND created_at >= %s"
+        cursor.execute(query, [company_id, from_date])
+        return cursor
+
+
     #### READ other
 
     def get_companies(self):

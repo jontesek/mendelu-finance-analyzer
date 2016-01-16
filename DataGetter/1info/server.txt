@@ -33,4 +33,5 @@ yahoo_update: 11:40-13:08 ... 1h:30
 yahoo_new: 13:30-14:57...1h:30
 
 LOCALHOST
+heslo k rootovi: autobus
 import db: C:\Program Files\MySQL\MySQL Server 5.6\bin>mysql -u root -p --default-character-set=utf8mb4 fin_analyzer < C:\Users\Jontes\Documents\sosna_0915.sql

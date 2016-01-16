@@ -1,26 +1,15 @@
-#from ...DataProcessor.src.classes.TextProcessor import TextProcessor
 import re
-import string
 import xml.etree.ElementTree as etree
-import nltk
 
-class SentimentAnalyzer(object):
+
+class LexiconReader(object):
 
     def __init__(self):
         self.file_paths = {'input': '../input_sources/'}
+        self.dicts = {}
 
-    def calculate_simple_sentiment(self, s_dictionary_name, input_text):
-        """
-        Calculates text's sentiment in a simple way - sum of sentiments of all words in the text.
-
-        Arguments:
-            s_dictionary_name (string)
-            input_text (string)
-
-        Returns:
-            int: sentiment value
-        """
-        # Get dictionary
+    def get_dictionary(self, s_dictionary_name):
+        """Read lexicon file to a dictionary: [word] -> [value]"""
         if s_dictionary_name == 'afinn':
             s_dict = self._get_afinn_dictionary()
         elif s_dictionary_name == 'wordstat':
@@ -51,21 +40,7 @@ class SentimentAnalyzer(object):
             s_dict = self._get_micrownop_dictionary()
         else:
             return False
-        # Tokenize text
-        tokens = nltk.word_tokenize(input_text.lower())
-        # Remove punctation
-        tokens = [i for i in tokens if i not in string.punctuation]
-        # Calculate sentiment
-        sentiment_sum = 0
-        found_tokens_count = 0.0
-        for token in tokens:
-            if token in s_dict:
-                found_tokens_count += 1
-                sentiment_sum += s_dict[token]
-        # count number of found tokens
-        percent_tokens_found = (found_tokens_count / len(tokens)) * 100
-        # result
-        return round(sentiment_sum, 3), round(percent_tokens_found, 3)
+        return s_dict
 
     def _get_afinn_dictionary(self):
         """
@@ -203,6 +178,10 @@ class SentimentAnalyzer(object):
         return senticnet
 
     def _get_vader_dictionary(self):
+        """
+        n-grams: no
+        weights: yes
+        """
         # Open file
         dict_file = open(self.file_paths['input']+"sentiment_dicts/vader_sentiment_lexicon.txt", 'r')
         vaderlexicon = {}
@@ -293,6 +272,10 @@ class SentimentAnalyzer(object):
         return mcdonald
 
     def _get_henry_dictionary(self):
+        """
+        n-grams: no
+        weights: no
+        """
         henry = {}
         # Read positive words
         dict_file = open(self.file_paths['input']+"sentiment_dicts/henry-word-list/positive_lines.txt", 'r')
@@ -308,6 +291,10 @@ class SentimentAnalyzer(object):
         return henry
 
     def _get_hajek_dictionary(self):
+        """
+        n-grams: yes
+        weights: no
+        """
         hajek = {}
         # Read positive words
         dict_file = open(self.file_paths['input']+"sentiment_dicts/hajek-multi-list/positivni.txt", 'r')
@@ -339,6 +326,10 @@ class SentimentAnalyzer(object):
         return hajek
 
     def _get_lsd_dictionary(self):
+        """
+        n-grams: no
+        weights: no
+        """
         # Open file
         dict_file = open(self.file_paths['input']+"sentiment_dicts/LSD2015.lc3", 'r')
         lsdlexicon = {}
@@ -346,18 +337,18 @@ class SentimentAnalyzer(object):
         for line_n, line_content in enumerate(dict_file):
             # Save negative terms
             if line_n > 1 and line_n < 2860:
-                term_key = self._create_term_key_from_line(line_content)
+                term_key = self._lsd_create_term_key_from_line(line_content)
                 lsdlexicon[term_key] = -1
                 continue
             # Save positive terms
             if line_n > 2860:
-                term_key = self._create_term_key_from_line(line_content)
+                term_key = self._lsd_create_term_key_from_line(line_content)
                 lsdlexicon[term_key] = 1
         # result
         dict_file.close()
         return lsdlexicon
 
-    def _create_term_key_from_line(self, line):
+    def _lsd_create_term_key_from_line(self, line):
         # Get term word(s)
         line_words = line.strip().split(' ')
         # Create term key

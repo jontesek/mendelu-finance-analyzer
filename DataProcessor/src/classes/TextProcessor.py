@@ -32,17 +32,22 @@ class TextProcessor(object):
     # MAIN PROCESSING
 
     def process_documents_for_company(self, doc_type, company_id, from_date, days_delay, total_file_name=False):
-        # Set stock prices for given company
+        # Set stock prices for given company.
         prices = self.stock_processor.set_stock_prices(company_id, from_date)
         if not prices:
             return False
-        # Get documents from DB
+        # Get documents from DB.
         if doc_type == 'fb_post':
             documents = self.db_model.get_fb_posts_for_company(company_id, from_date)
         elif doc_type == 'fb_comment':
             documents = self.db_model.get_fb_comments_for_company(company_id, from_date)
         elif doc_type == 'article':
             documents = self.db_model.get_articles_for_company(company_id, from_date)
+        elif doc_type == 'tweet':
+            documents = self.db_model.get_tweets_for_company(company_id, from_date)
+        # Check if documents exists.
+        if not documents:
+            return False
         # Process documents - create a list for writing to a file.
         new_docs_list = []
         for doc in documents:
@@ -51,6 +56,8 @@ class TextProcessor(object):
                 doc_date = datetime.datetime.utcfromtimestamp(doc['created_timestamp']).date()
             elif doc_type == 'article':
                 doc_date = doc['published_date'].date()
+            elif doc_type == 'tweet':
+                doc_date = doc['created_at'].date()
             # Get stock price movement direction
             movement_direction = self.stock_processor.get_price_movement_with_delay(doc_date, days_delay)
             # If the company was not on the stock exchange on this date, skip the post.
@@ -60,7 +67,7 @@ class TextProcessor(object):
             if movement_direction == 'const':
                 continue
             # Edit document text
-            if doc_type == 'fb_post' or doc_type == 'fb_comment':
+            if doc_type == 'fb_post' or doc_type == 'fb_comment' or doc_type == 'tweet':
                 doc_text = self._process_facebook_text(doc['text'])
             elif doc_type == 'article':
                 doc_text = self._process_article_text(doc['text'])
