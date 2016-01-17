@@ -7,7 +7,7 @@ class StockPriceProcessor(object):
     def __init__(self):
         self.db_model = DbModel()
         self.stock_prices = {'company_id': None, 'ratios': {}}
-        self.const_boundaries = (-0.3, 0.3)
+        self.const_boundaries = (-2.5, 2.5)
 
     def set_stock_prices(self, company_id, from_date):
         """

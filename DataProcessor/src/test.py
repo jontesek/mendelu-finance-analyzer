@@ -10,7 +10,7 @@ tp = TextProcessor(file_paths)
 #from_date = datetime(2015, 8, 5)
 from_date = datetime(2005, 5, 5)
 
-delay = 1
+delay = 3
 company_id = 1
 
 # Individual files
@@ -23,4 +23,4 @@ company_id = 1
 #tp.process_documents_for_all_companies('fb_post', from_date, delay)
 #tp.process_documents_for_all_companies('fb_comment', from_date, delay)
 #tp.process_documents_for_all_companies('article', from_date, delay)
-#tp.process_documents_for_all_companies('tweet', from_date, delay)
+tp.process_documents_for_all_companies('tweet', from_date, delay)
