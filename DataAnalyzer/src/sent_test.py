@@ -12,7 +12,8 @@ We rate ADVANCED MICRO DEVICES (AMD) a SELL. This is driven by a number of negat
 """
 input_string3 = u"today we're celebrating 75 years of road safety innovation. one notable example is the evolution of the stop sign. since the 1930s, 3m technologies have increased sign brightness and improved durability."
 
+input_string4 = "Scientists are pioneers of products, technology & innovation. LifeWith3M"
 
 sa = LexiconSentimentAnalyzer()
 #print sa.calculate_simple_sentiment('vader', input_string2)
-print sa.calculate_vader_sentiment('vader',input_string2)
+print sa.calculate_vader_sentiment('vader',input_string4)

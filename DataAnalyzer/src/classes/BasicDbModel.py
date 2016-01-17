@@ -1,7 +1,6 @@
 import datetime
 import time
 
-import pytz
 
 from FaCommon.DbModel import DbModel
 
@@ -44,17 +43,17 @@ class BasicDbModel(DbModel):
         cursor = self.dbcon.cursor(dictionary=True)
         start_time = examined_date
         end_time = examined_date + datetime.timedelta(days=1)
-        query = "SELECT created_at, text FROM tw_status WHERE company_id = %s AND created_at >= %s AND created_at < %s"
+        query = "SELECT tw_id, text FROM tw_status WHERE company_id = %s AND created_at >= %s AND created_at < %s"
         cursor.execute(query, [company_id, start_time, end_time])
         return cursor
 
     #### READ other
 
     def get_companies(self):
-        cursor = self.dbcon.cursor(buffered=True)
+        cursor = self.dbcon.cursor(dictionary=True)
         query = 'SELECT id FROM COMPANY ORDER BY id ASC'
         cursor.execute(query)
-        return cursor
+        return cursor.fetchall()
 
     #### HELPERS
 

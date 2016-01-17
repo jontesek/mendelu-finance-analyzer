@@ -58,3 +58,6 @@ target/
 
 # PyCharms
 .idea/
+
+# Outputs folder
+outputs/

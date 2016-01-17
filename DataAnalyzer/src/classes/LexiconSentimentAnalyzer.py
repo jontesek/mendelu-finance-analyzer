@@ -8,6 +8,8 @@ from LexiconReader import LexiconReader
 
 class LexiconSentimentAnalyzer(object):
 
+    NEUTRAL_S_LIMIT = (-0.05, 0.10)
+
     def __init__(self):
         self.lex_reader = LexiconReader()
         self.vader = VaderAnalyzer()
@@ -56,14 +58,28 @@ class LexiconSentimentAnalyzer(object):
         if s_dictionary_name != self.vader.lexicon_name:
             self.vader = VaderAnalyzer(s_dictionary_name)
             self.vader.lexicon_name = s_dictionary_name
-        # Split text into sentences
+        # Split text into sentences.
         sentences = nltk.tokenize.sent_tokenize(input_text)
-        # Calc sentiment for every sentence
+        # Calc sentiment for every sentence.
         sentiment_sum = 0.0
         for sent in sentences:
             values = self.vader.polarity_scores(sent)
             sentiment_sum += values['compound']
-            #print sent
-            #print values
-        # Calc sentiment for the whole text.
-        return sentiment_sum
+        # Calc sentiment for the whole text - normalize sum by number of sentences.
+        return float(sentiment_sum / len(sentences))
+
+    def format_sentiment_value(self, sent_value):
+        """
+        Return whether given sentiment value represents a positive, negative or neutral sentiment.
+        :param sent_value (float):
+        :return: string
+        """
+        if self.NEUTRAL_S_LIMIT[0] < sent_value < self.NEUTRAL_S_LIMIT[1]:
+            polarity = 'neu'
+        elif sent_value > 0:
+            polarity = 'pos'
+        elif sent_value < 0:
+            polarity = 'neg'
+        else:
+            polarity = 'neu'
+        return polarity
