@@ -55,6 +55,21 @@ class BasicDbModel(DbModel):
         cursor.execute(query)
         return cursor.fetchall()
 
+    def get_companies_order_by_total_documents(self, start_date, end_date):
+        cursor = self.dbcon.cursor(dictionary=True)
+        query = """
+            SELECT company.id,
+            (SELECT COUNT(*) FROM article WHERE company_id = company.id) +
+            (SELECT COUNT(*) FROM fb_post WHERE company_id = company.id) +
+            (SELECT COUNT(*) FROM fb_comment WHERE company_id = company.id) +
+            (SELECT COUNT(*) FROM tw_status WHERE company_id = company.id)
+            AS DocsCount
+            FROM company
+            ORDER BY DocsCount DESC
+        """
+        cursor.execute(query)
+        return cursor.fetchall()
+
     #### HELPERS
 
     def _from_date_to_timestamp(self, input_date):

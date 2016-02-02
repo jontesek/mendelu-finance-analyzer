@@ -5,22 +5,39 @@ from LexiconSentimentAnalyzer import LexiconSentimentAnalyzer
 from BasicDbModel import BasicDbModel
 from FaCommon.TextWriter import TextWriter
 from FaCommon.TextProcessing import TextProcessing
+import FaCommon.Helpers
 
 
 class DocumentsAnalyzer(object):
 
-    def __init__(self, output_dir):
+    def __init__(self, output_dir, verbose=False):
         self.dbmodel = BasicDbModel()
         self.s_analyzer = LexiconSentimentAnalyzer()
         self.text_writer = TextWriter(os.path.abspath(output_dir))
+        self.verbose = verbose
 
     ## PUBLIC methods
 
     def analyze_all_companies(self, from_date, to_date, file_name):
-        companies = self.dbmodel.get_companies()
+        # Write file header (and by this reset the file).
+        header = [
+            'company_id', 'date',
+            'fb_post_neutral', 'fb_post_positive', 'fb_post_negative',
+            'fb_comment_neutral', 'fb_comment_positive', 'fb_post_negative',
+            'yahoo_neutral', 'yahoo_positive', 'yahoo_negative',
+            'twitter_neutral', 'twitter_positive', 'twitter_negative',
+            'stock_dir_1', 'stock_dir_2', 'stock_dir_3'
+        ]
+        self.text_writer.write_econometric_file(file_name, [header], 'w')
+        # Process companies
+        companies = self.dbmodel.get_companies_order_by_total_documents(from_date, to_date)
         for comp in companies:
             print("<<<<<Company %d>>>>>") % comp['id']
-            self.analyze_company(comp['id'], from_date, to_date, file_name)
+            if not self.verbose:
+                with FaCommon.Helpers.suppress_stdout():
+                    self.analyze_company(comp['id'], from_date, to_date, file_name)
+            else:
+                self.analyze_company(comp['id'], from_date, to_date, file_name)
         print('>>>All stuff saved.')
 
     def analyze_company(self, company_id, from_date, to_date, file_name):
@@ -53,7 +70,9 @@ class DocumentsAnalyzer(object):
                 tw_values['neu'], tw_values['pos'], tw_values['neg'],
             ]
             total_data.append(day_data)
-            print day_data
+            #print(day_data)
+            # Get stock movement direction for 1,2,3 days from current date.
+            
             # Increment examined date
             examined_date = examined_date + datetime.timedelta(days=1)
         # Write result to file

@@ -1,0 +1,19 @@
+DB EDITS
+
+add company_id index to fb_comment table
+
+SELECT
+(SELECT COUNT(*) FROM article WHERE company_id = 1) +
+(SELECT COUNT(*) FROM fb_post WHERE company_id = 1) +
+(SELECT COUNT(*) FROM fb_comment WHERE company_id = 1) +
+(SELECT COUNT(*) FROM tw_status WHERE company_id = 1)
+AS DocsCount
+
+SELECT company.id,
+(SELECT COUNT(*) FROM article WHERE company_id = company.id) +
+(SELECT COUNT(*) FROM fb_post WHERE company_id = company.id) +
+(SELECT COUNT(*) FROM fb_comment WHERE company_id = company.id) +
+(SELECT COUNT(*) FROM tw_status WHERE company_id = company.id)
+AS DocsCount
+FROM company
+ORDER BY DocsCount DESC
