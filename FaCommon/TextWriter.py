@@ -33,9 +33,8 @@ class TextWriter(object):
                     # Add delimiter
                     if col_n < max_index:
                         fh.write(items_delimiter)
-                # Break line - not for the last item
-                if line_n < lines_c:
-                    fh.write('\n')
+                # Break line
+                fh.write('\n')
 
     def write_file_for_vectorization(self, file_name, documents_list, file_mode):
         self._write_file(documents_list, file_name, 'txt', '\t', file_mode)

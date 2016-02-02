@@ -12,17 +12,17 @@ class StockPriceProcessor(object):
     def set_stock_prices(self, company_id, from_date):
         """
         Set stock prices for days from given date to present day.
+        Must be called before calling get_price_movenet method.
 
         Args:
             company_id (int): Company ID
-            from_date (Datetime): from which date to search (also some previous days will be saved)
+            from_date (Date): from which date to search (also some previous days will be saved)
 
         Returns:
-            list: (datetime, float): stock price movements as percentage change (current/last day)
+            list: (Date, float): stock price movements as percentage change (current/last day)
         """
         self.stock_prices = {}
         # Substract some days to be sure to get data for the from_date.
-        from_date = from_date.date()
         early_from_date = from_date - datetime.timedelta(days=7)
         # Get stock prices for individual dates
         stock_prices = self.db_model.get_stock_prices(company_id, early_from_date)
@@ -37,10 +37,10 @@ class StockPriceProcessor(object):
 
     def _get_price_movement(self, first_date, second_date):
         """
-        Get relative stock price movement - second/first date.
+        Get relative stock price movement = second/first date.
 
         Args:
-            first_date (Datet)
+            first_date (Date)
             second_date (Date)
         Returns:
             float: stock price movement as percentage change
@@ -84,7 +84,7 @@ class StockPriceProcessor(object):
 
     def _get_working_date(self, lookup_date, direction):
         """
-        Check if given date is a working day. If not, return minus 1,2,..14 days date.
+        Check if given date is a working day. If not, return plus/minus 1,2,..14 days date.
 
         Args:
             lookup_date (Datetime)
