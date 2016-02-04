@@ -1,0 +1,3 @@
+  File "C:\Users\Jontes\Documents\programovani\PyCharmProjects\FinanceAnalyzer\DataAnalyzer\src\classes\DocumentsAnalyzer.py", line 233, in _evaluate_results_for_company
+    stats[i][day[-1] + '_' + day[dir_indexes[i]]] += 1
+TypeError: cannot concatenate 'str' and 'bool' objects
