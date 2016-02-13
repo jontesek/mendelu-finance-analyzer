@@ -97,7 +97,7 @@ class BasicDbModel(DbModel):
             AS DocsCount
             FROM company
             ORDER BY DocsCount DESC
-        """ 
+        """
         cursor.execute(query)
         return cursor.fetchall()
 

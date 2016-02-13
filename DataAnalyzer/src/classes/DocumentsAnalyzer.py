@@ -1,8 +1,8 @@
 import datetime
-import os
 import math
 
 from LexiconSentimentAnalyzer import LexiconSentimentAnalyzer
+from MetricsCalculator import MetricsCalculator
 from BasicDbModel import BasicDbModel
 from FaCommon.TextWriter import TextWriter
 from FaCommon.TextProcessing import TextProcessing
@@ -13,18 +13,33 @@ import FaCommon.Helpers
 class DocumentsAnalyzer(object):
 
     def __init__(self, output_dir, verbose=False):
+        """
+        Constructor.
+        :param output_dir: absolute filepath to output directory
+        :param verbose:
+        :return:
+        """
         self.dbmodel = BasicDbModel()
         self.s_analyzer = LexiconSentimentAnalyzer()
-        self.text_writer = TextWriter(os.path.abspath(output_dir))
+        self.text_writer = TextWriter(output_dir)
         self.verbose = verbose
         # Object for stock movements
         self.stock_processor = StockPriceProcessor()
         # Dict for testing results
         self.evaluated_results = {}
+        # Metrics object
+        self.metrics_calculator = MetricsCalculator(output_dir)
 
-    ## PUBLIC methods
+    ## Econom output file
 
-    def analyze_all_companies(self, from_date, to_date, file_name):
+    def analyze_companies_econom_output(self, from_date, to_date, file_name):
+        """
+        Basic output file containing only number of positive, neutral, negative documents.
+        :param from_date:
+        :param to_date:
+        :param file_name:
+        :return:
+        """
         # Prepare header
         header = [
             'company_id', 'date',
@@ -32,12 +47,75 @@ class DocumentsAnalyzer(object):
             'fb_comment_neutral', 'fb_comment_positive', 'fb_comment_negative',
             'yahoo_neutral', 'yahoo_positive', 'yahoo_negative',
             'twitter_neutral', 'twitter_positive', 'twitter_negative',
+        ]
+        # Reset file
+        self.text_writer.write_econometric_file(file_name, [header], 'w')
+        # Process companies
+        companies = self.dbmodel.get_companies_order_by_total_documents(from_date, to_date)
+        for comp in companies:
+            print("<<<<<Company %d>>>>>") % comp['id']
+            self.analyze_company_econom_output(comp['id'], from_date, to_date, file_name)
+        print('>>>All stuff saved.')
+
+    def analyze_company_econom_output(self, company_id, from_date, to_date, file_name):
+        """
+        Analyze documents about company (from_date -> present date) - simple output file.
+        :param company_id: int
+        :param from_date: string
+        :return: list of days, where every row contains information for documents for this day.
+        """
+        # Prepare variables
+        examined_date = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
+        last_date = datetime.datetime.strptime(to_date, '%Y-%m-%d').date()
+        total_data = []
+
+        # Prepare list for writing to a file.
+        # For every day (from "from_date" to "to_date"), query the DB for documents created on the day.
+        while examined_date <= last_date:
+            print("===%s===") % examined_date
+            # For every document type, process all documents and count number of neutral, positive, negative documents.
+            fb_p_values = self._process_fb_posts(company_id, examined_date)
+            fb_c_values = self._process_fb_comments(company_id, examined_date)
+            yahoo_values = self._process_yahoo(company_id, examined_date)
+            tw_values = self._process_tweets(company_id, examined_date)
+            # Save acquired data
+            day_data = [
+                company_id,
+                examined_date.strftime('%d.%m.%Y'),
+                fb_p_values['neu'], fb_p_values['pos'], fb_p_values['neg'],
+                fb_c_values['neu'], fb_c_values['pos'], fb_c_values['neg'],
+                yahoo_values['neu'], yahoo_values['pos'], yahoo_values['neg'],
+                tw_values['neu'], tw_values['pos'], tw_values['neg'],
+            ]
+            total_data.append(day_data)
+            # Increment examined date.
+            examined_date = examined_date + datetime.timedelta(days=1)
+
+        # Write result to file.
+        self.text_writer.write_econometric_file(file_name, total_data, 'a')
+
+
+    ## Analyze output file
+
+    def analyze_all_companies(self, from_date, to_date, file_name):
+        # Prepare headers
+        header_days = [
+            'company_id', 'date',
+            'fb_post_neutral', 'fb_post_positive', 'fb_post_negative',
+            'fb_comment_neutral', 'fb_comment_positive', 'fb_comment_negative',
+            'yahoo_neutral', 'yahoo_positive', 'yahoo_negative',
+            'twitter_neutral', 'twitter_positive', 'twitter_negative',
             'stock_dir_-1', 'stock_dir_1', 'stock_dir_2', 'stock_dir_3',
-            'overall_sentiment'
+            'sentiment_fb_post', 'sentiment_fb_comment', 'sentiment_yahoo', 'sentiment_twitter',
+            'overall_sentiment',
+        ]
+        header_metrics = [
+
         ]
         # Reset files
-        self.text_writer.write_econometric_file(file_name, [header], 'w')
-        self.text_writer.write_econometric_file('metrics', [['Metrics']], 'w')
+        self.text_writer.write_econometric_file(file_name, [header_days], 'w')
+        self.text_writer.write_econometric_file('total_metrics', [['Metrics']], 'w')
+        self.text_writer.write_econometric_file('source_metrics', [[header_metrics]], 'w')
         # Process companies
         companies = self.dbmodel.get_companies_order_by_total_documents(from_date, to_date)
         for comp in companies:
@@ -89,11 +167,16 @@ class DocumentsAnalyzer(object):
             day_data.append(self.stock_processor.get_price_movement_with_delay(examined_date, 1))
             day_data.append(self.stock_processor.get_price_movement_with_delay(examined_date, 2))
             day_data.append(self.stock_processor.get_price_movement_with_delay(examined_date, 3))
+            # Calculate simple sentiment for all sources.
+            fb_post_s = max(fb_p_values.keys(), key=lambda k: fb_p_values[k])
+            fb_comment_s = max(fb_c_values.keys(), key=lambda k: fb_c_values[k])
+            yahoo_s = max(yahoo_values.keys(), key=lambda k: yahoo_values[k])
+            twitter_s = max(tw_values.keys(), key=lambda k: tw_values[k])
+            day_data.extend([fb_post_s, fb_comment_s, yahoo_s, twitter_s])
             # Calculate overall sentiment for the day.
             (max_sent, day_sent) = self._calc_overall_sentiment_for_day(max_sent, fb_p_values, fb_c_values, yahoo_values, tw_values)
             day_data.append(day_sent)
-            # Save date to total data.
-            #print(day_data)
+            # Save day data to total data.
             total_data.append(day_data)
             # Increment examined date.
             examined_date = examined_date + datetime.timedelta(days=1)
@@ -107,16 +190,15 @@ class DocumentsAnalyzer(object):
         # Write result to file.
         self.text_writer.write_econometric_file(file_name, total_data, 'a')
 
-        # Evaluate results
-        self.evaluated_results[company_id] = self._evaluate_results_for_company(total_data)
-        metrics = self._calc_metrics_from_results(company_id)
-        # Save metrics to a file.
-        m_list = [['<<<<<Company %d>>>>>' % company_id]]
-        m_list.extend(self._format_metrics_to_list(metrics))
-        self.text_writer.write_econometric_file('metrics', m_list, 'a')
+        # Calculate total metrics
+        self.metrics_calculator.calculate_total_metrics(company_id, total_data)
+
+        # Calculate metrics by source
+        self.metrics_calculator.calculate_metrics_by_source(company_id, total_data)
 
 
-    ## PRIVATE methods
+
+    ## PRIVATE methods for processing documents
 
     def _process_fb_posts(self, company_id, examined_date):
         # Select all FB posts for given company created on given date.
@@ -186,7 +268,10 @@ class DocumentsAnalyzer(object):
         # result
         return counter
 
-    def _calc_overall_sentiment_for_day(self, max_sent, fb_p_values, fb_c_values, yahoo_values, tw_values):
+     ## PRIVATE methods for determining sentiment of the whole day
+
+    @staticmethod
+    def _calc_overall_sentiment_for_day(max_sent, fb_p_values, fb_c_values, yahoo_values, tw_values):
         # Calculate numeric sentiment
         fb_p_sent = fb_p_values['pos'] - fb_p_values['neg']
         fb_c_sent = fb_c_values['pos'] - fb_p_values['neg']
@@ -215,51 +300,3 @@ class DocumentsAnalyzer(object):
             return 'pos'
         elif norm_score < 0:
             return 'neg'
-
-    def _evaluate_results_for_company(self, total_data):
-        """For every day and every delay evaluate relation between sentiment value and stock price movement."""
-        # Prepare variables
-        stats = {}
-        for i in [-1, 1, 2, 3]:
-            stats[i] = {
-                'pos_up': 0.0, 'pos_down': 0.0, 'pos_const': 0.0,
-                'neg_up': 0.0, 'neg_down': 0.0, 'neg_const': 0.0,
-                'neu_up': 0.0, 'neu_down': 0.0, 'neu_const': 0.0,
-            }
-        dir_indexes = {3: -2, 2: -3, 1: -4, -1: -5}
-        # Process all days
-        for day in total_data:
-            for i in [-1, 1, 2, 3]:
-                stats[i][day[-1] + '_' + day[dir_indexes[i]]] += 1
-        # result
-        return stats
-
-    def _calc_metrics_from_results(self, id_company):
-        """Calculate some metrics from evaluated results (confusion matrix)."""
-        # Get company results (all delays).
-        results = self.evaluated_results[id_company]
-        # Count total number of values in one delay data.
-        total_values_count = sum(results.values()[0].values())
-        # Process all delays and calculate metrics.
-        metrics = {}
-        for delay, data in results.items():
-            try:
-                accuracy = (data['pos_up'] + data['neg_down'] + data['neu_const']) / total_values_count
-                precision = data['pos_up'] / (data['pos_up'] + data['pos_down'])
-                recall = data['pos_up'] / (data['pos_up'] + data['neg_up'])
-            except ZeroDivisionError:
-                precision = None
-                recall = None
-            metrics[delay] = {'accuracy': accuracy, 'precision': precision, 'recall': recall}
-        # result
-        return metrics
-
-    def _format_metrics_to_list(self, metrics):
-        ordered_keys = sorted(metrics.keys())
-        lines = []
-        for key in ordered_keys:
-            m_line = 'delay %d: accuracy: %.4f, ' % (key, metrics[key]['accuracy'])
-            m_line += 'precision: ' + str(metrics[key]['precision']) + ', recall: ' + str(metrics[key]['recall'])
-            lines.append([m_line])
-        # result
-        return lines
