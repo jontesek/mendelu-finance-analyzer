@@ -11,10 +11,9 @@ class TextWriter(object):
         """
         self.output_dir = output_dir
 
-    def _write_file(self, data_lists, file_name, file_extension, items_delimiter, file_mode):
+    def write_file(self, data_lists, file_name, file_extension, items_delimiter, file_mode):
         # Create a file path.
         file_path = '%s/%s.%s' % (self.output_dir, file_name, file_extension)
-        lines_c = len(data_lists) - 1
         # Prepare file for writing
         with codecs.open(file_path, mode=file_mode, encoding="utf-8-sig") as fh:
             # Loop through all data lists (rows).
@@ -37,7 +36,7 @@ class TextWriter(object):
                 fh.write('\n')
 
     def write_file_for_vectorization(self, file_name, documents_list, file_mode):
-        self._write_file(documents_list, file_name, 'txt', '\t', file_mode)
+        self.write_file(documents_list, file_name, 'txt', '\t', file_mode)
 
     def write_econometric_file(self, file_name, days_list, file_mode):
-        self._write_file(days_list, file_name, 'csv', ',', file_mode)
+        self.write_file(days_list, file_name, 'csv', ',', file_mode)

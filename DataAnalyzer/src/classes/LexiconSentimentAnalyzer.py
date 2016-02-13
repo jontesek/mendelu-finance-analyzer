@@ -83,3 +83,31 @@ class LexiconSentimentAnalyzer(object):
         else:
             polarity = 'neu'
         return polarity
+
+    def calculate_vader_sentiment_values(self, s_dictionary_name, input_text):
+        """
+        Calculate text sentiment using VADER algorithm and selected dictionary.
+        Return compund value in form of sum and division.
+
+        Arguments:
+            s_dictionary_name (string)
+            input_text (string)
+
+        Returns:
+            floats: compound sum, compound division
+        """
+        # If necessary, reload VADER object.
+        if s_dictionary_name != self.vader.lexicon_name:
+            self.vader = VaderAnalyzer(s_dictionary_name)
+            self.vader.lexicon_name = s_dictionary_name
+        # Split text into sentences.
+        sentences = nltk.tokenize.sent_tokenize(input_text)
+        # Calc sentiment for every sentence.
+        sentiment_sum = 0.0
+        for sent in sentences:
+            values = self.vader.polarity_scores(sent)
+            sentiment_sum += values['compound']
+        # Calc sentiment for the whole text - normalize sum by number of sentences.
+        sentiment_division = float(sentiment_sum / len(sentences))
+        # result
+        return sentiment_sum, round(sentiment_division, 4)

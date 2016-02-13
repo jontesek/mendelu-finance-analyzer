@@ -47,6 +47,37 @@ class BasicDbModel(DbModel):
         cursor.execute(query, [company_id, start_time, end_time])
         return cursor
 
+    #### READ documents 2
+
+    def get_articles(self, company_id, date_from, date_to):
+        cursor = self.dbcon.cursor(dictionary=True)
+        query = "SELECT id, title, text FROM article WHERE company_id = %s AND published_date BETWEEN %s AND %s"
+        cursor.execute(query, [company_id, date_from, date_to])
+        return cursor
+
+    def get_fb_posts(self, company_id, date_from, date_to):
+        cursor = self.dbcon.cursor(dictionary=True)
+        start_ts = self._from_date_to_timestamp(date_from)
+        end_ts = self._from_date_to_timestamp(date_to)
+        query = "SELECT id, text FROM fb_post WHERE company_id = %s AND created_timestamp BETWEEN %s AND %s"
+        cursor.execute(query, [company_id, start_ts, end_ts])
+        return cursor
+
+    def get_fb_comments(self, company_id, date_from, date_to):
+        cursor = self.dbcon.cursor(dictionary=True)
+        start_ts = self._from_date_to_timestamp(date_from)
+        end_ts = self._from_date_to_timestamp(date_to)
+        query = "SELECT id, text FROM fb_comment WHERE company_id = %s AND created_timestamp BETWEEN %s AND %s"
+        cursor.execute(query, [company_id, start_ts, end_ts])
+        return cursor
+
+    def get_tweets(self, company_id, date_from, date_to):
+        cursor = self.dbcon.cursor(dictionary=True)
+        query = "SELECT tw_id, text FROM tw_status WHERE company_id = %s AND created_at BETWEEN %s AND %s"
+        cursor.execute(query, [company_id, date_from, date_to])
+        return cursor
+
+
     #### READ other
 
     def get_companies(self):
@@ -66,7 +97,7 @@ class BasicDbModel(DbModel):
             AS DocsCount
             FROM company
             ORDER BY DocsCount DESC
-        """
+        """ 
         cursor.execute(query)
         return cursor.fetchall()
 
