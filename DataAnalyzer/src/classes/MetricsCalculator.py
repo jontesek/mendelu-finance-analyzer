@@ -11,40 +11,187 @@ class MetricsCalculator(object):
         """
         self.output_dir = output_dir
         self.text_writer = TextWriter(output_dir)
+        # Set input data indices
+        self.source_sent_pos = {'fb_post': 18, 'fb_comment': 19, 'yahoo': 20, 'twitter': 21}
+        self.price_dir_indices = {-1: 14, 1: 15, 2: 16, 3: 17}
+        self.day_delays = [-1, 1, 2, 3]
 
 
     # Metrics by SOURCE
 
-    def calculate_metrics_by_source(self, company_id, total_data):
-        pass
+    def calculate_metrics_by_source(self, company_id, total_data, file_name, write_header=False):
+        """
+        Calculate metrics for one company (from all available days).
+        :param company_id: int
+        :param total_data: list
+        :return: list
+        """
+        # For every source, get all delays and calculate metrics.
+        company_stats = self._prepare_matrices_for_sources()
+        company_stats = self._fill_result_matrices(company_stats, total_data)
+        metrics = self._calc_metrics_from_matrices(company_stats)
+        m_list = self._format_source_metrics_to_list(company_id, metrics)
+        # Write to file
+        if write_header:
+            w_list = [self.generate_source_metrics_header(), m_list]
+            self.text_writer.write_econometric_file(file_name, w_list, 'w')
+        else:
+            self.text_writer.write_econometric_file(file_name, [m_list], 'a')
 
+    def _calc_metrics_from_matrices(self, company_stats):
+        metrics = {}
+        # For every source
+        for source in company_stats:
+            metrics[source] = {}
+            # For every delay
+            for delay, matrix in company_stats[source].items():
+                d_stats = {}
+                # Accuracy - only one for the whole matrix.
+                total_values_count = sum(matrix.values())
+                total_correct_count = matrix['pos_up'] + matrix['neg_down'] + matrix['neu_const']
+                if total_values_count == 0:
+                    accuracy = None
+                else:
+                    accuracy = total_correct_count / total_values_count
+                d_stats['accuracy'] = accuracy
+                # Precision
+                pp = matrix['pos_up'] + matrix['pos_down'] + matrix['pos_const']
+                pn = matrix['neg_up'] + matrix['neg_down'] + matrix['neg_const']
+                pc = matrix['neu_up'] + matrix['neu_down'] + matrix['neu_const']
+                d_stats['precision_pos'] = None if pp == 0 else matrix['pos_up'] / pp
+                d_stats['precision_neg'] = None if pn == 0 else matrix['neg_down'] / pn
+                d_stats['precision_neu'] = None if pc == 0 else matrix['neu_const'] / pc
+                # Precision average
+                weight_by = 3 if total_correct_count == 0 else total_correct_count
+                weights = (matrix['pos_up'], matrix['neg_down'], matrix['neu_const'])
+                #weight_by = 3
+                #weights = (1, 1, 1)
+                d_stats['precision_avg'] = (float(d_stats['precision_pos'] or 0) * weights[0] +
+                                            float(d_stats['precision_neg'] or 0) * weights[1] +
+                                            float(d_stats['precision_neu'] or 0) * weights[2]) / weight_by
+                # Recall
+                rp = matrix['pos_up'] + matrix['neg_up'] + matrix['neu_up']
+                rn = matrix['pos_down'] + matrix['neg_down'] + matrix['neg_down']
+                rc = matrix['pos_const'] + matrix['neg_const'] + matrix['neu_const']
+                d_stats['recall_pos'] = None if rp == 0 else matrix['pos_up'] / rp
+                d_stats['recall_neg'] = None if rn == 0 else matrix['neg_down'] / rn
+                d_stats['recall_neu'] = None if rc == 0 else matrix['neu_const'] / rc
+                # Recall average
+                weight_by = 3 if total_correct_count == 0 else total_correct_count
+                weights = (matrix['pos_up'], matrix['neg_down'], matrix['neu_const'])
+                #weight_by = 3
+                #weights = (1, 1, 1)
+                d_stats['recall_avg'] = (float(d_stats['recall_pos'] or 0) * weights[0] +
+                                         float(d_stats['recall_neg'] or 0) * weights[1] +
+                                         float(d_stats['recall_neu'] or 0) * weights[2]) / weight_by
+                # Save to total data
+                metrics[source][delay] = d_stats
+        # result
+        return metrics
+
+    def _prepare_matrices_for_sources(self):
+        # Main directory
+        company_stats = {}
+        # For every source
+        for source in self.source_sent_pos:
+            company_stats[source] = {}
+            # For every delay create a confusion matrix.
+            for i in self.day_delays:
+                company_stats[source][i] = {
+                    'pos_up': 0.0, 'pos_down': 0.0, 'pos_const': 0.0,
+                    'neg_up': 0.0, 'neg_down': 0.0, 'neg_const': 0.0,
+                    'neu_up': 0.0, 'neu_down': 0.0, 'neu_const': 0.0,
+                }
+        # result
+        return company_stats
+
+    def _fill_result_matrices(self, company_stats, total_data):
+        # Process all days
+        for day in total_data:
+            # For every source
+            for source in self.source_sent_pos:
+                # For every delay update the confusion matrix.
+                for i in self.day_delays:
+                    price_mov = day[self.price_dir_indices[i]]
+                    # Skip FALSE price movements.
+                    if not price_mov:
+                        continue
+                    company_stats[source][i][day[self.source_sent_pos[source]] + '_' + price_mov] += 1
+        # result
+        return company_stats
+
+    def _format_source_metrics_to_list(self, company_id, metrics):
+        """
+        Format metrics to one list (one line).
+        :param metrics: dictionary of sources
+        :return:
+        """
+        # company_id, source metrics * 4: <source>_<delay>_{accuracy,precision_avg,recall_avg,
+        # precision_pos,precision_neg,precision_neu,recall_pos,recall_neg,recall_neu}
+        company_data = [company_id]
+        # For every source
+        for source in sorted(metrics.keys()):
+            # For every delay
+            for delay in sorted(metrics[source].keys()):
+                d_data = metrics[source][delay]
+                company_data.extend([
+                    d_data['accuracy'],
+                    d_data['precision_avg'], d_data['recall_avg'],
+                    #d_data['precision_pos'], d_data['precision_neg'], d_data['precision_neu'],
+                    #d_data['recall_pos'], d_data['recall_neg'], d_data['recall_neu'],
+                ])
+        # result
+        return company_data
+
+    def generate_source_metrics_header(self):
+        # template: <source>_<delay>_{accuracy,precision_avg,recall_avg
+        # not necessary: precision_pos,precision_neg,precision_neu,recall_pos,recall_neg,recall_neu
+        sources = ['fb_comment', 'fb_post', 'twitter', 'yahoo']
+        metrics = ['accuracy', 'precision_avg', 'recall_avg',
+                   #'precision_pos', 'precision_neg', 'precision_neu',
+                   #'recall_pos', 'recall_neg', 'recall_neu']
+                   ]
+        header = ['company_id']
+        for source in sorted(sources):
+            for delay in self.day_delays:
+                for m in metrics:
+                    item = '%s_%d_%s' % (source, delay, m)
+                    header.append(item)
+        # result
+        return header
 
     # TOTAL metrics
 
-    def calculate_total_metrics(self, company_id, total_data):
+    def calculate_total_metrics(self, company_id, total_data, file_name, write_header=False):
         # Calculate metrics
         results = self._evaluate_results_for_company(total_data)
         metrics = self._calc_metrics_from_results(results)
         # Save to file
         m_list = [['<<<<<Company %d>>>>>' % company_id]]
-        m_list.extend(self._format_metrics_to_list(metrics))
-        self.text_writer.write_econometric_file('total_metrics', m_list, 'a')
+        m_list.extend(self._format_total_metrics_to_list(metrics))
+        if write_header:
+            self.text_writer.write_econometric_file(file_name, m_list, 'w')
+        else:
+            self.text_writer.write_econometric_file(file_name, m_list, 'a')
 
     def _evaluate_results_for_company(self, total_data):
         """For every day and every delay evaluate relation between sentiment value and stock price movement."""
         # Prepare variables
         stats = {}
-        for i in [-1, 1, 2, 3]:
+        for i in self.day_delays:
             stats[i] = {
                 'pos_up': 0.0, 'pos_down': 0.0, 'pos_const': 0.0,
                 'neg_up': 0.0, 'neg_down': 0.0, 'neg_const': 0.0,
                 'neu_up': 0.0, 'neu_down': 0.0, 'neu_const': 0.0,
             }
-        dir_indexes = {3: 17, 2: 16, 1: 15, -1: 14}
         # Process all days
         for day in total_data:
-            for i in [-1, 1, 2, 3]:
-                stats[i][day[-1] + '_' + day[dir_indexes[i]]] += 1
+            for i in self.day_delays:
+                price_mov = day[self.price_dir_indices[i]]
+                # Skip FALSE price movements.
+                if not price_mov:
+                    continue
+                stats[i][day[-1] + '_' + price_mov] += 1
         # result
         return stats
 
@@ -66,7 +213,7 @@ class MetricsCalculator(object):
         # result
         return metrics
 
-    def _format_metrics_to_list(self, metrics):
+    def _format_total_metrics_to_list(self, metrics):
         ordered_keys = sorted(metrics.keys())
         lines = []
         for key in ordered_keys:
@@ -75,3 +222,5 @@ class MetricsCalculator(object):
             lines.append([m_line])
         # result
         return lines
+
+
