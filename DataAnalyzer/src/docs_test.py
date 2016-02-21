@@ -6,7 +6,7 @@ from classes.DocumentsAnalyzer import DocumentsAnalyzer
 start_time = time.time()
 
 output_dir = os.path.abspath('../../outputs')
-da = DocumentsAnalyzer(output_dir, True)
+da = DocumentsAnalyzer(output_dir, False)
 
 #da.analyze_company(1, '2015-11-1', '2016-1-10', 'econom')
 #da.analyze_company(217, '2016-1-1', '2016-1-14', 'econom-tw')

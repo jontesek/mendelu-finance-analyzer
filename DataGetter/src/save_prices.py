@@ -5,4 +5,4 @@ spg = StockPriceGetter()
 #prices = spg.get_prices_for_company_ticker('INTC', datetime.date(2015, 3, 31), datetime.date(2015, 3, 31))
 #spg.save_prices_for_company(233, prices)
 
-spg.save_prices_for_all_companies(datetime.date(2009, 1, 1), datetime.date(2016, 1, 14))
+spg.save_prices_for_all_companies(datetime.date(2009, 1, 1), datetime.date(2016, 2, 18))
