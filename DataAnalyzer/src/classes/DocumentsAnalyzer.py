@@ -2,7 +2,8 @@ import datetime
 import math
 
 from LexiconSentimentAnalyzer import LexiconSentimentAnalyzer
-from MetricsCalculator import MetricsCalculator
+from SourceMetricsCalculator import SourceMetricsCalculator
+from TotalMetricsCalculator import TotalMetricsCalculator
 from BasicDbModel import BasicDbModel
 from FaCommon.TextWriter import TextWriter
 from FaCommon.TextProcessing import TextProcessing
@@ -28,11 +29,12 @@ class DocumentsAnalyzer(object):
         # Dict for testing results
         self.evaluated_results = {}
         # Metrics object
-        self.metrics_calculator = MetricsCalculator(output_dir)
+        self.source_metrics_calculator = SourceMetricsCalculator(output_dir)
+        self.total_metrics_calculator = TotalMetricsCalculator(output_dir)
 
     ## Analyze output file
 
-    def analyze_all_companies(self, from_date, to_date, file_name):
+    def analyze_all_companies(self, from_date, to_date, file_name, price_type):
         # Prepare headers
         header_days = [
             'company_id', 'date',
@@ -44,7 +46,7 @@ class DocumentsAnalyzer(object):
             'sentiment_fb_post', 'sentiment_fb_comment', 'sentiment_yahoo', 'sentiment_twitter',
             'overall_sentiment',
         ]
-        header_metrics = self.metrics_calculator.generate_source_metrics_header()
+        header_metrics = self.source_metrics_calculator.generate_source_metrics_header()
         # Reset files
         self.text_writer.write_econometric_file(file_name, [header_days], 'w')
         #self.text_writer.write_econometric_file('total_metrics', [['Metrics']], 'w')
@@ -56,12 +58,12 @@ class DocumentsAnalyzer(object):
             print("<<<<<Company %d>>>>>") % comp['id']
             if not self.verbose:
                 with FaCommon.Helpers.suppress_stdout():
-                    self.analyze_company(comp['id'], from_date, to_date, file_name)
+                    self.analyze_company(comp['id'], from_date, to_date, file_name, price_type)
             else:
-                self.analyze_company(comp['id'], from_date, to_date, file_name)
+                self.analyze_company(comp['id'], from_date, to_date, file_name, price_type)
         print('>>>All stuff saved.')
 
-    def analyze_company(self, company_id, from_date, to_date, file_name, write_header=False):
+    def analyze_company(self, company_id, from_date, to_date, file_name, price_type, write_header=False):
         """
         Analyze documents about company (from_date -> present date).
         :param company_id: int
@@ -75,7 +77,7 @@ class DocumentsAnalyzer(object):
         max_sent = float('-inf')
 
         # Set stock prices for this company ID.
-        self.stock_processor.set_stock_prices(company_id, examined_date)
+        self.stock_processor.set_stock_prices(company_id, examined_date, price_type)
         #exit(self.stock_processor.get_price_movement_with_delay(examined_date, 2))
 
         # Prepare list for writing to a file.
@@ -131,11 +133,11 @@ class DocumentsAnalyzer(object):
 
         # Calculate metrics by source.
         m_filename = file_name + '-source_metrics'
-        self.metrics_calculator.calculate_metrics_by_source(company_id, total_data, m_filename, write_header)
+        self.source_metrics_calculator.calculate_metrics_by_source(company_id, total_data, m_filename, write_header)
 
         # Calculate total metrics
         #m_filename = file_name + '-total_metrics'
-        #self.metrics_calculator.calculate_total_metrics(company_id, total_data, m_filename, write_header)
+        #self.total_metrics_calculator.calculate_total_metrics(company_id, total_data, m_filename, write_header)
 
 
 
@@ -209,7 +211,7 @@ class DocumentsAnalyzer(object):
         # result
         return counter
 
-     ## PRIVATE methods for determining sentiment of the whole day
+    ## PRIVATE methods for determining sentiment of the whole day
 
     def _calc_source_sentiment(self, s_dict):
         """
@@ -273,66 +275,3 @@ class DocumentsAnalyzer(object):
         ]
         return header_days
 
-    ## Econom output file - probably redundant...
-
-    def analyze_companies_econom_output(self, from_date, to_date, file_name):
-        """
-        Basic output file containing only number of positive, neutral, negative documents.
-        :param from_date:
-        :param to_date:
-        :param file_name:
-        :return:
-        """
-        # Prepare header
-        header = [
-            'company_id', 'date',
-            'fb_post_neutral', 'fb_post_positive', 'fb_post_negative',
-            'fb_comment_neutral', 'fb_comment_positive', 'fb_comment_negative',
-            'yahoo_neutral', 'yahoo_positive', 'yahoo_negative',
-            'twitter_neutral', 'twitter_positive', 'twitter_negative',
-        ]
-        # Reset file
-        self.text_writer.write_econometric_file(file_name, [header], 'w')
-        # Process companies
-        companies = self.dbmodel.get_companies_order_by_total_documents(from_date, to_date)
-        for comp in companies:
-            print("<<<<<Company %d>>>>>") % comp['id']
-            self.analyze_company_econom_output(comp['id'], from_date, to_date, file_name)
-        print('>>>All stuff saved.')
-
-    def analyze_company_econom_output(self, company_id, from_date, to_date, file_name):
-        """
-        Analyze documents about company (from_date -> present date) - simple output file.
-        :param company_id: int
-        :param from_date: string
-        :return: list of days, where every row contains information for documents for this day.
-        """
-        # Prepare variables
-        examined_date = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
-        last_date = datetime.datetime.strptime(to_date, '%Y-%m-%d').date()
-        total_data = []
-
-        # Prepare list for writing to a file.
-        # For every day (from "from_date" to "to_date"), query the DB for documents created on the day.
-        while examined_date <= last_date:
-            print("===%s===") % examined_date
-            # For every document type, process all documents and count number of neutral, positive, negative documents.
-            fb_p_values = self._process_fb_posts(company_id, examined_date)
-            fb_c_values = self._process_fb_comments(company_id, examined_date)
-            yahoo_values = self._process_yahoo(company_id, examined_date)
-            tw_values = self._process_tweets(company_id, examined_date)
-            # Save acquired data
-            day_data = [
-                company_id,
-                examined_date.strftime('%d.%m.%Y'),
-                fb_p_values['neu'], fb_p_values['pos'], fb_p_values['neg'],
-                fb_c_values['neu'], fb_c_values['pos'], fb_c_values['neg'],
-                yahoo_values['neu'], yahoo_values['pos'], yahoo_values['neg'],
-                tw_values['neu'], tw_values['pos'], tw_values['neg'],
-            ]
-            total_data.append(day_data)
-            # Increment examined date.
-            examined_date = examined_date + datetime.timedelta(days=1)
-
-        # Write result to file.
-        self.text_writer.write_econometric_file(file_name, total_data, 'a')

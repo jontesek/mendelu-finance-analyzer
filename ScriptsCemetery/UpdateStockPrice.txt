@@ -1,0 +1,9 @@
+"""
+    def update_stock_price(self, company_id, price_date, field_name, field_value):
+        cursor = self.dbcon.cursor()
+        query = 'UPDATE stock_price SET %s = %s WHERE company_id = %s AND date = %s' % \
+                (field_name, field_value, company_id, price_date)
+        cursor.execute(query)
+        #self.dbcon.commit()
+        return cursor
+    """

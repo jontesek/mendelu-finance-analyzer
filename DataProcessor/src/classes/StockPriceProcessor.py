@@ -9,10 +9,10 @@ class StockPriceProcessor(object):
         self.stock_prices = {'company_id': None, 'ratios': {}}
         self.const_boundaries = (-2.5, 2.5)
 
-    def set_stock_prices(self, company_id, from_date):
+    def set_stock_prices(self, company_id, from_date, price_type='close'):
         """
         Set stock prices for days from given date to present day.
-        Must be called before calling get_price_movenet method.
+        Must be called before calling get_price_movement method.
 
         Args:
             company_id (int): Company ID
@@ -24,15 +24,15 @@ class StockPriceProcessor(object):
         self.stock_prices = {}
         # Substract some days to be sure to get data for the from_date.
         early_from_date = from_date - datetime.timedelta(days=7)
-        # Get stock prices for individual dates
-        stock_prices = self.db_model.get_stock_prices(company_id, early_from_date)
+        # Get stock prices for individual dates.
+        stock_prices = self.db_model.get_stock_prices(company_id, early_from_date, price_type)
         # Check if there was any result.
         if not stock_prices:
             return False
-        # Create stock prices dictionary
+        # Create stock prices dictionary.
         for (price_date, price) in stock_prices:
             self.stock_prices[price_date] = price
-        # result
+        # Result
         return True
 
     def _get_price_movement(self, first_date, second_date):

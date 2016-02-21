@@ -15,7 +15,8 @@ class StockPriceTransformer(object):
         :return:
         """
         # Get daily closing prices.
-        close_prices = self.db_model.get_stock_prices(company_id)
+        min_date = datetime.date(1900, 1, 1)
+        close_prices = self.db_model.get_stock_prices(company_id, min_date, 'close')
         # For first N-1 days just insert the close price.
         values = []
         for s_date, s_price in close_prices[0:period_length-1]:
@@ -32,3 +33,10 @@ class StockPriceTransformer(object):
             values.append([company_id, s_date, mov_avg])
         # Save values to DB.
         self.db_model.update_stock_prices_for_company('sma', values)
+
+    def calculate_ma_for_all_companies(self, period_length):
+        print('Calculating moving average for all companies.')
+        for company in self.db_model.get_companies():
+            print('MA for company %d') % company[0]
+            self.calculate_moving_average_for_company(company[0], period_length)
+        print('All companies prices updated.')

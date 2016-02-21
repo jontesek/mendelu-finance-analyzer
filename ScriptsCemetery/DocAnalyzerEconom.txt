@@ -1,0 +1,64 @@
+
+## Econom output file - probably redundant...
+
+    def analyze_companies_econom_output(self, from_date, to_date, file_name):
+        """
+        Basic output file containing only number of positive, neutral, negative documents.
+        :param from_date:
+        :param to_date:
+        :param file_name:
+        :return:
+        """
+        # Prepare header
+        header = [
+            'company_id', 'date',
+            'fb_post_neutral', 'fb_post_positive', 'fb_post_negative',
+            'fb_comment_neutral', 'fb_comment_positive', 'fb_comment_negative',
+            'yahoo_neutral', 'yahoo_positive', 'yahoo_negative',
+            'twitter_neutral', 'twitter_positive', 'twitter_negative',
+        ]
+        # Reset file
+        self.text_writer.write_econometric_file(file_name, [header], 'w')
+        # Process companies
+        companies = self.dbmodel.get_companies_order_by_total_documents(from_date, to_date)
+        for comp in companies:
+            print("<<<<<Company %d>>>>>") % comp['id']
+            self.analyze_company_econom_output(comp['id'], from_date, to_date, file_name)
+        print('>>>All stuff saved.')
+
+    def analyze_company_econom_output(self, company_id, from_date, to_date, file_name):
+        """
+        Analyze documents about company (from_date -> present date) - simple output file.
+        :param company_id: int
+        :param from_date: string
+        :return: list of days, where every row contains information for documents for this day.
+        """
+        # Prepare variables
+        examined_date = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
+        last_date = datetime.datetime.strptime(to_date, '%Y-%m-%d').date()
+        total_data = []
+
+        # Prepare list for writing to a file.
+        # For every day (from "from_date" to "to_date"), query the DB for documents created on the day.
+        while examined_date <= last_date:
+            print("===%s===") % examined_date
+            # For every document type, process all documents and count number of neutral, positive, negative documents.
+            fb_p_values = self._process_fb_posts(company_id, examined_date)
+            fb_c_values = self._process_fb_comments(company_id, examined_date)
+            yahoo_values = self._process_yahoo(company_id, examined_date)
+            tw_values = self._process_tweets(company_id, examined_date)
+            # Save acquired data
+            day_data = [
+                company_id,
+                examined_date.strftime('%d.%m.%Y'),
+                fb_p_values['neu'], fb_p_values['pos'], fb_p_values['neg'],
+                fb_c_values['neu'], fb_c_values['pos'], fb_c_values['neg'],
+                yahoo_values['neu'], yahoo_values['pos'], yahoo_values['neg'],
+                tw_values['neu'], tw_values['pos'], tw_values['neg'],
+            ]
+            total_data.append(day_data)
+            # Increment examined date.
+            examined_date = examined_date + datetime.timedelta(days=1)
+
+        # Write result to file.
+        self.text_writer.write_econometric_file(file_name, total_data, 'a')
