@@ -26,7 +26,7 @@ Performance
 http://dev.mysql.com/doc/refman/5.1/en/using-explain.html
 http://code.openark.org/blog/mysql/7-ways-to-convince-mysql-to-use-the-right-index
 
-SIzes
+Sizes
 http://stackoverflow.com/questions/2023481/mysql-large-varchar-vs-text
 
 Timestamps: 

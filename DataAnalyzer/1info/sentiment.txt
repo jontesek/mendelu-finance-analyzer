@@ -52,7 +52,6 @@ For each word, we report the overall mean (Mean.Sum), standard deviation (SD.Sum
 TIPS:
 https://github.com/kevincobain2000/sentiment_classifier
 https://www.quora.com/I-have-a-list-of-positive-and-negative-words-How-do-I-proceed-to-do-a-sentiment-analysis-of-Tweets-on-Python-using-the-said-list
-https://www.quora.com/What-is-the-best-way-to-do-Sentiment-Analysis-with-Python-1
 https://www.quora.com/What-are-the-most-powerful-open-source-sentiment-analysis-tools
 https://www.youtube.com/watch?v=eObouMO2qSE
 https://github.com/kylehg/sentiment-analysis/blob/master/src/mpqa.py

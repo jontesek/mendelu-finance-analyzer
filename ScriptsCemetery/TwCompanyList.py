@@ -1,6 +1,6 @@
 # coding=utf-8
 
-class CompanyList(object):
+class TwCompanyList(object):
     '''
     classdocs
     '''

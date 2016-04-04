@@ -6,14 +6,12 @@ class DbModel(object):
     classdocs
     '''
 
-
     def __init__(self):
         '''
         Constructor
         '''
         self.dbcon = DbConnection.get_con()
-            
-    
+
     def add_log_exec(self, script, exec_error):     
         # Prepare variables
         err_v = 1 if exec_error else 0

@@ -6,26 +6,23 @@ from MyMailer import MyMailer
 
 
 class TwitterGetter(object):
-    '''
-    classdocs
-    '''
 
     def __init__(self, twitter):
-        '''
-        Constructor
-        '''
         self.twitter_api = twitter          # Twython object
         self.db_model = TwitterDbModel()
         self.exec_error = False
 
-    
-    
-    """Get all possible tweets"""
-    def get_all_tweets(self):
+
+    def get_all_tweets(self, sleep_seconds_n=16):
+        """Get all possible tweets for all companies."""
         # Browse all companies
         for company in self.db_model.get_companies():
-            print "=====%d: %s=====" % (company['id'], company['tw_name'])
-            try: 
+            print "=====%d: %s=====" % (company['id'], company['tw_search_name'])
+            try:
+                # If company has no Twiter name, use only search name field.
+                if company['tw_name'] == 'NULL':
+                    self.__get_search_tweets('search_name', company)
+                    continue    # Skip other tweets types.
                 # Get tweets containing @companyUsername: @CocaCola
                 self.__get_search_tweets('mention', company)
                 # Get tweets containg "company name" but not containing @companyUsername: coco cola -@CocaCola
@@ -38,8 +35,10 @@ class TwitterGetter(object):
                 self.exec_error = True
                 print "serious error: %s" % repr(e)
                 self.__send_serious_error(e)
-                quit()  # end script
-        # Log successful execution
+                break   # end loop
+            # Wait some time to obey Twitter API rate limits.
+            time.sleep(sleep_seconds_n)
+        # Log execution
         self.db_model.add_log_exec(3, self.exec_error)
         
     
@@ -52,7 +51,7 @@ class TwitterGetter(object):
         # Create a correct search query.
         query = self.__create_query(tweet_type, company['tw_name'], company['tw_search_name'])
         # Send request to Twitter and get result.
-        result = self.twitter_api.search(q=query, lang = 'en', result_type = 'mixed', count = 100, since_id = last_id)
+        result = self.twitter_api.search(q=query, lang='en', result_type='mixed', count=100, since_id=last_id)
         # Check if there are any news tweets.
         if not result['statuses']:
             #print "nothing new"
@@ -67,19 +66,49 @@ class TwitterGetter(object):
         max_id = result['search_metadata']['max_id']
         self.db_model.update_last_id(tweet_type, max_id, company['id'])
         
-        
-          
+
     def __create_query(self, tweet_type, comp_username, search_name):
         """Create a search query based on provided tweet type."""  
         if tweet_type == 'mention':
             return '@'+comp_username
         if tweet_type == 'search_name':
-            return search_name.lower()+' -@'+comp_username
+            if comp_username == 'NULL':
+                return search_name
+            else:
+                return search_name + ' -@'+comp_username
         if tweet_type == 'reply':
             return 'to:'+comp_username
-        
-        
-    
+
+
+    def __get_timeline_tweets(self, company):
+        """Timeline method for downloading and saving requested tweets."""
+        # Get ID of last downloaded tweet.
+        last_id = company['tw_timeline_id']
+        # Download timestamp
+        cur_timestamp = int(time.time())
+        # Send request to Twitter and get result.
+        try:
+            result = self.twitter_api.get_user_timeline(screen_name = company['tw_name'], count = 200, since_id = last_id)
+        except Exception, e:
+            self.exec_error = True
+            print "Timeline problem with company %s" % company['tw_name']
+            self.__send_name_error(company['tw_name'], e)
+            return True
+        # Check if there are any news tweets.
+        if not result:
+            #print "nothing new"
+            return True       # skip company
+        # Prepare tweets.
+        tw_data = []
+        for status in reversed(result):
+            tw_data.append(self.__process_status(status, company['id'], 'timeline', cur_timestamp))
+        # Save tweets to DB.
+        self.db_model.add_tweets(tw_data)
+        # Get new max ID and update DB.
+        max_id = result[0]['id']
+        self.db_model.update_last_id('timeline', max_id, company['id'])
+
+
     def __process_status(self, status, company_id, tweet_type, cur_timestamp):
         """Process tweet, get desired information and return list for writing to DB."""
         data = []
@@ -125,37 +154,10 @@ class TwitterGetter(object):
             return 3
         elif tw_type == 'timeline':
             return 4
-    
-    
-    def __get_timeline_tweets(self, company):
-        """Timeline method for downloading and saving requested tweets."""
-        # Get ID of last downloaded tweet.
-        last_id = company['tw_timeline_id']
-        # Download timestamp
-        cur_timestamp = int(time.time()) 
-        # Send request to Twitter and get result.
-        try: 
-            result = self.twitter_api.get_user_timeline(screen_name = company['tw_name'], count = 200, since_id = last_id)
-        except Exception, e:
-            self.exec_error = True
-            print "Timeline problem with company %s" % company['tw_name']
-            self.__send_name_error(company['tw_name'], e)
-            return True
-        # Check if there are any news tweets.
-        if not result:
-            #print "nothing new"
-            return True       # skip company
-        # Prepare tweets.
-        tw_data = []
-        for status in reversed(result):
-            tw_data.append(self.__process_status(status, company['id'], 'timeline', cur_timestamp))
-        # Save tweets to DB.
-        self.db_model.add_tweets(tw_data)
-        # Get new max ID and update DB.
-        max_id = result[0]['id']
-        self.db_model.update_last_id('timeline', max_id, company['id'])
-        
-    
+
+
+    # EMAILING
+
     def __send_name_error(self, company_name, error):
         print repr(error)
         """Send email to inform about timeline name error from TW API."""
@@ -163,8 +165,7 @@ class TwitterGetter(object):
         message += repr(error)
         message += '\n\n Please edit the database.'
         message += '\n\nFinance DataGetter from sosna.mendelu.cz'
-        MyMailer.send_error_email('Finance DataGetter Twitter error - company', message)  
-        
+        MyMailer.send_error_email('Finance DataGetter Twitter error - company', message)
         
     def __send_serious_error(self, error):
         """Send email to inform about serious error from TW API."""

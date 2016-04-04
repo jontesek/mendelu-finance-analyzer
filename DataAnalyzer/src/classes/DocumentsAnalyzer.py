@@ -22,13 +22,9 @@ class DocumentsAnalyzer(object):
         """
         self.dbmodel = BasicDbModel()
         self.s_analyzer = LexiconSentimentAnalyzer()
-        self.text_writer = TextWriter(output_dir)
-        self.verbose = verbose
-        # Object for stock movements
-        self.stock_processor = StockPriceProcessor()
-        # Dict for testing results
-        self.evaluated_results = {}
-        # Metrics object
+        self.text_writer = TextWriter(output_dir)   # writing CSV files
+        self.verbose = verbose  # verbose output
+        self.stock_processor = StockPriceProcessor()    # Object for price movements
         self.source_metrics_calculator = SourceMetricsCalculator(output_dir)
         self.total_metrics_calculator = TotalMetricsCalculator(output_dir)
 

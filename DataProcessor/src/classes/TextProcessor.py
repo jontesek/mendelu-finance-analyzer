@@ -31,9 +31,9 @@ class TextProcessor(object):
 
     # MAIN PROCESSING
 
-    def process_documents_for_company(self, doc_type, company_id, from_date, days_delay, total_file_name=False):
+    def process_documents_for_company(self, doc_type, company_id, from_date, days_delay, price_type, total_file_name=False):
         # Set stock prices for given company.
-        prices = self.stock_processor.set_stock_prices(company_id, from_date)
+        prices = self.stock_processor.set_stock_prices(company_id, from_date, price_type)
         if not prices:
             return False
         # Get documents from DB.
@@ -80,17 +80,17 @@ class TextProcessor(object):
             file_name = total_file_name
             file_mode = 'a'
         else:
-            file_name = doc_type+'_%s_%s_%s' % (company_id, from_date.strftime('%Y-%m-%d'), str(days_delay))
+            file_name = doc_type+'_%s_%s_%s_%d' % (company_id, price_type, from_date.strftime('%Y-%m-%d'), days_delay)
             file_mode = 'w'
         # Write data to the file
         self.text_writer.write_file_for_vectorization(file_name, new_docs_list, file_mode)
 
-    def process_documents_for_all_companies(self, doc_type, from_date, days_delay):
+    def process_documents_for_all_companies(self, doc_type, from_date, days_delay, price_type):
         # Reset documents count (for given doc_type)
         self.documents_count = 0
         self.files_count = 0
         # Create file name
-        file_name = doc_type+'_all_%s_%s-0' % (from_date.strftime('%Y-%m-%d'), str(days_delay))
+        file_name = doc_type+'_all_%s_%s_%s-0' % (price_type, from_date.strftime('%Y-%m-%d'), str(days_delay))
         # Process all companies
         for comp in self.db_model.get_companies():
             print('===Company %d===') % comp[0]
@@ -101,7 +101,7 @@ class TextProcessor(object):
                 self.documents_count = 0
                 file_name = re.sub('\d+$', str(self.files_count), file_name)
             # Process and write data for one company.
-            self.process_documents_for_company(doc_type, comp[0], from_date, days_delay, file_name)
+            self.process_documents_for_company(doc_type, comp[0], from_date, days_delay, price_type, file_name)
 
     # TEXT processing
 

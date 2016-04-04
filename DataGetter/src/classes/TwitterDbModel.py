@@ -14,7 +14,7 @@ class TwitterDbModel(DbModel):
     def get_companies(self):
         cursor = self.dbcon.cursor(dictionary=True)
         query = 'SELECT id, tw_name, tw_search_name, tw_mention_id, tw_search_name_id, tw_reply_id, tw_timeline_id ' \
-        'FROM company JOIN last_download ON id = company_id WHERE tw_name IS NOT NULL'
+        'FROM company JOIN last_download ON id = company_id WHERE tw_search_name IS NOT NULL'
         cursor.execute(query)
         return cursor.fetchall()
     
