@@ -52,8 +52,7 @@ class YahooDbModel(DbModel):
         # Return new ID.
         return cursor.lastrowid
     
-    
-    
+
     #### WRITE methods
     
     def add_article(self, article, company_id, url, server_id):
@@ -62,19 +61,15 @@ class YahooDbModel(DbModel):
         query = "INSERT INTO article (company_id, published_date, title, text, url, server_id) VALUES (%s, %s, %s, %s, %s, %s)"
         data = (company_id, article['datetime'], article['title'], article['text'], url, server_id)
         cursor.execute(query, data)
-        #self.dbcon.commit()
-        # return inserted ID for history
+        # Return inserted ID for history.
         return cursor.lastrowid
-    
-        
+
     
     def add_article_history(self, article_id, fb_shares, tw_shares):
         cursor = self.dbcon.cursor()
         query = "INSERT INTO article_history (article_id, download_timestamp, fb_shares, tw_shares) VALUES (%s, UNIX_TIMESTAMP(), %s, %s)"
         cursor.execute(query, (article_id, fb_shares, tw_shares))
-        #self.dbcon.commit()
         cursor.close()
-        
         
     
     def update_last_download(self, company_id, newest_saved_date):
@@ -84,8 +79,7 @@ class YahooDbModel(DbModel):
         # commit add_article, add_article_history inserts, this update
         self.dbcon.commit()
         cursor.close()
-    
-    
+
     
     def add_articles_history(self, articles_history):
         cursor = self.dbcon.cursor()
@@ -93,5 +87,3 @@ class YahooDbModel(DbModel):
         cursor.executemany(query, articles_history)
         self.dbcon.commit()
         cursor.close()
-        
-            

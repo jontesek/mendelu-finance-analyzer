@@ -25,12 +25,11 @@ class YahooArticleGetter(object):
         self.db_model = YahooDbModel()
         self.article_parser = ArticleParser()
         self.exec_error = False
-        # precompiled patterns
+        self.parse_datetime = False
+        # Precompiled patterns
         self.native_p = re.compile('^http://finance.yahoo.com/news/.+')
         self.h_time_p = re.compile('.+ (\d+:\d+\w\w) .*')
-        
-        
-    
+
     #### METHOD 1: get new articles
         
     def get_new_articles(self):
@@ -40,18 +39,24 @@ class YahooArticleGetter(object):
             print "====%d: %s====" % (company['id'], company['ticker'])
             # Get headlines and process so far unsaved articles.
             try: 
-                self.__get_headlines(company['ticker'], company['id'], company['article_newest_saved'])
+                self.get_headlines(company['ticker'], company['id'], company['article_newest_saved'])
             except Exception, e:
                 self.exec_error = True
                 print "serious error: "+repr(e)
                 self.__send_serious_error(e)
-                quit()   # end script
+                break   # end script
         # Log execution.
         self.db_model.add_log_exec(4, self.exec_error)
-         
         
     
-    def __get_headlines(self, ticker, company_id, last_date):
+    def get_headlines(self, ticker, company_id, last_date):
+        """
+        Get headlines and save articles for given company.
+        :param ticker:
+        :param company_id:
+        :param last_date:
+        :return:
+        """
         # Get headlines page
         page = urllib2.urlopen(self.headlines_url+ticker)
         #page = open('../test_data/amd_headlines.htm')
@@ -67,7 +72,7 @@ class YahooArticleGetter(object):
         # Get headings (dates)
         try:
             headings = table.find_all('tr')[2].td.div.find_all('h3')
-        except Exception, e: # ticker was moved.
+        except Exception, e:    # Ticker was moved.
             self.exec_error = True
             print e
             self.__send_ticker_error(ticker)
@@ -77,30 +82,29 @@ class YahooArticleGetter(object):
         last_date = pytz.timezone('America/New_York').localize(last_date)
         # Process headings (dates)
         for heading in headings:
-            # Get heading date
+            # Get heading date.
             h_date = datetime.datetime.strptime(heading.span.text, '%A, %B %d, %Y')
             h_date = pytz.timezone('America/New_York').localize(h_date)
-            # Check if the date is recent: newer than 2 days
+            # Check if the date is today or yesterday.
             ny_date = datetime.datetime.now(pytz.timezone('America/New_York')).replace(minute=0, hour=0, second=0, microsecond=0)
-            max_date = ny_date - datetime.timedelta(days=2)
+            max_date = ny_date - datetime.timedelta(days=1)
             #print "UTC date: %s, MAX date: %s, H date: %s" % (datetime.datetime.utcnow(), max_date, h_date)
             if h_date > max_date:
-                print "%s: recent day - skip the date" % h_date
+                print "%s: today - skip the date" % h_date
                 continue
             # Check the date against previously newest saved date.
             if h_date <= last_date:
                 print "%s: nothing new - end loop" % h_date
                 break
             # Process headlines for given date.           
-            self.__process_headlines_list(heading.next_sibling.children, company_id)
+            self.__process_headlines_list(heading.next_sibling.children, company_id, h_date)
         # If something changed, update last download article date and COMMIT all inserts.
         print "NEWEST DATE: %s" % self.newest_saved_date
         if self.newest_saved_date:
             self.db_model.update_last_download(company_id, self.newest_saved_date)
+
     
-    
-    
-    def __process_headlines_list(self, headlines, company_id):
+    def __process_headlines_list(self, headlines, company_id, h_date):
         # Browse all articles
         for li in headlines:
             try:
@@ -112,13 +116,18 @@ class YahooArticleGetter(object):
                 a_url = li.a['href']
                 # Check if article is from native server.
                 is_native = self.native_p.match(a_url)
-                # Get server ID or Save a new server to DB
+                # Get server ID or Save a new server to DB.
                 server_id = self.db_model.get_server_id(s_name, is_native)
                 # Parse article
                 article = self.__parse_article(a_url, is_native, s_name)
-                print '----'+str(article['datetime'])
-                # Convert date from EDT to UTC - add 4 hours (summer) or 5 hours (winter)
-                article['datetime'] = self.convert_edt_to_utc(article['datetime'])
+                # Check if article datetime could be parsed.
+                if article['datetime']:
+                    print '----'+str(article['datetime'])
+                    # Convert date from EDT to UTC - add 4 hours (summer) or 5 hours (winter).
+                    article['datetime'] = self.convert_edt_to_utc(article['datetime'])
+                else:
+                    print '----'+str(h_date)
+                    article['datetime'] = h_date    # Use heading date.
                 # Save article to DB.
                 article_id = self.db_model.add_article(article, company_id, a_url, server_id)
                 # Is it the first (newest) saved article in the loop?
@@ -129,25 +138,23 @@ class YahooArticleGetter(object):
                 if share_data:
                     self.db_model.add_article_history(article_id, share_data['fb_shares'], share_data['tw_shares'])
             except urllib2.URLError, e:
-                print(e)     # article url is not accessible
+                print(e)     # Article url is not accessible.
                 continue
             except ParsingNotImplementedException, e:
                 print(e)
                 continue
 
-            
-            
+
     def __parse_article(self, url, is_native, s_name):
         """Parse the article (choose the right parser)."""
         if is_native:
             html = urllib2.urlopen(url)
             #html = open('../test_data/adt_article.htm')
-            return self.article_parser.native_yahoo(html)
+            return self.article_parser.native_yahoo(html, self.parse_datetime)
         else:
             raise ParsingNotImplementedException('Parsing for server '+s_name+' is not implemented.')
         
-    
-    
+
     #### METHOD 2: update article statistics
        
     def update_article_stats(self, days):
@@ -157,42 +164,39 @@ class YahooArticleGetter(object):
             print "====%s====" % company['id']
             articles_history = []
             cur_timestamp = int(time.time())
-            # Get articles and their share data
+            # Get articles and their share data.
             for article in self.db_model.get_articles_since(days, company['id']):
                 #print article['id']
                 data = self.__get_share_count(article['url'])
                 if data:
                     articles_history.append((article['id'], cur_timestamp, data['fb_shares'], data['tw_shares']))
-            # Save non-empty share data to DB
+            # Save non-empty share data to DB.
             if articles_history:
                 self.db_model.add_articles_history(articles_history) 
-            # Wait some time
+            # Wait some time.
             time.sleep(1)
-        # Log execution
+        # Log execution.
         self.db_model.add_log_exec(5, self.exec_error)
     
-    
-    
+
     def __get_share_count(self, url):
-        """Get number of shares for given URL on Facebook and Twitter."""
+        """Get number of shares for given URL on Facebook."""
         try: 
-            # Get data
+            # Get FB share count.
             fb_data = json.loads(urllib2.urlopen('http://graph.facebook.com/'+url).read())
-            tw_data = json.loads(urllib2.urlopen('http://cdn.api.twitter.com/1/urls/count.json?url='+url).read())
+            # Twitter share API does not work anymore (from 20.11.2015).
             # Check count
             fb_shares = int(fb_data['shares']) if 'shares' in fb_data else 0
-            tw_shares = int(tw_data['count']) if 'count' in tw_data else 0
             # Is it worth saving?
-            if fb_shares == 0 and tw_shares == 0:
-                return False    # no, it isn't
+            if fb_shares == 0:
+                return False    # No, it isn't.
             # Prepare result
-            return {'fb_shares': fb_shares, 'tw_shares': tw_shares}
+            return {'fb_shares': fb_shares, 'tw_shares': None}
         except Exception, e:
-            print e
+            print "Could not get share count: " + e
             return False
     
-    
-    
+
     ### EMAIL methods
     
     def __send_ticker_error(self, ticker):
@@ -211,8 +215,7 @@ class YahooArticleGetter(object):
         message += '\n\nFinance DataGetter from sosna.mendelu.cz'
         MyMailer.send_error_email('Finance DataGetter Yahoo SERIOUS error', message)
     
-    
-    
+
     #### OTHER methods
     
     def convert_edt_to_utc(self, edt_datetime):

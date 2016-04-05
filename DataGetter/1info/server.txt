@@ -32,6 +32,10 @@ fb_new: 10:20-11:23 ... 1h:00
 yahoo_update: 11:40-13:08 ... 1h:30
 yahoo_new: 13:30-14:57...1h:30
 
+yahoo_new (for new articles): 18:00-18:45...45 min.
+save_prices (update): 18:20-18:26...10 min.
+twitter (prostoj 8 sekund): 18:45-
+
 LOCALHOST
 heslo k rootovi: autobus
 import db: C:\Program Files\MySQL\MySQL Server 5.6\bin>mysql -u root -p --default-character-set=utf8mb4 fin_analyzer < C:\Users\Jontes\Documents\sosna_0915.sql

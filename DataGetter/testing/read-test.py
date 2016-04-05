@@ -1,11 +1,13 @@
-import json
 
-# test for reading from created files
+from bs4 import BeautifulSoup
 
+html = open('../test_data/inplay_article.htm').read()
 
-tfile = open('../data/twitter/mentions/amazon.tweets')
-for line in tfile.readlines():
-    print line,
-    data = json.loads(line.rstrip())
-    print "=="+data['s']['te']
-    #break
+# Create a main parse object
+soup = BeautifulSoup(html, "lxml")
+# DIV - main content
+content = soup.find('section', id='mediacontentstory')
+
+a_content = soup.find('div', itemtype='http://schema.org/Article')
+
+print soup

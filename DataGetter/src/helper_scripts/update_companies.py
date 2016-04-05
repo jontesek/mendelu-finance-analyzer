@@ -17,7 +17,7 @@ def process_line(input_line, csv_sep):
         items[7].strip(),   # tw_search_name
     ]
     # Replace empty strings with NULL.
-    new_values = ['NULL' if not x else x for x in orig_values]
+    new_values = [None if not x else x for x in orig_values]
     # Return data.
     return company_id, new_values
 
