@@ -3,8 +3,8 @@
 
 # Jonas CRON
 # Yahoo
-30 6 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_yahoo_new.py       # Každý den v 8:00
-30 3 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_yahoo_update.py    # Každý den v 3:20 (musí být předtím)
+0 8 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_yahoo_new.py        # Každý den v 8:00
+30 3 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_yahoo_update.py    # Každý den v 3:30 (musí být předtím)
 # Facebook
 0 2 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_fb_new.py           # Každý den v 2:00
 20 0 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_fb_update.py       # Každý den v 0:20 (musí být předtím)
@@ -13,5 +13,19 @@
 # Stock prices
 0 10 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/save_prices.py         # Každý den v 10:00
 
+# No email
+* * * * * >/dev/null 2>&1
+
+====původní====
+
+# Jonas CRON
+# Yahoo
+#30 6 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_yahoo_new.py                # každý den v 6:30
+#30 3 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_yahoo_update.py     # každý den v 3:20 (musí být předtím)
+# Facebook
+#0 2 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_fb_new.py                    # každý den v 2:00
+#20 0 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_fb_update.py                # každý den v 0:20 (musí být předtím)
+# Twitter
+#0 */6 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetter/src/run_tw.py                              # každých 6 hodin (0,6,12,18)
 # No email
 * * * * * >/dev/null 2>&1

@@ -47,7 +47,7 @@ class FacebookGetter(object):
         print "====%d: %s====" % (company['id'], company['fb_page'])
         # Send request to FB.
         try: 
-            result = self.fb_api.get_connections(id=company['fb_page'], connection_name = 'posts', limit=90, date_format='U', since=company['fb_post_timestamp'], fields=my_fields)
+            result = self.fb_api.get_connections(id=company['fb_page'], connection_name='posts', limit=90, date_format='U', since=company['fb_post_timestamp'], fields=my_fields)
             #result = json.load(open('../test_data/fb_posts.json'))
         # There was no or wrong response from FB.
         except GraphAPIError, e:
@@ -69,7 +69,7 @@ class FacebookGetter(object):
                 #return True
                 print "lower the limit please"
                 # Lower limit and continue below.
-                result = self.fb_api.get_connections(id=company['fb_page'], connection_name = 'posts', limit=30, date_format='U', since=company['fb_post_timestamp'], fields=my_fields)
+                result = self.fb_api.get_connections(id=company['fb_page'], connection_name='posts', limit=30, date_format='U', since=company['fb_post_timestamp'], fields=my_fields)
             # If other than OK errors, send serious message and end the script.
             if error_code not in [100, 1, -3]:
                 print "Serious problem with company %s" % company['fb_page']

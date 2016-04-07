@@ -19,8 +19,8 @@ class TwitterGetter(object):
         for company in self.db_model.get_companies():
             print "=====%d: %s=====" % (company['id'], company['tw_search_name'])
             try:
-                # If company has no Twiter name, use only search name field.
-                if company['tw_name'] == 'NULL':
+                # If company has no Twitter name, use only search name field.
+                if not company['tw_name']:
                     self.__get_search_tweets('search_name', company)
                     continue    # Skip other tweets types.
                 # Get tweets containing @companyUsername: @CocaCola
@@ -50,6 +50,7 @@ class TwitterGetter(object):
         cur_timestamp = int(time.time()) 
         # Create a correct search query.
         query = self.__create_query(tweet_type, company['tw_name'], company['tw_search_name'])
+        #print query
         # Send request to Twitter and get result.
         result = self.twitter_api.search(q=query, lang='en', result_type='mixed', count=100, since_id=last_id)
         # Check if there are any news tweets.
@@ -72,7 +73,7 @@ class TwitterGetter(object):
         if tweet_type == 'mention':
             return '@'+comp_username
         if tweet_type == 'search_name':
-            if comp_username == 'NULL':
+            if not comp_username:
                 return search_name
             else:
                 return search_name + ' -@'+comp_username

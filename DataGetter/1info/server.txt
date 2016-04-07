@@ -34,7 +34,7 @@ yahoo_new: 13:30-14:57...1h:30
 
 yahoo_new (for new articles): 18:00-18:45...45 min.
 save_prices (update): 18:20-18:26...10 min.
-twitter (prostoj 8 sekund): 18:45-
+twitter (prostoj 8 sekund): 18:45-20:30 ... 2h
 
 LOCALHOST
 heslo k rootovi: autobus

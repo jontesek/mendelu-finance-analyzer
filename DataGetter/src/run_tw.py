@@ -19,4 +19,4 @@ twitter_api = Twython(APP_KEY, access_token=ACCESS_TOKEN)
 ########################################
 tw_getter = TwitterGetter(twitter_api)
 
-tw_getter.get_all_tweets(16)
+tw_getter.get_all_tweets(15)
