@@ -3,13 +3,10 @@ from DbModel import DbModel
 
 class TwitterDbModel(DbModel):
     '''
-    classdocs
+    DB methods for Twitter.
+    Parent constructor sets a DB connection ("dbcon" attribute).
     '''
 
-
-    def __init__(self):
-        super(TwitterDbModel, self).__init__()       # creates "dbcon" variable
-    
     
     def get_companies(self):
         cursor = self.dbcon.cursor(dictionary=True)
@@ -35,5 +32,3 @@ class TwitterDbModel(DbModel):
         cursor.execute(query, (last_id, company_id))
         self.dbcon.commit()
         cursor.close()
-    
-    

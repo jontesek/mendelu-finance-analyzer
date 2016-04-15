@@ -9,15 +9,11 @@ from MyMailer import MyMailer
 
 
 class FacebookGetter(object):
-    '''
-    classdocs
-    '''
-
+    """
+    Download documents from Facebook.
+    """
 
     def __init__(self, fb_api):
-        '''
-        Constructor
-        '''
         self.fb_api = fb_api 
         self.db_model = FacebookDbModel()
         self.exec_error = False

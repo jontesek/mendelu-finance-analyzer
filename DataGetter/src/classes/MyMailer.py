@@ -3,22 +3,15 @@ from email.mime.text import MIMEText
 
 
 class MyMailer(object):
-    '''
-    classdocs
-    '''
+    """
+    Send emails to administrator.
+    """
     EMAIL_FROM = 'apps.noreply@petrovsky.cz'
     ERROR_EMAILS_TO = ['jond@post.cz']
-    
 
-    def __init__(self, params):
-        '''
-        Constructor
-        '''
-    
     @classmethod
     def __send_email(cls, email_from, emails_to, subject, text):
         """Send email to selected addresses."""
-        
         # Create a text/plain message
         msg = MIMEText(text)
         msg['Subject'] = subject
@@ -35,6 +28,3 @@ class MyMailer(object):
     @classmethod
     def send_error_email(cls, subject, text):
         cls.__send_email(cls.EMAIL_FROM, cls.ERROR_EMAILS_TO, subject, text)
-    
-    
-        

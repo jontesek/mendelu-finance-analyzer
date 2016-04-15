@@ -13,14 +13,11 @@ from exceptions.ParsingNotImplementedException import ParsingNotImplementedExcep
 
 
 class YahooArticleGetter(object):
-    '''
-    classdocs
-    '''
+    """
+    Download articles from Yahoo Finance.
+    """
 
     def __init__(self):
-        '''
-        Constructor
-        '''
         self.headlines_url = 'http://finance.yahoo.com/q/h?s='
         self.db_model = YahooDbModel()
         self.article_parser = ArticleParser()

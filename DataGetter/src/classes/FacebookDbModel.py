@@ -1,16 +1,12 @@
 from DbModel import DbModel
 
 
-
 class FacebookDbModel(DbModel):
-    '''
-    classdocs
-    '''
+    """
+    DB methods for Facebook.
+    Parent constructor sets a DB connection ("dbcon" attribute).
+    """
 
-    def __init__(self):
-        super(FacebookDbModel, self).__init__()       # creates "dbcon" variable
-
-    
     ##### READ methods    
         
     def get_companies(self):

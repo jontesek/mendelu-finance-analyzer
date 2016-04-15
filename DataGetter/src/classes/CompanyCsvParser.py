@@ -2,20 +2,14 @@ import os
 
 
 class CompanyCsvParser(object):
-    '''
+    """
     Parser for company list in CSV file and producing SQL insert query.
-    '''
-
-
-    def __init__(self):
-        '''
-        Constructor
-        '''
+    """
 
     def create_sql(self, csv_filepath, output_dir, csv_sep, index_id, start_id):
-        '''
-        
-        '''
+        """
+        Create SQL file (for import into DB) based on input Excel file.
+        """
         # Open CSV file
         cfpath = os.path.abspath(csv_filepath)
         csv_file = open(cfpath, 'r')

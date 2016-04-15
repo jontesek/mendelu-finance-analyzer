@@ -2,17 +2,23 @@ from DbConnection import DbConnection
 
 
 class DbModel(object):
-    '''
-    classdocs
-    '''
+    """
+    Parent for classes working with DB.
+    """
 
     def __init__(self):
-        '''
-        Constructor
-        '''
+        """
+        Get a DB connection.
+        """
         self.dbcon = DbConnection.get_con()
 
-    def add_log_exec(self, script, exec_error):     
+    def add_log_exec(self, script, exec_error):
+        """
+        Log execution of performing script and commit all changes to DB.
+        :param script: int
+        :param exec_error: boolean
+        :return:
+        """
         # Prepare variables
         err_v = 1 if exec_error else 0
         # Insert log 

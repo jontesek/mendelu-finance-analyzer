@@ -3,7 +3,10 @@ from DbModel import DbModel
 
 
 class StockPriceDbModel(DbModel):
-
+    """
+    DB methods for stock prices.
+    Parent constructor sets a DB connection ("dbcon" attribute).
+    """
 
     ##### READ methods
 
@@ -18,7 +21,8 @@ class StockPriceDbModel(DbModel):
 
     def save_prices_for_company(self, company_id, data, stop_if_duplicate=True):
         cursor = self.dbcon.cursor()
-        query = 'INSERT INTO stock_price (company_id,date,open,high,low,close,volume,adj_close) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'
+        query = 'INSERT INTO stock_price (company_id,date,open,high,low,close,volume,adj_close) ' \
+                'VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'
         # Save prices for all days.
         for price_str in data:
             price_list = price_str.split(',')

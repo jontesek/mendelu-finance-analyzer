@@ -5,20 +5,17 @@ codecs.register(lambda name: codecs.lookup('utf8') if name == 'utf8mb4' else Non
 
 
 class DbConnection(object):
-    '''
-    classdocs
-    '''
+    """
+    Provides database connection for other classes.
+    """
     dbcon = False
 
-
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        
-    
     @staticmethod
     def get_con():
+        """
+        Return an existing connection or create a new connection.
+        :return: MySQLConnection
+        """
         if DbConnection.dbcon:
             return DbConnection.dbcon
         else:
@@ -31,5 +28,4 @@ class DbConnection(object):
                 'collation': 'utf8mb4_general_ci'
             }
             DbConnection.dbcon = mysql.connector.connect(**config)
-            return DbConnection.dbcon  
-    
+            return DbConnection.dbcon

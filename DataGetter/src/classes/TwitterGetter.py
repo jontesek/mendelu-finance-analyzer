@@ -6,6 +6,9 @@ from MyMailer import MyMailer
 
 
 class TwitterGetter(object):
+    """
+    Download tweets from Twitter.
+    """
 
     def __init__(self, twitter):
         self.twitter_api = twitter          # Twython object
@@ -89,7 +92,7 @@ class TwitterGetter(object):
         cur_timestamp = int(time.time())
         # Send request to Twitter and get result.
         try:
-            result = self.twitter_api.get_user_timeline(screen_name = company['tw_name'], count = 200, since_id = last_id)
+            result = self.twitter_api.get_user_timeline(screen_name=company['tw_name'], count=200, since_id=last_id)
         except Exception, e:
             self.exec_error = True
             print "Timeline problem with company %s" % company['tw_name']

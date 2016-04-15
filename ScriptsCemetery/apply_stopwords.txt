@@ -1,0 +1,10 @@
+# STOP WORDS
+    def remove_stop_words(self, input_string):
+        tokens = nltk.word_tokenize(input_string.lower())
+        ok_words = [word for word in tokens if word not in self.stop_words]
+        print ' '.join(ok_words)
+
+    def _read_stopwords(self, filepath):
+        abs_path = os.path.abspath(filepath)
+        with open(abs_path) as f:
+            return set(f.read().split('\n'))

@@ -16,9 +16,10 @@ class TextProcessor(object):
         self.db_model = TextProcessorDbModel()
         # Path to input and output dirs
         self.file_paths = file_paths
-        # self.stop_words = self._read_stopwords(file_paths['stopwords'])
         # Object for stock movements
         self.stock_processor = StockPriceProcessor()
+        # Document classes
+        self.doc_classes = {'up': 1, 'down': 2}
         # Regexp patterns
         self.pattern_http = re.compile('https?:\/\/.* ')
         # Object for writing text files
@@ -58,22 +59,22 @@ class TextProcessor(object):
                 doc_date = doc['published_date'].date()
             elif doc_type == 'tweet':
                 doc_date = doc['created_at'].date()
-            # Get stock price movement direction
+            # Get stock price movement direction.
             movement_direction = self.stock_processor.get_price_movement_with_delay(doc_date, days_delay)
             # If the company was not on the stock exchange on this date, skip the post.
             if not movement_direction:
                 continue
-            # Skip constant direction
+            # Skip documents with constant direction.
             if movement_direction == 'const':
                 continue
-            # Edit document text
+            # Edit document text.
             if doc_type == 'fb_post' or doc_type == 'fb_comment' or doc_type == 'tweet':
                 doc_text = self._process_facebook_text(doc['text'])
             elif doc_type == 'article':
                 doc_text = self._process_article_text(doc['text'])
             # Add created data to the list.
-            new_docs_list.append([movement_direction, doc_text])
-            # Increment current file's documents count
+            new_docs_list.append([self.doc_classes[movement_direction], doc_text])
+            # Increment current file's documents count.
             self.documents_count += 1
         # Choose the correct file name (bulk vs individual generating).
         if total_file_name:
@@ -86,12 +87,12 @@ class TextProcessor(object):
         self.text_writer.write_file_for_vectorization(file_name, new_docs_list, file_mode)
 
     def process_documents_for_all_companies(self, doc_type, from_date, days_delay, price_type):
-        # Reset documents count (for given doc_type)
+        # Reset documents count (for given doc_type).
         self.documents_count = 0
         self.files_count = 0
-        # Create file name
+        # Create file name.
         file_name = doc_type+'_all_%s_%s_%s-0' % (price_type, from_date.strftime('%Y-%m-%d'), str(days_delay))
-        # Process all companies
+        # Process all companies.
         for comp in self.db_model.get_companies():
             print('===Company %d===') % comp[0]
             # Check if the file should be ended.
@@ -109,7 +110,7 @@ class TextProcessor(object):
         # Remove whitespace
         text = ' '.join(text.strip().split())
         # Remove hyper links
-        text = re.sub('https?:\/\/.* ?', '', text)
+        text = re.sub('https?:\/\/.* ?', 'URL', text)
         # Remove hash tag symbols
         text = text.replace('#', '')
         # Lowercase the text
@@ -120,20 +121,9 @@ class TextProcessor(object):
     def _process_article_text(self, text):
         # Remove paragraph tags
         text = re.sub('<p>|</p>', '', text)
+        # Remove hyper links
+        text = re.sub('https?:\/\/.* ?', 'URL', text)
         # Lowercase the text
         text = text.lower()
         # result
         return text
-
-
-    # STOP WORDS
-    def remove_stop_words(self, input_string):
-        tokens = nltk.word_tokenize(input_string.lower())
-        ok_words = [word for word in tokens if word not in self.stop_words]
-        print ' '.join(ok_words)
-
-    def _read_stopwords(self, filepath):
-        abs_path = os.path.abspath(filepath)
-        with open(abs_path) as f:
-            return set(f.read().split('\n'))
-

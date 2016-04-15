@@ -5,9 +5,9 @@ from exceptions.ParsingNotImplementedException import ParsingNotImplementedExcep
 
 
 class ArticleParser(object):
-    '''
-    classdocs
-    '''
+    """
+    Parsing HTML articles from Yahoo Finance.
+    """
 
     def native_yahoo(self, html, parse_datetime=False):
         """Parse a native yahoo finance article."""

@@ -1,5 +1,4 @@
 import urllib2
-from datetime import datetime, timedelta
 
 from StockPriceDbModel import StockPriceDbModel
 
@@ -8,7 +7,7 @@ class StockPriceGetter(object):
 
     def __init__(self):
         self.dbmodel = StockPriceDbModel()
-        # example: http://real-chart.finance.yahoo.com/table.csv?s=INTC&d=3&e=4&f=2016&g=d&a=2&b=17&c=1980&ignore=.csv
+        # example: http://real-chart.finance.yahoo.com/table.csv?s=INTC&d=3&e=9&f=2016&g=d&a=2&b=17&c=1980&ignore=.csv
         self.price_url = 'http://real-chart.finance.yahoo.com/table.csv?s=%s&d=%d&e=%d&f=%d&g=d&a=%d&b=%d&c=%d&ignore=.csv'
 
     def get_prices_for_company_ticker(self, ticker, start_date, end_date):
@@ -19,7 +18,7 @@ class StockPriceGetter(object):
         :return list
         """
         # Build URL
-        target_url = self.price_url % (ticker, end_date.day, end_date.month, end_date.year,
+        target_url = self.price_url % (ticker, end_date.month, end_date.day, end_date.year,
                                        start_date.month, start_date.day, start_date.year)
         print target_url
         # Get CSV file and turn it into list. Data in format: Date,Open,High,Low,Close,Volume,Adj Close

@@ -149,6 +149,7 @@ def scalar_inc_dec(word, valence, is_cap_diff):
             else: scalar -= C_INCR
     return scalar
 
+
 class SentiText(object):
     """
     Identify sentiment-relevant string-level properties of input text.
@@ -194,6 +195,7 @@ class SentiText(object):
                     wes.insert(i, word)
                     x2 = wes.count(wordp)
         return wes
+
 
 class SentimentIntensityAnalyzer(object):
     """

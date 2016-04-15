@@ -1,0 +1,17 @@
+
+def get_price_movement_with_delay(self, document_date, days_delay):
+        #print document_date
+        # Get working days
+        prepublication_date = document_date - datetime.timedelta(days=1)
+        prepublication_date = self._get_working_date(prepublication_date, '-')
+        #document_date = self._get_working_date(document_date, '-')
+        if not prepublication_date:
+            return False
+        reaction_date = document_date + datetime.timedelta(days=days_delay)
+        reaction_date = self._get_working_date(reaction_date, '+')
+        if not reaction_date:
+            return False
+        # Calculate price movement
+        percent_change = self._get_price_movement(prepublication_date, reaction_date)
+        # Format movement to string
+        return self._format_price_movement(percent_change, self.const_boundaries)
