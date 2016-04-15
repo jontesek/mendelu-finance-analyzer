@@ -19,7 +19,7 @@ class TextProcessor(object):
         # Object for stock movements
         self.stock_processor = StockPriceProcessor()
         # Document classes
-        self.doc_classes = {'up': 1, 'down': 2}
+        self.doc_classes = {'up': '1', 'down': '2'}
         # Regexp patterns
         self.pattern_http = re.compile('https?:\/\/.* ')
         # Object for writing text files
@@ -122,7 +122,7 @@ class TextProcessor(object):
         # Remove paragraph tags
         text = re.sub('<p>|</p>', '', text)
         # Remove hyper links
-        text = re.sub('https?:\/\/.* ?', 'URL', text)
+        text = re.sub('https?:\/\/.* ?', '', text)
         # Lowercase the text
         text = text.lower()
         # result
