@@ -1,14 +1,14 @@
 import datetime
 import re
 
-from ExportsDbModel import ExportsDbModel
+from ExportsDbModel import PlainExportDbModel
 from FaCommon.TextWriter import TextWriter
 
 
-class Exports(object):
+class PlainExport(object):
 
     def __init__(self, out_dir):
-        self.db_model = ExportsDbModel()
+        self.db_model = PlainExportDbModel()
         self.text_writer = TextWriter(out_dir)
         self.pattern_http = re.compile('https?:\/\/.* ')
 

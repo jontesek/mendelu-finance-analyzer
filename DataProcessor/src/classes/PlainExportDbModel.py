@@ -2,7 +2,7 @@ import time
 
 from DbModel import DbModel
 
-class ExportsDbModel(DbModel):
+class PlainExportDbModel(DbModel):
 
     #### READ documents
 

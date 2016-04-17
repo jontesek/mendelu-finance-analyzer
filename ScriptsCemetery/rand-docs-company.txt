@@ -1,0 +1,18 @@
+def process_random_documents_for_company(self, doc_type, company_id, from_date, days_delay, price_type,
+                                             neutral_border_n, max_docs_count, total_file_name=False):
+        # Get documents from DB.
+        if doc_type == 'fb_post':
+            documents = self.db_model.get_random_fb_posts_for_company(company_id, from_date, max_docs_count)
+        elif doc_type == 'fb_comment':
+            documents = self.db_model.get_random_fb_comments_for_company(company_id, from_date, max_docs_count)
+        elif doc_type == 'article':
+            documents = self.db_model.get_random_articles_for_company(company_id, from_date, max_docs_count)
+        elif doc_type == 'tweet':
+            documents = self.db_model.get_random_tweets_for_company(company_id, from_date, max_docs_count)
+        # Check if documents exists.
+        if not documents:
+            return False
+        # Process the documents.
+        d_list, class_counts = self._process_given_documents(documents, doc_type, days_delay, price_type, neutral_border_n)
+        self._write_docs_to_file(d_list, class_counts, doc_type,
+                                 company_id, days_delay, price_type, neutral_border_n, total_file_name)

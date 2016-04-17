@@ -1,7 +1,7 @@
 from datetime import datetime
-from classes.Exports import Exports
+from classes.Exports import PlainExport
 
-exp = Exports('../../outputs/exports')
+exp = PlainExport('../../outputs/exports')
 
 company_id = 48
 from_date = datetime(2015, 12, 1)

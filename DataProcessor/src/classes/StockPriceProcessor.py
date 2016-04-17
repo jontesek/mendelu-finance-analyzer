@@ -6,8 +6,7 @@ class StockPriceProcessor(object):
 
     def __init__(self):
         self.db_model = DbModel()
-        self.stock_prices = {'company_id': None, 'ratios': {}}
-        self.const_boundaries = (-2.5, 2.5)
+        self.stock_prices = {}
 
     def set_stock_prices(self, company_id, from_date, price_type='close'):
         """
@@ -49,7 +48,7 @@ class StockPriceProcessor(object):
         #print first_date, second_date, ratio*100
         return ratio*100
 
-    def get_price_movement_with_delay(self, document_date, days_delay):
+    def get_price_movement_with_delay(self, document_date, days_delay, const_boundaries):
         #print document_date
         # Get working days
         document_date = self._get_working_date(document_date, '-')
@@ -62,7 +61,7 @@ class StockPriceProcessor(object):
         # Calculate price movement
         percent_change = self._get_price_movement(document_date, reaction_date)
         # Format movement to string
-        return self._format_price_movement(percent_change, self.const_boundaries)
+        return self._format_price_movement(percent_change, const_boundaries)
 
     def _format_price_movement(self, percentage_change, const_boundaries):
         """
