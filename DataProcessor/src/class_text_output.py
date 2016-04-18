@@ -17,9 +17,9 @@ delay = 1
 company_id = 1
 
 # Individual files
-tp.process_documents_for_company('fb_post', company_id, from_date, delay, 'close', (3, 3), False)
+#tp.process_documents_for_company('fb_post', company_id, from_date, delay, 'close', (3, 3), False)
 #tp.process_documents_for_company('fb_comment', company_id, from_date, delay, 'close')
-#tp.process_documents_for_company('article', company_id, from_date, delay)
+tp.process_documents_for_company('article', company_id, from_date, delay, 'close', (-5, 5), False)
 #tp.process_documents_for_company('tweet', company_id, from_date, delay, 'close')
 
 # Total files
@@ -33,6 +33,6 @@ price_type = 'sma'
 for delay in [1, 2, 3]:
     print('>>>>>DELAY %d<<<<<') % delay
     #tp.process_documents_for_all_companies('fb_post', from_date, delay, price_type)
-    tp.process_all_documents_for_all_companies('fb_comment', from_date, delay, price_type)
+    tp.process_documents_for_all_companies('fb_comment', from_date, delay, price_type)
     #tp.process_documents_for_all_companies('article', from_date, delay, price_type)
-    tp.process_all_documents_for_all_companies('tweet', from_date, delay, price_type)
+    tp.process_documents_for_all_companies('tweet', from_date, delay, price_type)

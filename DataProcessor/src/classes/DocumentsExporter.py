@@ -26,20 +26,23 @@ class DocumentsExporter(object):
 
     # PUBLIC METHODS
 
-    def process_all_documents_for_all_companies(self, doc_type, from_date, days_delay, price_type,
-                                                const_boundaries, balance_classes_for_company, docs_per_file=50000):
+    def process_documents_for_all_companies(self, doc_type, from_date, days_delay, price_type, const_boundaries,
+                                            balance_classes_for_company, docs_per_file=50000, only_one_file=True):
+        print('===Processing %s===') % doc_type
         # Reset document counts.
         documents_count = 0
         files_count = 0
         # Create file name.
-        file_name = doc_type + '_all_%s_%s_%s-0' % (price_type, str(days_delay), const_boundaries[1])
+        f_number = '' if only_one_file else '_0'
+        file_name = doc_type.replace('_', '-') + '_all_%s_%s_%s%s' % \
+                                                 (price_type, str(days_delay), const_boundaries[1], f_number)
         # Remove old file.
         file_path = os.path.abspath(self.file_paths['output_dir'] + '/' + file_name + '.text')
         if os.path.isfile(file_path):
             os.remove(file_path)
         # Process all companies.
         for comp in self.db_model.get_companies():
-            print('===Company %d===') % comp[0]
+            #print('===Company %d===') % comp[0]
             # Process and write data for one company.
             new_docs_count = self.process_documents_for_company(doc_type, comp[0], from_date, days_delay,
                                                                 price_type, const_boundaries,
@@ -48,12 +51,16 @@ class DocumentsExporter(object):
             # Check if the file should be ended.
             if documents_count > docs_per_file:
                 print('>>>NEW FILE')
-                files_count += 1
-                documents_count = 0
-                file_name = re.sub('\d+$', str(files_count), file_name)
+                if only_one_file:
+                    break
+                else:
+                    files_count += 1
+                    documents_count = 0
+                    file_name = re.sub('\d+$', str(files_count), file_name)
+
         # The end.
-        print('>>>All docs for all companies exported.')
-        return file_path
+        print('>>>All %s for all companies exported. Total docs: %d ') % \
+             (doc_type, files_count * docs_per_file + documents_count)
 
 
     def process_random_documents(self, doc_type, from_date, days_delay, price_type,
@@ -102,11 +109,15 @@ class DocumentsExporter(object):
         # Process the documents.
         d_list = self._process_given_documents(documents, doc_type, days_delay, price_type, const_boundaries, balance_classes)
         file_name = self._write_docs_to_file(d_list, doc_type,
-                                 company_id, days_delay, price_type, const_boundaries, total_file_name)
+                                             company_id, days_delay, price_type, const_boundaries, total_file_name)
         if not total_file_name:
             return os.path.abspath(self.file_paths['output_dir'] + '/' + file_name + '.text')
         else:
             return len(d_list)
+
+
+    def change_output_dir(self, new_dir):
+        self.file_paths['output_dir'] = new_dir
 
 
     # PRIVATE METHODS
@@ -186,7 +197,7 @@ class DocumentsExporter(object):
             file_name = total_file_name
             file_mode = 'a'
         else:
-            file_name = doc_type + '_%s_%s_%s_%s' % (company_id, days_delay, price_type, const_boundaries[1])
+            file_name = doc_type.replace('_', '-') + '_%s_%s_%s_%s' % (company_id, price_type, days_delay, const_boundaries[1])
             file_mode = 'w'
         # Write data to the file.
         self.text_writer.write_file_for_vectorization(file_name, docs_list, file_mode)
@@ -197,7 +208,7 @@ class DocumentsExporter(object):
     # TEXT processing
 
     def _process_facebook_text(self, text):
-        # Remove whitespace
+        # Remove whitespace.
         text = ' '.join(text.strip().split())
         # Remove hash tag symbols
         text = text.replace('#', '')
@@ -211,9 +222,9 @@ class DocumentsExporter(object):
     def _process_article_text(self, text):
         # Remove outer spaces.
         text = text.strip()
-        # Remove paragraph tags
+        # Remove paragraph tags.
         text = re.sub('<p>|</p>', '', text)
-        # Lowercase the text
+        # Lowercase the text.
         text = text.lower()
         # Result
         return text
