@@ -27,4 +27,4 @@ class TextWriter(object):
                 fh.write('\n')
 
     def write_file_for_vectorization(self, file_name, documents_list, file_mode):
-        self._write_file(documents_list, file_name, 'txt', '\t', file_mode)
+        self._write_file(documents_list, file_name, 'text', '\t', file_mode)

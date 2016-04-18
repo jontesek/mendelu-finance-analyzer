@@ -19,11 +19,11 @@ class StockPriceTransformer(object):
         close_prices = self.db_model.get_stock_prices(company_id, min_date, 'close')
         # For first N-1 days just insert the close price.
         values = []
-        for s_date, s_price in close_prices[0:period_length-1]:
+        for s_date, s_price in close_prices[0:period_length - 1]:
             # self.db_model.update_stock_price(company_id, s_date, 'sma', s_price)
             values.append([company_id, s_date, s_price])
         # For remaining days calc the MA: (sum of current + previous n - 1 days) / period length
-        for p_i, (s_date, s_price) in enumerate(close_prices[(period_length-1):], start=period_length-1):
+        for p_i, (s_date, s_price) in enumerate(close_prices[(period_length - 1):], start=period_length-1):
             # Debug info
             #print p_i, (close_prices[(p_i - period_length + 1)][1]), s_price,
             # Save values

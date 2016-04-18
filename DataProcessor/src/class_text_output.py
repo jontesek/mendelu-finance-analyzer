@@ -1,11 +1,13 @@
 from datetime import datetime
+import os
+
 from classes.DocumentsExporter import DocumentsExporter
 
 
 file_paths = {
     'stopwords': '../input_sources/google_en_stopwords.txt',
     #'output_dir': 'C:/text_mining/data/test',
-    'output_dir': '../../outputs/class_text',
+    'output_dir': os.path.abspath('../../outputs/class_text'),
 }
 tp = DocumentsExporter(file_paths)
 #from_date = datetime(2015, 8, 5)
@@ -15,7 +17,7 @@ delay = 1
 company_id = 1
 
 # Individual files
-#tp.process_documents_for_company('fb_post', company_id, from_date, delay, 'close', (3, 3))
+tp.process_documents_for_company('fb_post', company_id, from_date, delay, 'close', (3, 3), False)
 #tp.process_documents_for_company('fb_comment', company_id, from_date, delay, 'close')
 #tp.process_documents_for_company('article', company_id, from_date, delay)
 #tp.process_documents_for_company('tweet', company_id, from_date, delay, 'close')
@@ -23,7 +25,7 @@ company_id = 1
 # Total files
 #tp.process_documents_for_all_companies('fb_post', from_date, delay, 'sma')
 #tp.process_documents_for_all_companies('fb_comment', from_date, delay, 'close')
-tp.process_all_documents_for_all_companies('article', from_date, delay, 'close', (-1.5, 1.5), True, 50000)
+#tp.process_all_documents_for_all_companies('article', from_date, delay, 'close', (-3, 3), False, 30000)
 #tp.process_documents_for_all_companies('tweet', from_date, delay, 'close')
 exit()
 # Bulk processing
