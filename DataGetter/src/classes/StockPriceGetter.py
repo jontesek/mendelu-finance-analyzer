@@ -1,4 +1,5 @@
 import urllib2
+import datetime
 
 from StockPriceDbModel import StockPriceDbModel
 
@@ -18,6 +19,7 @@ class StockPriceGetter(object):
         :return list
         """
         # Build URL
+        start_date = start_date - datetime.timedelta(days=33)
         target_url = self.price_url % (ticker, end_date.month, end_date.day, end_date.year,
                                        start_date.month, start_date.day, start_date.year)
         print target_url
@@ -25,7 +27,7 @@ class StockPriceGetter(object):
         try:
             data = urllib2.urlopen(target_url).read().split('\n')
         except Exception, e:
-            print('not found: '+target_url)
+            print('not found: ' + target_url)
             return False
         # Remove first line (labels) and last line (empty).
         del(data[0])
@@ -33,11 +35,64 @@ class StockPriceGetter(object):
         # Return list
         return data
 
-    def save_prices_for_all_companies(self, start_date, end_date, stop_if_duplicate=True):
+    def save_prices_for_all_companies(self, start_date, end_date, stop_if_duplicate=True, insert_missing_days=True):
         print('>>>Saving stock prices from %s to %s') % (start_date, end_date)
         for comp in self.dbmodel.get_companies():
             data = self.get_prices_for_company_ticker(comp[1], start_date, end_date)
             if data:
-                self.dbmodel.save_prices_for_company(comp[0], data, stop_if_duplicate)
+                if insert_missing_days:
+                    new_data = self._refill_yahoo_data(comp[0], data, start_date, end_date)
+                    self.dbmodel.save_refilled_prices_for_company(new_data)
+                else:
+                    self.dbmodel.save_prices_for_company(comp[0], data, stop_if_duplicate, insert_missing_days)
         # the end
         print('>>>New stock prices were saved into DB.')
+
+
+    def _refill_yahoo_data(self, company_id, orig_yahoo_data, start_date, end_date):
+        # For every missing day (i) from start to end date, insert artificial value: d_i = (d_i-1 + d_i+1)/2
+        current_date = start_date
+        plus_day = datetime.timedelta(days=1)
+        y_last_day_i = 0
+        all_days = []
+        yahoo_data = list(reversed(orig_yahoo_data))
+        # Loop all days from given interval.
+        while current_date <= end_date:
+            #print("==Examined date: %s") % current_date
+            #print("Last yahoo date: %s") % yahoo_data[y_last_day_i][0:11]
+            # Find the date in Yahoo data.
+            for pr_i, price_str in enumerate(yahoo_data[y_last_day_i:], y_last_day_i):
+                price_list = price_str.split(',')
+                y_date = datetime.datetime.strptime(price_list[0], '%Y-%m-%d').date()
+                # Skip too early dates.
+                if y_date < start_date:
+                    y_last_day_i = pr_i
+                    continue
+                # If the date was found, append it to new days.
+                if current_date == y_date:
+                    price_list.insert(0, company_id)
+                    all_days.append(price_list)
+                    y_last_day_i = pr_i
+                    #print("working date: %s") % (price_list[-1])
+                    break
+            # If the date was not found, calculate an artificial value for it.
+            else:
+                # Yahoo data row: date(0), open(1), high(2), low(3), close(4), volume(5), adjclose(6).
+                d_close = self._calculate_new_var_value(yahoo_data, y_last_day_i, 4, 1)
+                d_volume = self._calculate_new_var_value(yahoo_data, y_last_day_i, 5, 5)
+                d_adjclose = self._calculate_new_var_value(yahoo_data, y_last_day_i, 6, 1)
+                all_days.append([company_id, current_date, None, None, None, d_close, d_volume, d_adjclose])
+                #print("non-working date: %s")  % d_adjclose
+            # Either way, incerement date.
+            current_date += plus_day
+
+        # Result
+        return all_days
+
+
+    def _calculate_new_var_value(self, yahoo_data, last_day_i, var_pos_1, var_pos_2):
+        date_list_1 = yahoo_data[last_day_i].split(',')
+        date_list_2 = yahoo_data[last_day_i + 1].split(',')
+        new_va1ue = (float(date_list_1[var_pos_1]) + float(date_list_2[var_pos_2])) / 2.0
+        return new_va1ue
+

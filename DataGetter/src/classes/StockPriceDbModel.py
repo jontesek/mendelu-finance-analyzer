@@ -1,4 +1,6 @@
 from mysql.connector.errors import IntegrityError
+import datetime
+
 from DbModel import DbModel
 
 
@@ -38,3 +40,14 @@ class StockPriceDbModel(DbModel):
         # Save changes
         self.dbcon.commit()
         cursor.close()
+
+    def save_refilled_prices_for_company(self, in_data):
+        cursor = self.dbcon.cursor()
+        # Prepare query
+        query = 'REPLACE INTO stock_price (company_id, date, open, high, low, close, volume, adjclose) ' \
+                'VALUES (%s, %s, %s, %s, %s, %s, %s, %s) '
+        # Execute query
+        cursor.executemany(query, in_data)
+        self.dbcon.commit()
+        cursor.close()
+

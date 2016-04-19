@@ -9,4 +9,4 @@ spg = StockPriceGetter()
 last_date = datetime.datetime.now() - datetime.timedelta(days=1)
 
 # Update prices
-spg.save_prices_for_all_companies(datetime.date(2000, 1, 15), last_date.date(), True)
+spg.save_prices_for_all_companies(datetime.date(2008, 3, 3), last_date.date(), True, True)
