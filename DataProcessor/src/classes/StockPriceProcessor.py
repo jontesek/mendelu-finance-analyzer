@@ -8,7 +8,7 @@ class StockPriceProcessor(object):
         self.db_model = DbModel()
         self.stock_prices = {}
 
-    def set_stock_prices(self, company_id, from_date, price_type='close'):
+    def set_stock_prices(self, company_id, from_date, price_type='adjclose'):
         """
         Set stock prices for days from given date to present day.
         Must be called before calling get_price_movement method.
@@ -16,9 +16,6 @@ class StockPriceProcessor(object):
         Args:
             company_id (int): Company ID
             from_date (Date): from which date to search (also some previous days will be saved)
-
-        Returns:
-            list: (Date, float): stock price movements as percentage change (current/last day)
         """
         self.stock_prices = {}
         # Substract some days to be sure to get data for the from_date.
@@ -31,46 +28,56 @@ class StockPriceProcessor(object):
         # Create stock prices dictionary.
         for (price_date, price) in stock_prices:
             self.stock_prices[price_date] = price
-        # Result
+        # OK
         return True
 
     def _get_price_movement(self, first_date, second_date):
         """
-        Get relative stock price movement = second/first date.
+        Get relative stock price movement: R_t = (P_t - P_t-1) / P_t-1
 
         Args:
             first_date (Date)
             second_date (Date)
+
         Returns:
-            float: stock price movement as percentage change
+            float: Stock price movement between the two dates (as percentage change).
         """
-        ratio = (self.stock_prices[second_date] / self.stock_prices[first_date]) - 1
-        #print first_date, second_date, ratio*100
-        return ratio*100
+        ratio = (self.stock_prices[second_date] - self.stock_prices[first_date]) / self.stock_prices[first_date]
+        #print first_date, second_date, ratio * 100, self.stock_prices[first_date], self.stock_prices[second_date]
+        return ratio * 100
 
     def get_price_movement_with_delay(self, document_date, days_delay, const_boundaries):
-        #print document_date
-        # Get working days
-        document_date = self._get_working_date(document_date, '-')
-        if not document_date:
-            return False
+        """
+        Calculate direction of price movement with given delay and constant boundaries.
+
+        Args:
+            document_date (Date): When was document published.
+            days_delay (int): How many days from published day should be reaction date.
+            const_boundaries (list): [-A, +A] maximal value for contant state.
+
+        Returns:
+            string: const, up, down
+        """
+        # Create delayed date.
         reaction_date = document_date + datetime.timedelta(days=days_delay)
-        reaction_date = self._get_working_date(reaction_date, '+')
-        if not reaction_date:
-            return False
-        # Calculate price movement
-        percent_change = self._get_price_movement(document_date, reaction_date)
-        # Format movement to string
-        return self._format_price_movement(percent_change, const_boundaries)
+        # Calculate price movement.
+        percentage_change = self._get_price_movement(document_date, reaction_date)
+        #print percentage_change, const_boundaries, self._format_price_movement(percentage_change, const_boundaries)
+        # Format movement to string.
+        return self._format_price_movement(percentage_change, const_boundaries)
 
     def _format_price_movement(self, percentage_change, const_boundaries):
         """
         Get string representation of a size of stock movement.
+        If the change is in interval (min, max), the movement is constant.
+        If it's <= min and >= max, it's down and up, respectively.
 
-        :param percentage_change: percentage change
-        :type float
-        :param const_boundaries: [min, max] for constant state
-        :return: direction
+        Args:
+            percentage_change (float)
+            const_boundaries (list): (min, max) interval for constant state
+
+        Returns:
+            string: const, up, down
         """
         if const_boundaries[0] < percentage_change < const_boundaries[1]:
             return 'const'
@@ -81,28 +88,3 @@ class StockPriceProcessor(object):
         else:
             return 'const'
 
-    def _get_working_date(self, lookup_date, direction):
-        """
-        Check if given date is a working day. If not, return plus/minus 1,2,..14 days date.
-
-        Args:
-            lookup_date (Datetime)
-
-        Returns:
-            Datetime: the same date or date of the previous working day
-            False: If company was not on stock exchange.
-        """
-        # For working day
-        if lookup_date in self.stock_prices:
-            return lookup_date
-        # Search future working date
-        search_past_days = 14
-        for i in range(1, search_past_days):
-            if direction == '+':
-                edited_date = lookup_date + datetime.timedelta(days=i)
-            else:
-                edited_date = lookup_date - datetime.timedelta(days=i)
-            if edited_date in self.stock_prices:
-                return edited_date
-        # nothing found
-        return False

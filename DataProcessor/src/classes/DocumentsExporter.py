@@ -36,10 +36,6 @@ class DocumentsExporter(object):
         f_number = '' if only_one_file else '_0'
         file_name = doc_type.replace('_', '-') + '_all_%s_%s_%s%s' % \
                                                  (price_type, str(days_delay), const_boundaries[1], f_number)
-        # Remove old file.
-        file_path = os.path.abspath(self.file_paths['output_dir'] + '/' + file_name + '.text')
-        if os.path.isfile(file_path):
-            os.remove(file_path)
         # Process all companies.
         for comp in self.db_model.get_companies():
             #print('===Company %d===') % comp[0]
@@ -57,7 +53,6 @@ class DocumentsExporter(object):
                     files_count += 1
                     documents_count = 0
                     file_name = re.sub('\d+$', str(files_count), file_name)
-
         # The end.
         print('>>>All %s for all companies exported. Total docs: %d ') % \
              (doc_type, files_count * docs_per_file + documents_count)

@@ -1,0 +1,25 @@
+def _get_working_date(self, lookup_date, direction):
+        """
+        Check if given date is a working day. If not, return plus/minus 1,2,..14 days date.
+
+        Args:
+            lookup_date (Datetime)
+
+        Returns:
+            Datetime: the same date or date of the previous working day
+            False: If company was not on stock exchange.
+        """
+        # For working day
+        if lookup_date in self.stock_prices:
+            return lookup_date
+        # Search future working date
+        search_past_days = 14
+        for i in range(1, search_past_days):
+            if direction == '+':
+                edited_date = lookup_date + datetime.timedelta(days=i)
+            else:
+                edited_date = lookup_date - datetime.timedelta(days=i)
+            if edited_date in self.stock_prices:
+                return edited_date
+        # nothing found
+        return False

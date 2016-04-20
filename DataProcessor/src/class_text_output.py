@@ -13,13 +13,13 @@ tp = DocumentsExporter(file_paths)
 #from_date = datetime(2015, 8, 5)
 from_date = datetime(2005, 5, 5)
 
-delay = 1
+delay = 2
 company_id = 1
 
 # Individual files
 #tp.process_documents_for_company('fb_post', company_id, from_date, delay, 'close', (3, 3), False)
 #tp.process_documents_for_company('fb_comment', company_id, from_date, delay, 'close')
-tp.process_documents_for_company('article', company_id, from_date, delay, 'close', (-5, 5), False)
+tp.process_documents_for_company('article', company_id, from_date, delay, 'adjclose', (-2, 2), False)
 #tp.process_documents_for_company('tweet', company_id, from_date, delay, 'close')
 
 # Total files

@@ -1,5 +1,4 @@
 from mysql.connector.errors import IntegrityError
-import datetime
 
 from DbModel import DbModel
 

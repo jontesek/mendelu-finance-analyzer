@@ -13,7 +13,7 @@ class DbModel(object):
         cursor.execute(query)
         return cursor.fetchall()
 
-    def get_stock_prices(self, company_id, from_date="1970-01-01", price_type='close'):
+    def get_stock_prices(self, company_id, from_date, price_type):
         cursor = self.dbcon.cursor()
         query = 'SELECT date, ' + price_type + ' FROM stock_price ' \
                                                'WHERE company_id = %s AND date >= %s ORDER BY date ASC'

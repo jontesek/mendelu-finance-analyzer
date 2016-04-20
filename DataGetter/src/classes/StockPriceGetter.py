@@ -8,18 +8,19 @@ class StockPriceGetter(object):
 
     def __init__(self):
         self.dbmodel = StockPriceDbModel()
-        # example: http://real-chart.finance.yahoo.com/table.csv?s=INTC&d=3&e=9&f=2016&g=d&a=2&b=17&c=1980&ignore=.csv
+        # example: http://real-chart.finance.yahoo.com/table.csv?s=INTC&d=3&e=9&f=2016&g=d&a=2&b=17&c=2000&ignore=.csv
         self.price_url = 'http://real-chart.finance.yahoo.com/table.csv?s=%s&d=%d&e=%d&f=%d&g=d&a=%d&b=%d&c=%d&ignore=.csv'
 
     def get_prices_for_company_ticker(self, ticker, start_date, end_date):
         """
         :param ticker: string
-        :param start_date: Date (The API has error - you must give the previous month.)
+        :param start_date: Date
         :param end_date: Date
         :return list
         """
-        # Build URL
+        # The API has error - you must give the previous month.
         start_date = start_date - datetime.timedelta(days=33)
+        # Build URL
         target_url = self.price_url % (ticker, end_date.month, end_date.day, end_date.year,
                                        start_date.month, start_date.day, start_date.year)
         print target_url
@@ -50,16 +51,34 @@ class StockPriceGetter(object):
 
 
     def _refill_yahoo_data(self, company_id, orig_yahoo_data, start_date, end_date):
-        # For every missing day (i) from start to end date, insert artificial value: d_i = (d_i-1 + d_i+1)/2
+        """
+        For every missing day (i) from start to end date, insert artificial value: d_i = (d_i-1 + d_i+1)/2
+        If yahoo date do not go to end_date, end function prematurely.
+
+        :param company_id:
+        :param orig_yahoo_data:
+        :param start_date:
+        :param end_date:
+        :return:
+        """
+        # Prepare variables
         current_date = start_date
         plus_day = datetime.timedelta(days=1)
         y_last_day_i = 0
         all_days = []
+        # Get last date from Yahoo.
+        newest_yahoo_date = datetime.datetime.strptime(orig_yahoo_data[0].split(',')[0], '%Y-%m-%d').date()
+        # Reverse data from oldest to newest.
         yahoo_data = list(reversed(orig_yahoo_data))
         # Loop all days from given interval.
         while current_date <= end_date:
             #print("==Examined date: %s") % current_date
             #print("Last yahoo date: %s") % yahoo_data[y_last_day_i][0:11]
+
+            # Check if current date is not higher than the newest yahoo date.
+            if current_date > newest_yahoo_date:
+                break
+
             # Find the date in Yahoo data.
             for pr_i, price_str in enumerate(yahoo_data[y_last_day_i:], y_last_day_i):
                 price_list = price_str.split(',')
@@ -70,8 +89,13 @@ class StockPriceGetter(object):
                     continue
                 # If the date was found, append it to new days.
                 if current_date == y_date:
-                    price_list.insert(0, company_id)
-                    all_days.append(price_list)
+                    # Convert strings to floats.
+                    floats_list = [float(x) for x in price_list[1:]]
+                    # Create final data list.
+                    f_day_list = [company_id, price_list[0]]
+                    f_day_list.extend(floats_list)
+                    # Save day data to all days.
+                    all_days.append(f_day_list)
                     y_last_day_i = pr_i
                     #print("working date: %s") % (price_list[-1])
                     break
@@ -83,6 +107,7 @@ class StockPriceGetter(object):
                 d_adjclose = self._calculate_new_var_value(yahoo_data, y_last_day_i, 6, 1)
                 all_days.append([company_id, current_date, None, None, None, d_close, d_volume, d_adjclose])
                 #print("non-working date: %s")  % d_adjclose
+
             # Either way, incerement date.
             current_date += plus_day
 

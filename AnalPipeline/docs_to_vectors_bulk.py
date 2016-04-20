@@ -33,6 +33,7 @@ common_config = {
     'logarithm_type': 'natural', 'case': 'lower case', 'output_decimal_places': 3, 'sort_attributes': 'none',
     'subset_size': 100000, 'n_grams': 1,
 }
+c_print_stats = True
 
 # Change working directory to VecText.
 os.chdir(vectext_dir)
@@ -76,6 +77,8 @@ for d_type in doc_types:
                 p_query = build_query_from_params(all_params)
                 # Run it with VecText.
                 run_cmd = 'perl vectext-cmdline.pl ' + p_query
+                if c_print_stats:
+                    run_cmd += '  --print_statistics'
                 if suppress_output:
                     ret_code = subprocess.call(run_cmd, shell=True, stdout=FNULL, stderr=FNULL)
                 else:
