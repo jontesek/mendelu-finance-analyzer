@@ -7,7 +7,7 @@ from classes.DocumentsExporter import DocumentsExporter
 file_paths = {
     'stopwords': '../input_sources/google_en_stopwords.txt',
     #'output_dir': 'C:/text_mining/data/test',
-    'output_dir': os.path.abspath('../../outputs/class_text'),
+    'output_dir': os.path.abspath('../../outputs/class_text/XXX'),
 }
 tp = DocumentsExporter(file_paths)
 #from_date = datetime(2015, 8, 5)

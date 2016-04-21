@@ -60,6 +60,9 @@ class StockPriceProcessor(object):
         """
         # Create delayed date.
         reaction_date = document_date + datetime.timedelta(days=days_delay)
+        # Check if dates are present in DB.
+        if reaction_date not in self.stock_prices or document_date not in self.stock_prices:
+            return False
         # Calculate price movement.
         percentage_change = self._get_price_movement(document_date, reaction_date)
         #print percentage_change, const_boundaries, self._format_price_movement(percentage_change, const_boundaries)

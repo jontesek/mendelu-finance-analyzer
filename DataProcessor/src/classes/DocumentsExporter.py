@@ -199,26 +199,28 @@ class DocumentsExporter(object):
         return file_name
 
 
-
     # TEXT processing
 
     def _process_facebook_text(self, text):
         # Remove whitespace.
         text = ' '.join(text.strip().split())
-        # Remove hash tag symbols
+        # Remove hash tag symbols.
         text = text.replace('#', '')
         # Remove at symbols.
         text = text.replace('@', '')
-        # Lowercase the text
+        # Remove URL links.
+        text = re.sub(r'https?://\S+', 'XURL', text)
+        # Lowercase the text.
         text = text.lower()
         # result
         return text
 
     def _process_article_text(self, text):
-        # Remove outer spaces.
-        text = text.strip()
+        # Remove URL links.
+        #text = re.sub(r'(https?://\S+)|(www\.\w+\.\S+)', 'URL', text)
+        text = re.sub(r'https?://\S+', 'XURL', text)
         # Remove paragraph tags.
-        text = re.sub('<p>|</p>', '', text)
+        text = re.sub(r'<p>|</p>', '', text)
         # Lowercase the text.
         text = text.lower()
         # Result

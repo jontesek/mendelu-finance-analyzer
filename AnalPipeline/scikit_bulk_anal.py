@@ -13,7 +13,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
 from src.TextWriter import TextWriter
-from src.file_processing import get_features_from_vector_filename
+import src.file_processing as my_fp
 from src.classification import classify_data
 
 ########
@@ -22,7 +22,7 @@ from src.classification import classify_data
 
 # File paths
 vectext_dir = os.path.abspath('VecText')
-input_dir = os.path.abspath('../outputs/vec_text')
+input_dir = os.path.abspath('../outputs/vec_text/company_48')
 output_dir = os.path.abspath('../outputs/scikit_results')
 
 # Specify used classifiers.
@@ -35,7 +35,8 @@ classifiers = [
 ]
 
 # Document types.
-doc_types = ['test', 'tweet', 'fb-post', 'fb-comment', 'article']
+#doc_types = ['article', 'test', 'tweet', 'fb-post', 'fb-comment', ]
+doc_types = ['tweet']
 
 # Text writer object
 text_writer = TextWriter(output_dir)
@@ -44,6 +45,8 @@ text_writer = TextWriter(output_dir)
 # For every file, there is for every classifier one row in following format:
 header_str = 'timestamp,input_file,doc_type,company,variable_type,days_delay,const_border_top,vector_type,n_samples,n_features,algo_name,accuracy,precision,recall,f1_score,runtime'
 header_list = header_str.split(',')
+# Edit document
+r_description = ''
 
 #######
 # Performing part
@@ -55,17 +58,18 @@ header_list = header_str.split(',')
 for d_type in doc_types:
     print('======Processing %s======') % d_type
 
-    # If results file does not exists, create it and write header to it.
-    res_filename = d_type + '_results'
-    if not os.path.isfile(os.path.join(output_dir, res_filename + '.csv')):
-        text_writer.reset_results_file(res_filename, [header_list])
-
     # Process all applicable files.
     for file_name in sorted(os.listdir(input_dir)):
         if file_name.startswith(d_type) and file_name.endswith('.SVMlight.dat'):
             print('===%s===') % file_name
             # Create path to file.
             file_path = os.path.join(input_dir, file_name)
+            # Check if file is not empty.
+            if not my_fp.is_not_empty_file(file_path):
+                print('File is empty, skipping it.')
+                continue
+            # Check type of file and if corresponding results file exists.
+            res_filename = my_fp.check_and_reset_results_file(file_name, output_dir, text_writer, header_list, r_description)
             # Get file name.
             base_filename = file_name.replace('.SVMlight.dat', '')
             # Load file into matrix.
@@ -74,7 +78,7 @@ for d_type in doc_types:
             n_features = data_matrix[0].shape[1]
             print('Number of samples/features: %d, %d') % (n_samples, n_features)
             # Prepare common info.
-            file_features = get_features_from_vector_filename(base_filename).values()
+            file_features = my_fp.get_features_from_vector_filename(base_filename).values()
             common_data = [base_filename]
             common_data.extend(file_features)
             common_data.extend([n_samples, n_features])
@@ -88,7 +92,7 @@ for d_type in doc_types:
                 algo_row.insert(0, str(datetime.datetime.now()))
                 # Fit and predict data. Return accuracy, precision, recall, f1 score, runtime.
                 clf_results = classify_data(clf_object, X_train, X_test, y_train, y_test)
-                print('%s: %s') % (clf_name, str(clf_results))
+                print('%s: %s') % (clf_name, str([round(x, 4) for x in clf_results]))
                 # Populate row data.
                 algo_row.append(clf_name)
                 algo_row.extend(clf_results)

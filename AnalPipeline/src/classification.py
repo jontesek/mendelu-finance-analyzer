@@ -16,6 +16,6 @@ def classify_data(clf_obj, X_train, X_test, y_train, y_test):
     recall = metrics.recall_score(y_test, y_predicted, average='weighted', pos_label=None)
     f1_score = metrics.f1_score(y_test, y_predicted, average='weighted', pos_label=None)
     # Return data
-    results = [round(accuracy, 4), round(precision, 4), round(recall, 4), round(f1_score, 4), total_runtime]
+    results = [accuracy, precision, recall, f1_score, total_runtime]
     return results
 

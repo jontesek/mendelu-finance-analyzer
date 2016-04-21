@@ -12,11 +12,12 @@ from src.vector_helpers import build_query_from_params, check_if_vector_file_exi
 
 # Set file paths
 vectext_dir = os.path.abspath('VecText')
-input_dir = os.path.abspath('../outputs/class_text')
-output_dir = os.path.abspath('../outputs/vec_text')
+input_dir = os.path.abspath('../outputs/class_text/a_rest')
+output_dir = os.path.abspath('../outputs/vec_text/article')
 
 # Specific run configurations for VecText.
 run_configs = [
+    #{'conf_id': 'tf-idf-no', 'local_weights': 'Term Frequency (TF)', 'global_weights': 'Inverse Document Frequency (IDF)', 'normalization': 'none'},
     {'conf_id': 'tp-no-no', 'local_weights': 'Binary (Term Presence)', 'global_weights': 'none', 'normalization': 'none'},
     {'conf_id': 'tf-idf-cos', 'local_weights': 'Term Frequency (TF)', 'global_weights': 'Inverse Document Frequency (IDF)', 'normalization': 'Cosine'},
 ]
@@ -30,7 +31,7 @@ doc_freqs_param = {
 common_config = {
     'input_file': None, 'encoding': 'utf8', 'class_position': 1, 'output_dir': output_dir, 'output_file': None,
     'min_word_length': 2, 'min_document_frequency': 3, 'output_format': 'SVMlight', 'create_dictionary': 'no',
-    'logarithm_type': 'natural', 'case': 'lower case', 'output_decimal_places': 3, 'sort_attributes': 'none',
+    'logarithm_type': 'natural', 'case': 'lower case', 'output_decimal_places': 5, 'sort_attributes': 'none',
     'subset_size': 100000, 'n_grams': 1,
 }
 c_print_stats = True
@@ -38,10 +39,11 @@ c_print_stats = True
 # Change working directory to VecText.
 os.chdir(vectext_dir)
 FNULL = open(os.devnull, 'w')
-suppress_output = False
+suppress_output = True
 
 # Document types.
-doc_types = ['tweet', 'fb-post', 'fb-comment', 'article']
+doc_types = ['article']
+#doc_types = ['article', 'tweet', 'fb-post', 'fb-comment', ]
 
 #######
 # Performing part
