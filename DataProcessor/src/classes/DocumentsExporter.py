@@ -103,16 +103,19 @@ class DocumentsExporter(object):
             documents = self.db_model.get_tweets_for_company(company_id, from_date)
         # Process the documents.
         d_list = self._process_given_documents(documents, doc_type, days_delay, price_type, const_boundaries, balance_classes)
+        # Check if there are were any documents.
+        if not d_list:
+            return False
+        # Write documents to correct file.
         file_name = self._write_docs_to_file(d_list, doc_type,
                                              company_id, days_delay, price_type, const_boundaries, total_file_name)
-        if not total_file_name:
-            return os.path.abspath(self.file_paths['output_dir'] + '/' + file_name + '.text')
-        else:
-            return len(d_list)
+        # Return some information.
+        return len(d_list)
 
 
     def change_output_dir(self, new_dir):
         self.file_paths['output_dir'] = new_dir
+        self.text_writer.output_dir = new_dir
 
 
     # PRIVATE METHODS
