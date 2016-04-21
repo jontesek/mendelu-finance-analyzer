@@ -34,35 +34,38 @@ class DocumentsExporterDbModel(DbModel):
 
     #### READ random documents
 
-    def get_random_articles(self, for_date, docs_per_day):
-        cursor = self.dbcon.cursor(dictionary=True)
-        query = "SELECT id, title, text, published_date FROM article " \
-                "WHERE DATE(published_date) == %s LIMIT %s"
-        cursor.execute(query, [for_date, docs_per_day])
-        return cursor
+    # def get_random_articles_for_company(self, company_id, for_date, docs_per_day):
+    #     cursor = self.dbcon.cursor(dictionary=True)
+    #     query = "SELECT id, title, text, published_date FROM article " \
+    #             "WHERE DATE(published_date) == %s AND company_id = %s LIMIT %s"
+    #     cursor.execute(query, [for_date, company_id, docs_per_day])
+    #     return cursor
+    #
+    # def get_random_fb_posts_for_company(self, company_id, for_date, docs_per_day):
+    #     cursor = self.dbcon.cursor(dictionary=True)
+    #     from_timestamp = self._from_date_to_timestamp(for_date.replace(hours=0, minutes=0, seconds=0))
+    #     to_timestamp = self._from_date_to_timestamp(for_date.replace(hours=23, minutes=59, seconds=59))
+    #     query = "SELECT id, created_timestamp, text FROM fb_post " \
+    #             "WHERE created_timestamp BETWEEN %s AND %s AND company_id = %s LIMIT %s"
+    #     cursor.execute(query, [from_timestamp, to_timestamp, company_id, docs_per_day])
+    #     return cursor
 
-    def get_random_fb_posts(self, for_date, docs_per_day):
+    def get_random_fb_comments_for_company(self, company_id, for_date, docs_per_day):
         cursor = self.dbcon.cursor(dictionary=True)
         from_timestamp = self._from_date_to_timestamp(for_date.replace(hours=0, minutes=0, seconds=0))
         to_timestamp = self._from_date_to_timestamp(for_date.replace(hours=23, minutes=59, seconds=59))
-        query = "SELECT id, created_timestamp, text FROM fb_post " \
-                "WHERE company_id = %s AND created_timestamp BETWEEN %s AND %s LIMIT %s"
-        cursor.execute(query, [from_timestamp, to_timestamp, docs_per_day])
-        return cursor
-
-    def get_random_fb_comments(self, for_date, docs_per_day):
-        cursor = self.dbcon.cursor(dictionary=True)
-        from_date_timestamp = self._from_date_to_timestamp(for_date)
         query = "SELECT id, created_timestamp, text FROM fb_comment " \
-                "WHERE company_id = %s AND created_timestamp >= %s LIMIT %s"
-        cursor.execute(query, [from_date_timestamp, docs_per_day])
+                "WHERE created_timestamp BETWEEN %s AND %s AND company_id = %s " \
+                "ORDER BY id ASC LIMIT %s"
+        cursor.execute(query, [from_timestamp, to_timestamp, company_id, docs_per_day])
         return cursor
 
-    def get_random_tweets(self, for_date, docs_per_day):
+    def get_random_tweets_for_company(self, company_id, for_date, docs_per_day):
         cursor = self.dbcon.cursor(dictionary=True)
         query = "SELECT tw_id, created_at, text FROM tw_status " \
-                "WHERE company_id = %s AND DATE(created_at) == %s LIMIT %s"
-        cursor.execute(query, [for_date, docs_per_day])
+                "WHERE DATE(created_at) = %s AND company_id = %s " \
+                "ORDER BY retweet_count DESC LIMIT %s"
+        cursor.execute(query, [for_date, company_id, docs_per_day])
         return cursor
 
     #### READ other

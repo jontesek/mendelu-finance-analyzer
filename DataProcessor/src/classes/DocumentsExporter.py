@@ -58,8 +58,8 @@ class DocumentsExporter(object):
              (doc_type, files_count * docs_per_file + documents_count)
 
 
-    def process_documents_for_selected_companies(self, companies_ids, doc_type, from_date, days_delay, price_type,
-                                                 const_boundaries, balance_classes_for_company, docs_per_file=50000,
+    def process_documents_for_selected_companies(self, companies_ids, doc_type, from_date, to_date, days_delay, price_type,
+                                                 const_boundaries, balance_classes_for_company, docs_per_file=100000,
                                                  only_one_file=True, docs_per_company=10000):
         print('===Processing %s===') % doc_type
         # Reset document counts.
@@ -74,9 +74,10 @@ class DocumentsExporter(object):
         for comp in self.db_model.get_selected_companies(companies_ids):
             print('===Company %d===') % comp[0]
             # Process and write data for one company.
-            new_docs_count = self.process_documents_for_company(doc_type, comp[0], from_date, days_delay,
-                                                                price_type, const_boundaries,
-                                                                balance_classes_for_company, file_name)
+            new_docs_count = self.process_random_documents_for_company(
+                doc_type, comp[0], from_date, to_date, days_delay, price_type, const_boundaries,
+                balance_classes_for_company, docs_per_company, file_name)
+            # Increment docs count.
             documents_count += new_docs_count
             # Check if the file should be ended.
             if documents_count > docs_per_file:
@@ -90,6 +91,36 @@ class DocumentsExporter(object):
         # The end.
         print('>>>All %s for selected companies exported. Total docs: %d ') % \
              (doc_type, files_count * docs_per_file + documents_count)
+
+
+    def process_random_documents_for_company(self, doc_type, company_id, from_date, to_date, days_delay, price_type,
+                                             const_boundaries, balance_classes, docs_per_company, total_file_name=False):
+        # Set stock prices for given company.
+        prices = self.stock_processor.set_stock_prices(company_id, from_date, price_type)
+        if not prices:
+            return False
+        # Calculate number of documents per day: n = docs_per_company / days(to_date - from_date)
+        date_delta = to_date - from_date
+        docs_per_day = int(round(docs_per_company / float(date_delta.days))) * 2
+
+        # Get documents from DB.
+        if doc_type == 'fb_post':
+            documents = self.db_model.get_random_fb_posts_for_company(company_id, from_date, to_date, docs_per_day)
+        elif doc_type == 'fb_comment':
+            documents = self.db_model.get_random_fb_comments_for_company(company_id, from_date, to_date, docs_per_day)
+        elif doc_type == 'article':
+            documents = self.db_model.get_random_articles_for_company(company_id, from_date, to_date, docs_per_day)
+        elif doc_type == 'tweet':
+            documents = self.db_model.get_random_tweets_for_company(company_id, from_date, to_date, docs_per_day)
+        # Process the documents.
+        d_list = self._process_given_documents(documents, doc_type, days_delay, price_type, const_boundaries, balance_classes)
+        # Check if there are were any documents.
+        if not d_list:
+            return False
+        # Write documents to correct file.
+        self._write_docs_to_file(d_list, doc_type, company_id, days_delay, price_type, const_boundaries, total_file_name)
+        # Return some information.
+        return len(d_list)
 
 
     def process_documents_for_company(self, doc_type, company_id, from_date, days_delay, price_type,

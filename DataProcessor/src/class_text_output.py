@@ -7,11 +7,11 @@ from classes.DocumentsExporter import DocumentsExporter
 file_paths = {
     'stopwords': '../input_sources/google_en_stopwords.txt',
     #'output_dir': 'C:/text_mining/data/test',
-    'output_dir': os.path.abspath('../../outputs/class_text/XXX'),
+    'output_dir': os.path.abspath('../../outputs/class_text/test'),
 }
 tp = DocumentsExporter(file_paths)
 #from_date = datetime(2015, 8, 5)
-from_date = datetime(2005, 5, 5)
+from_date = datetime(2009, 1, 1)
 
 delay = 2
 company_id = 1
@@ -19,8 +19,10 @@ company_id = 1
 # Individual files
 #tp.process_documents_for_company('fb_post', company_id, from_date, delay, 'close', (3, 3), False)
 #tp.process_documents_for_company('fb_comment', company_id, from_date, delay, 'close')
-tp.process_documents_for_company('article', company_id, from_date, delay, 'adjclose', (-2, 2), False)
+#tp.process_documents_for_company('article', company_id, from_date, delay, 'adjclose', (-2, 2), False)
 #tp.process_documents_for_company('tweet', company_id, from_date, delay, 'close')
+
+tp.process_random_documents_for_company('tweet', 48, datetime(2015, 8, 5), datetime(2016, 4, 2), delay, 'adjclose', (-2, 2), False, 20000)
 
 # Total files
 #tp.process_documents_for_all_companies('fb_post', from_date, delay, 'sma')
