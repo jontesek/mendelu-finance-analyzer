@@ -73,10 +73,19 @@ class DocumentsExporterDbModel(DbModel):
         cursor.execute(query)
         return cursor
 
+    def get_selected_companies(self, companies_ids):
+        cursor = self.dbcon.cursor(buffered=True)
+        ids_string = ','.join(['%s'] * len(companies_ids))
+        query = 'SELECT id FROM COMPANY WHERE id IN (%s) ORDER BY id ASC' % ids_string
+        cursor.execute(query, tuple(companies_ids))
+        return cursor.fetchall()
+
     #### HELPERS
 
     def _from_date_to_timestamp(self, input_date):
         return long(time.mktime(input_date.timetuple()))
+
+
 
 
 

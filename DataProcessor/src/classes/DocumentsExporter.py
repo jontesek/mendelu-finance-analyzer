@@ -58,32 +58,38 @@ class DocumentsExporter(object):
              (doc_type, files_count * docs_per_file + documents_count)
 
 
-    def process_random_documents(self, doc_type, from_date, days_delay, price_type,
-                                 const_boundaries, docs_per_day):
+    def process_documents_for_selected_companies(self, companies_ids, doc_type, from_date, days_delay, price_type,
+                                                 const_boundaries, balance_classes_for_company, docs_per_file=50000,
+                                                 only_one_file=True, docs_per_company=10000):
+        print('===Processing %s===') % doc_type
+        # Reset document counts.
+        documents_count = 0
+        files_count = 0
         # Create file name.
-        file_name = doc_type + '_random_%s_%s_%s' % (price_type, str(days_delay), str(const_boundaries))
-        # For every day, choose random documents (from all companies).
-        processed_date = from_date
-        plus_day = datetime.timedelta(days=1)
-        while processed_date <= datetime.datetime.now():
-            print('===%s===') % str(processed_date)
-            # Get documents from DB.
-            if doc_type == 'fb_post':
-                documents = self.db_model.get_random_fb_posts(processed_date, docs_per_day)
-            elif doc_type == 'fb_comment':
-                documents = self.db_model.get_random_fb_comments(processed_date, docs_per_day)
-            elif doc_type == 'article':
-                documents = self.db_model.get_random_articles(processed_date, docs_per_day)
-            elif doc_type == 'tweet':
-                documents = self.db_model.get_random_tweets(processed_date, docs_per_day)
-            # Process documents.
-            self._process_given_documents(documents, doc_type, days_delay, price_type, const_boundaries)
-            d_list, min_class_count = self._process_given_documents(documents, doc_type, days_delay, price_type, const_boundaries)
-            self._write_docs_to_file(d_list, min_class_count, doc_type, 'all', days_delay, price_type, const_boundaries, file_name)
-            # Increment date.
-            processed_date += plus_day
-        # the end
-        print('>>>Random documents for all dates exported.')
+        f_number = '' if only_one_file else '_0'
+        fn_companies = '-'.join(str(v) for v in companies_ids)
+        file_name = '%s_%s_%s_%s_%s%s' % \
+                    (doc_type.replace('_', '-'), fn_companies, price_type, str(days_delay), const_boundaries[1], f_number)
+        # Process all companies.
+        for comp in self.db_model.get_selected_companies(companies_ids):
+            print('===Company %d===') % comp[0]
+            # Process and write data for one company.
+            new_docs_count = self.process_documents_for_company(doc_type, comp[0], from_date, days_delay,
+                                                                price_type, const_boundaries,
+                                                                balance_classes_for_company, file_name)
+            documents_count += new_docs_count
+            # Check if the file should be ended.
+            if documents_count > docs_per_file:
+                print('>>>NEW FILE')
+                if only_one_file:
+                    break
+                else:
+                    files_count += 1
+                    documents_count = 0
+                    file_name = re.sub('\d+$', str(files_count), file_name)
+        # The end.
+        print('>>>All %s for selected companies exported. Total docs: %d ') % \
+             (doc_type, files_count * docs_per_file + documents_count)
 
 
     def process_documents_for_company(self, doc_type, company_id, from_date, days_delay, price_type,
@@ -107,8 +113,7 @@ class DocumentsExporter(object):
         if not d_list:
             return False
         # Write documents to correct file.
-        file_name = self._write_docs_to_file(d_list, doc_type,
-                                             company_id, days_delay, price_type, const_boundaries, total_file_name)
+        self._write_docs_to_file(d_list, doc_type, company_id, days_delay, price_type, const_boundaries, total_file_name)
         # Return some information.
         return len(d_list)
 

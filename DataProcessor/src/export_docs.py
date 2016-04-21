@@ -4,6 +4,10 @@ import itertools
 
 from classes.DocumentsExporter import DocumentsExporter
 
+#####
+# PARAMETERS definition
+####
+
 # Prepare exporter object
 file_paths = {
     'stopwords': '../input_sources/google_en_stopwords.txt',
@@ -22,19 +26,39 @@ const_boundaries = [(-1, 1), (-2, 2), (-3, 3), (-4, 4), (-5, 5)]
 # Create all combinations of parameters.
 params_combinations = list(itertools.product(price_types, delays, const_boundaries))
 
-# # Process all Yahoo articles and Facebook posts.
+#######
+# EXECUTION
+#######
+
+#### Process all Yahoo articles and Facebook posts.
 # for (n_price_type, n_delay, n_boundary) in params_combinations:
 #     print("======All companies: %s, %s, %s======") % (n_price_type, str(n_delay), str(n_boundary))
 #     #d_exporter.process_documents_for_all_companies('article', from_date, n_delay, n_price_type, n_boundary, False, 50000, True)
 #     d_exporter.process_documents_for_all_companies('fb_post', from_date, n_delay, n_price_type, n_boundary, False, 100000, True)
 #
 # quit()
-# Process Facebook comments and tweets for one company.
-company_id = 48
+
+#### Process Facebook comments and tweets for multiple companies.
+# Define companies
+dir_company_ids = {'Apple': 44, 'AT&T': 48, 'Google': 202, 'HP': 217, 'Intel: ': 233, 'Microsoft': 300}
+company_ids = sorted(dir_company_ids.values())
+docs_per_company = 15000
+# Set correct output directory.
 new_dir = os.path.abspath(d_exporter.file_paths['output_dir'] + '/sel_com')
 d_exporter.change_output_dir(new_dir)
-
+# Process all parameters and companies.
 for (n_price_type, n_delay, n_boundary) in params_combinations:
-    print("===Company %d: %s, %s, %s===") % (company_id, n_price_type, str(n_delay), str(n_boundary))
-    #d_exporter.process_documents_for_company('tweet', company_id, from_date, n_delay, n_price_type, n_boundary, False)
-    print(d_exporter.process_documents_for_company('fb_comment', company_id, from_date, n_delay, n_price_type, n_boundary, False))
+    print("===Companies %s: %s, %s, %s===") % (str(company_ids), n_price_type, str(n_delay), str(n_boundary))
+    d_exporter.process_documents_for_selected_companies(company_ids, 'tweet', from_date, n_delay, n_price_type,
+                                                        n_boundary, False, 100000, True, docs_per_company)
+    break
+
+#### Process Facebook comments and tweets for one company.
+# company_id = 48
+# new_dir = os.path.abspath(d_exporter.file_paths['output_dir'] + '/sel_com')
+# d_exporter.change_output_dir(new_dir)
+#
+# for (n_price_type, n_delay, n_boundary) in params_combinations:
+#     print("===Company %d: %s, %s, %s===") % (company_id, n_price_type, str(n_delay), str(n_boundary))
+#     #d_exporter.process_documents_for_company('tweet', company_id, from_date, n_delay, n_price_type, n_boundary, False)
+#     print(d_exporter.process_documents_for_company('fb_comment', company_id, from_date, n_delay, n_price_type, n_boundary, False))

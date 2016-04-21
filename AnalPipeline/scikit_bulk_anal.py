@@ -22,7 +22,7 @@ from src.classification import classify_data
 
 # File paths
 vectext_dir = os.path.abspath('VecText')
-input_dir = os.path.abspath('../outputs/vec_text/company_48')
+input_dir = os.path.abspath('../outputs/vec_text/article-rest')
 output_dir = os.path.abspath('../outputs/scikit_results')
 
 # Specify used classifiers.
@@ -36,7 +36,7 @@ classifiers = [
 
 # Document types.
 #doc_types = ['article', 'test', 'tweet', 'fb-post', 'fb-comment', ]
-doc_types = ['tweet']
+doc_types = ['article']
 
 # Text writer object
 text_writer = TextWriter(output_dir)
