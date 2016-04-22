@@ -78,6 +78,8 @@ class DocumentsExporter(object):
         documents_count = 0
         # Calculate number of documents per company.
         docs_per_company = int(round(docs_per_file / float(len(companies_ids))))
+        if doc_type == 'fb_comment':
+            docs_per_company = 2500
         # Choose file description string.
         if companies_filename:
             fs_comp = companies_filename
@@ -116,7 +118,7 @@ class DocumentsExporter(object):
         # Calculate number of documents per day: n = docs_per_company / days(to_date - from_date)
         date_delta = to_date - from_date
         docs_per_day = int(round(max_docs_per_company / float(date_delta.days)))
-        docs_per_day *= 2   # To get more documents, increase the count.
+        #docs_per_day *= 2   # To get more documents, increase the count.
         #docs_per_day = 200  # For Twitter and 4 companies.
         docs_per_day = 10   # For Facebook
         # Example: 25 000 docs per company / 241 days = 104 docs per day
@@ -238,8 +240,8 @@ class DocumentsExporter(object):
                 doc_text = self._process_facebook_text(doc['text'])
             elif doc_type == 'article':
                 doc_text = self._process_article_text(doc['text'])
-            # Check if the document is not empty.
-            if not doc_text:
+            # Check if the document is not empty (or too short).
+            if len(doc_text) < 2:
                 continue
             # Add created data to the list.
             new_docs_list.append([self.doc_classes[movement_direction], doc_text])
@@ -299,17 +301,20 @@ class DocumentsExporter(object):
     # TEXT processing
 
     def _process_facebook_text(self, text):
-        # Remove whitespace.
-        text = ' '.join(text.strip().split())
         # Remove hash tag symbols.
         text = text.replace('#', '')
         # Remove at symbols.
         text = text.replace('@', '')
         # Remove URL links.
         text = re.sub(r'https?://\S+', 'XURL', text)
+        # Replace emoticons with descriptions.
+        text = re.sub(r':\)|:-\)|:D|=\)', ' XyzPosEmoticon ', text)
+        text = re.sub(r':\(|:-\(', ' XyzNegEmoticon ', text)
+        # Remove whitespace.
+        text = ' '.join(text.strip().split())
         # Lowercase the text.
         text = text.lower()
-        # result
+        # Result
         return text
 
     def _process_article_text(self, text):

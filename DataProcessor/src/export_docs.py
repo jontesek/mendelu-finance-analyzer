@@ -53,10 +53,10 @@ params_combinations = list(itertools.product(price_types, delays, const_boundari
 comp_ids_tw = [44, 202, 233, 300]
 comp_ids_fb = [202, 217, 233, 300]
 # Special variables
-from_date = datetime(2015, 8, 1).date()
-to_date = datetime(2016, 4, 4).date()
+from_date = datetime(2015, 8, 2).date()
+to_date = datetime(2016, 4, 2).date()
 # Set correct output directory.
-new_dir = os.path.abspath(d_exporter.file_paths['output_dir'] + '/fb-com-ll')
+new_dir = os.path.abspath(d_exporter.file_paths['output_dir'] + '/fb-com-1m')
 d_exporter.change_output_dir(new_dir)
 
 # Process all parameters and companies.
@@ -65,4 +65,4 @@ for (n_price_type, n_delay, n_boundary) in params_combinations:
     # d_exporter.process_documents_for_selected_companies(
     # comp_ids_tw, 'tweet', from_date, to_date, n_delay, n_price_type, n_boundary, False, 100000)
     d_exporter.process_companies_by_source('all-fb', 'fb_comment', from_date, to_date, n_delay, n_price_type,
-                                           n_boundary, False, 200000)
+                                           n_boundary, False, 1000000)

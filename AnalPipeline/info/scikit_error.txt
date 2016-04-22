@@ -1,0 +1,14 @@
+===tweet_44-202-233-300_sma_2_5_tf-idf-cos.SVMlight.dat===
+Number of samples/features: 400, 182
+NB-multi: [1.0, 1.0, 1.0, 1.0, 0.042]
+NB-berno: [1.0, 1.0, 1.0, 1.0, 0.001]
+Traceback (most recent call last):
+  File "scikit_bulk_anal.py", line 91, in <module>
+    clf_results = classify_data(clf_object, X_train, X_test, y_train, y_test)
+  File "/export/home/jonas/FinAnalV2/AnalPipeline/src/classification.py", line 9, in classify_data
+    clf_obj.fit(X_train, y_train)
+  File "/usr/local/lib/python2.7/site-packages/sklearn/linear_model/logistic.py", line 1154, in fit
+    self.max_iter, self.tol, self.random_state)
+  File "/usr/local/lib/python2.7/site-packages/sklearn/svm/base.py", line 885, in _fit_liblinear
+    " class: %r" % classes_[0])
+ValueError: This solver needs samples of at least 2 classes in the data, but the data contains only one class: 2.0

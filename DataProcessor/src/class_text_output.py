@@ -34,7 +34,7 @@ twc_ids = [44, 202, 233, 300]
 #                                             2, 'adjclose', (-3, 3), False, 10000)
 
 #### For Facebook companies (comments)..
-from_date = datetime(2015, 8, 5).date()
+from_date = datetime(2015, 8, 2).date()
 to_date = datetime(2016, 4, 2).date()
 
 tp.process_companies_by_source('all-fb', 'fb_comment', from_date, to_date, 2, 'adjclose', (-3, 3), False, 100000)
