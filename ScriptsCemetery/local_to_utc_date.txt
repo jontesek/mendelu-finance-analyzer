@@ -1,0 +1,5 @@
+def local_to_utc_date(self, naive_dt, timezone_name="Europe/Prague"):
+        local_tz = pytz.timezone(timezone_name)
+        local_dt = local_tz.localize(naive_dt, is_dst=None)
+        utc_dt = local_dt.astimezone(pytz.utc)
+        return utc_dt

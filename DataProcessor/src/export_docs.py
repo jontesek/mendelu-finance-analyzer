@@ -16,7 +16,7 @@ file_paths = {
 d_exporter = DocumentsExporter(file_paths)
 # Set lowest published date.
 # Yahoo: 2014-06-18 21:24:00, twitter: 2014-11-20 09:32:02, fb post: 2009-04-15 17:10:55, fb commnent: 2009-04-16 13:51:28
-from_date = datetime(2009, 1, 1)
+#from_date = datetime(2009, 1, 1)
 
 # Parameters lists
 delays = [1, 2, 3]
@@ -53,15 +53,16 @@ params_combinations = list(itertools.product(price_types, delays, const_boundari
 comp_ids_tw = [44, 202, 233, 300]
 comp_ids_fb = [202, 217, 233, 300]
 # Special variables
-docs_per_company = 15000
 from_date = datetime(2015, 8, 1).date()
 to_date = datetime(2016, 4, 4).date()
 # Set correct output directory.
-new_dir = os.path.abspath(d_exporter.file_paths['output_dir'] + '/sel_com')
+new_dir = os.path.abspath(d_exporter.file_paths['output_dir'] + '/fb-com-ll')
 d_exporter.change_output_dir(new_dir)
+
 # Process all parameters and companies.
 for (n_price_type, n_delay, n_boundary) in params_combinations:
     print("===Companies %s: %s, %s, %s===") % (str(comp_ids_tw), n_price_type, str(n_delay), str(n_boundary))
-    d_exporter.process_documents_for_selected_companies(comp_ids_tw, 'tweet', from_date, to_date, n_delay, n_price_type,
-                                                        n_boundary, False, 100000, True, docs_per_company)
-    break
+    # d_exporter.process_documents_for_selected_companies(
+    # comp_ids_tw, 'tweet', from_date, to_date, n_delay, n_price_type, n_boundary, False, 100000)
+    d_exporter.process_companies_by_source('all-fb', 'fb_comment', from_date, to_date, n_delay, n_price_type,
+                                           n_boundary, False, 200000)

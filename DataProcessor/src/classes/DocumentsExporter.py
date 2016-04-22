@@ -1,6 +1,7 @@
 import os
 import datetime
 import re
+import pytz
 
 from StockPriceProcessor import StockPriceProcessor
 from DocumentsExporterDbModel import DocumentsExporterDbModel
@@ -58,20 +59,36 @@ class DocumentsExporter(object):
              (doc_type, files_count * docs_per_file + documents_count)
 
 
-    def process_documents_for_selected_companies(self, companies_ids, doc_type, from_date, to_date, days_delay, price_type,
-                                                 const_boundaries, balance_classes_for_company, docs_per_file=100000,
-                                                 only_one_file=True):
+    def process_companies_by_source(self, file_desc, doc_type, from_date, to_date, days_delay, price_type,
+                                    const_boundaries, balance_classes_for_company, docs_per_file=100000):
+        # Get company IDs.
+        company_ids = self.db_model.get_companies_by_doc_type(doc_type)
+        c_ids_list = [x[0] for x in company_ids]
+        # Process all selected companies.
+        self.process_documents_for_selected_companies(
+            c_ids_list, doc_type, from_date, to_date, days_delay, price_type,
+            const_boundaries, balance_classes_for_company, docs_per_file, file_desc)
+
+
+    def process_documents_for_selected_companies(self, companies_ids, doc_type, from_date, to_date, days_delay,
+                                                 price_type, const_boundaries, balance_classes_for_company,
+                                                 docs_per_file=100000, companies_filename=False):
         print('===Processing %s===') % doc_type
         # Reset document counts.
         documents_count = 0
-        files_count = 0
         # Calculate number of documents per company.
         docs_per_company = int(round(docs_per_file / float(len(companies_ids))))
+        # Choose file description string.
+        if companies_filename:
+            fs_comp = companies_filename
+        else:
+            if len(companies_ids) < 5:
+                fs_comp = '-'.join(str(v) for v in companies_ids)
+            else:
+                fs_comp = 'm%s' % len(companies_ids)
         # Create file name.
-        f_number = '' if only_one_file else '_0'
-        fn_companies = '-'.join(str(v) for v in companies_ids)
-        file_name = '%s_%s_%s_%s_%s%s' % \
-                    (doc_type.replace('_', '-'), fn_companies, price_type, str(days_delay), const_boundaries[1], f_number)
+        file_name = '%s_%s_%s_%s_%s' % \
+                    (doc_type.replace('_', '-'), fs_comp, price_type, str(days_delay), const_boundaries[1])
 
         # Process all companies.
         for comp in self.db_model.get_selected_companies(companies_ids):
@@ -80,40 +97,39 @@ class DocumentsExporter(object):
             new_docs_count = self.process_daily_documents_for_company(
                 doc_type, comp[0], from_date, to_date, days_delay, price_type, const_boundaries,
                 balance_classes_for_company, docs_per_company, file_name)
+            print new_docs_count
             # Increment docs count.
             documents_count += new_docs_count
             # Check if the file should be ended.
             if documents_count > docs_per_file:
-                print('>>>NEW FILE')
-                if only_one_file:
-                    break
-                else:
-                    files_count += 1
-                    documents_count = 0
-                    file_name = re.sub('\d+$', str(files_count), file_name)
+                print('>>>END FILE')
         # The end.
-        print('>>>All %s for selected companies exported. Total docs: %d ') % \
-             (doc_type, files_count * docs_per_file + documents_count)
+        print('>>>All %s for selected companies exported. Total docs: %d ') % (doc_type, documents_count)
 
 
     def process_daily_documents_for_company(self, doc_type, company_id, from_date, to_date, days_delay, price_type,
-                                            const_boundaries, balance_classes, docs_per_company, total_file_name=False):
+                                            const_boundaries, balance_classes, max_docs_per_company, total_file_name=False):
         # Set stock prices for given company.
         prices = self.stock_processor.set_stock_prices(company_id, from_date, price_type)
         if not prices:
             return False
         # Calculate number of documents per day: n = docs_per_company / days(to_date - from_date)
         date_delta = to_date - from_date
-        docs_per_day = int(round(docs_per_company / float(date_delta.days)))
-        print ('>Docs per day: %d') % docs_per_day   # 25 000 docs per company / 241 days = 104 docs per day
-        docs_query_limit = 400
-        # For every day, get documents from DB.
+        docs_per_day = int(round(max_docs_per_company / float(date_delta.days)))
+        docs_per_day *= 2   # To get more documents, increase the count.
+        #docs_per_day = 200  # For Twitter and 4 companies.
+        docs_per_day = 10   # For Facebook
+        # Example: 25 000 docs per company / 241 days = 104 docs per day
+        print ('>>Docs per company/days/per day: %d, %d, %d') % (max_docs_per_company, date_delta.days, docs_per_day)
+        # Define variables.
+        docs_query_limit = 400  # Do not change -- cached queries won't work. Original value: 400.
         total_doc_list = []
+        docs_counter = 0
         processed_date = from_date
         day_plus = datetime.timedelta(days=1)
-
+        # For every day, get documents from DB.
         while processed_date <= to_date:
-            print processed_date
+            #print processed_date
             # Get documents for current date from DB.
             if doc_type == 'fb_post':
                 daily_documents = self.db_model.get_daily_fb_posts_for_company(company_id, processed_date, docs_query_limit)
@@ -126,8 +142,8 @@ class DocumentsExporter(object):
             else:
                 raise ValueError('Unknown document type.')
             # Process the documents.
-            d_list = self._process_given_documents(daily_documents, doc_type, days_delay, price_type, const_boundaries, balance_classes)
-            print ('Processed docs: %d') % len(d_list)
+            d_list = self._process_given_documents(daily_documents, doc_type, days_delay, price_type, const_boundaries, False)
+            #print('Processed docs: %d') % d_length
             # Increment day.
             processed_date += day_plus
             # If there are no documents, continue with next date.
@@ -136,9 +152,14 @@ class DocumentsExporter(object):
             # Check and edit number of available documents.
             if len(d_list) > docs_per_day:
                 d_list = d_list[0:docs_per_day]
-            print ('Saved docs: %d') % len(d_list)
+            #print('Saved docs: %d') % len(d_list)
             # Add documents to total list.
             total_doc_list.extend(d_list)
+            docs_counter += len(d_list)
+            # Check number of already saved documents.
+            if docs_counter > max_docs_per_company:
+                print('Max documents count (%d) for company reached.') % max_docs_per_company
+                break   # Stop and write documents to file.
 
         # Check if there are any documents.
         if not total_doc_list:
@@ -178,8 +199,12 @@ class DocumentsExporter(object):
 
 
     def change_output_dir(self, new_dir):
+        # Update object attributes.
         self.file_paths['output_dir'] = new_dir
         self.text_writer.output_dir = new_dir
+        # Check if directory exists. If it doesn't, create it.
+        if not os.path.exists(new_dir):
+            os.makedirs(new_dir)
 
 
     # PRIVATE METHODS
@@ -213,6 +238,9 @@ class DocumentsExporter(object):
                 doc_text = self._process_facebook_text(doc['text'])
             elif doc_type == 'article':
                 doc_text = self._process_article_text(doc['text'])
+            # Check if the document is not empty.
+            if not doc_text:
+                continue
             # Add created data to the list.
             new_docs_list.append([self.doc_classes[movement_direction], doc_text])
             # Increment variables.
@@ -294,5 +322,3 @@ class DocumentsExporter(object):
         text = text.lower()
         # Result
         return text
-
-

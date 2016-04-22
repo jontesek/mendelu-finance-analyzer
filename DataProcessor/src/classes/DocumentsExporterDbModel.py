@@ -1,4 +1,6 @@
-import time
+from datetime import datetime
+import calendar
+
 from DbModel import DbModel
 
 
@@ -42,34 +44,35 @@ class DocumentsExporterDbModel(DbModel):
         return cursor
 
     def get_daily_fb_posts_for_company(self, company_id, for_date, docs_query_limit=1000):
-        cursor = self.dbcon.cursor(dictionary=True)
-        from_timestamp = self._from_date_to_timestamp(for_date.replace(hours=0, minutes=0, seconds=0))
-        to_timestamp = self._from_date_to_timestamp(for_date.replace(hours=23, minutes=59, seconds=59))
-        query = "SELECT id, created_timestamp, text FROM fb_post " \
-                "WHERE created_timestamp BETWEEN %s AND %s AND company_id = %s LIMIT %s"
-        cursor.execute(query, [from_timestamp, to_timestamp, company_id, docs_query_limit])
-        return cursor
+        pass
 
     def get_daily_fb_comments_for_company(self, company_id, for_date, docs_query_limit=1000):
         """
-        Get Facebook comments created on given day. Exclude duplicates - GROUP BY(text).
+        Get Facebook comments created on given day.
+
         :param company_id:
-        :param for_date:
+        :param for_date: in UTC time zone
         :param docs_query_limit:
         :return:
         """
         cursor = self.dbcon.cursor(dictionary=True)
-        from_timestamp = self._from_date_to_timestamp(for_date.replace(hours=0, minutes=0, seconds=0))
-        to_timestamp = self._from_date_to_timestamp(for_date.replace(hours=23, minutes=59, seconds=59))
+        # Transform date to timestamp range.
+        for_datetime_start = datetime(for_date.year, for_date.month, for_date.day, 0, 0, 0)
+        for_datetime_end = datetime(for_date.year, for_date.month, for_date.day, 23, 59, 59)
+        from_timestamp = self._from_date_to_timestamp(for_datetime_start)
+        to_timestamp = self._from_date_to_timestamp(for_datetime_end)
+        # Define a query.
         query = "SELECT id, created_timestamp, text FROM fb_comment " \
                 "WHERE created_timestamp BETWEEN %s AND %s AND company_id = %s " \
-                "ORDER BY id ASC LIMIT %s"
+                "ORDER BY init_likes_count DESC LIMIT %s"
+        # Execute the query.
         cursor.execute(query, [from_timestamp, to_timestamp, company_id, docs_query_limit])
         return cursor
 
     def get_daily_tweets_for_company(self, company_id, for_date, docs_query_limit=1000):
         """
         Get tweets created on given day. Exclude duplicates - GROUP BY(text).
+
         :param company_id:
         :param for_date:
         :param docs_query_limit:
@@ -98,31 +101,28 @@ class DocumentsExporterDbModel(DbModel):
         cursor.execute(query, tuple(companies_ids))
         return cursor.fetchall()
 
-    def get_companies_by_source(self, source_type):
+    def get_companies_by_doc_type(self, doc_type):
         # Choose a correct query.
-        if source_type == 'facebook':
-            query = 'SELECT id FROM COMPANY WHERE fb_page IS NOT NULL ORDER BY id ASC'
-        elif source_type == 'twitter':
-            query = 'SELECT id FROM COMPANY WHERE tw_name IS NOT NULL ORDER BY id ASC'
-        elif source_type == 'yahoo':
-            query = 'SELECT id FROM COMPANY WHERE ticker IS NOT NULL ORDER BY id ASC'
+        if doc_type == 'fb_post' or doc_type == 'fb_comment':
+            query = 'SELECT id FROM company WHERE fb_page IS NOT NULL ORDER BY id ASC'
+        elif doc_type == 'tweet':
+            query = 'SELECT id FROM company WHERE tw_name IS NOT NULL ORDER BY id ASC'
+        elif doc_type == 'article':
+            query = 'SELECT id FROM company WHERE ticker IS NOT NULL ORDER BY id ASC'
         else:
             raise ValueError('Unknown document source.')
         # Execute query.
-        cursor = self.dbcon.cursor(buffered=True)
+        cursor = self.dbcon.cursor()
         cursor.execute(query)
-        return cursor
+        return cursor.fetchall()
 
     #### HELPERS
 
     def _from_date_to_timestamp(self, input_date):
-        return long(time.mktime(input_date.timetuple()))
-
-
-
-
-
-
-
-
+        """
+        Convert date to UNIX timestamp (using UTC timezone).
+        :param input_date: Naive date object.
+        :return: int: Seconds passed since 1.1.1970.
+        """
+        return int(calendar.timegm(input_date.timetuple()))
 
