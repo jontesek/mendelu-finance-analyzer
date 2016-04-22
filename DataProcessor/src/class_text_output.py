@@ -7,7 +7,7 @@ from classes.DocumentsExporter import DocumentsExporter
 file_paths = {
     'stopwords': '../input_sources/google_en_stopwords.txt',
     #'output_dir': 'C:/text_mining/data/test',
-    'output_dir': os.path.abspath('../../outputs/class_text/test'),
+    'output_dir': os.path.abspath('../../outputs/class_text/xtest'),
 }
 tp = DocumentsExporter(file_paths)
 #from_date = datetime(2015, 8, 5)
@@ -22,7 +22,12 @@ company_id = 1
 #tp.process_documents_for_company('article', company_id, from_date, delay, 'adjclose', (-2, 2), False)
 #tp.process_documents_for_company('tweet', company_id, from_date, delay, 'close')
 
-tp.process_random_documents_for_company('tweet', 48, datetime(2015, 8, 5), datetime(2016, 4, 2), delay, 'adjclose', (-2, 2), False, 20000)
+c_ids = [44, 202, 233, 300]
+
+for c_id in c_ids:
+    print ('====COMPANY %s====') % c_id
+    tp.process_daily_documents_for_company('tweet', c_id, datetime(2015, 8, 5).date(), datetime(2016, 4, 2).date(),
+                                            delay, 'adjclose', (-3, 3), False, 25000)
 
 # Total files
 #tp.process_documents_for_all_companies('fb_post', from_date, delay, 'sma')

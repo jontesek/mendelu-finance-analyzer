@@ -60,21 +60,24 @@ class DocumentsExporter(object):
 
     def process_documents_for_selected_companies(self, companies_ids, doc_type, from_date, to_date, days_delay, price_type,
                                                  const_boundaries, balance_classes_for_company, docs_per_file=100000,
-                                                 only_one_file=True, docs_per_company=10000):
+                                                 only_one_file=True):
         print('===Processing %s===') % doc_type
         # Reset document counts.
         documents_count = 0
         files_count = 0
+        # Calculate number of documents per company.
+        docs_per_company = int(round(docs_per_file / float(len(companies_ids))))
         # Create file name.
         f_number = '' if only_one_file else '_0'
         fn_companies = '-'.join(str(v) for v in companies_ids)
         file_name = '%s_%s_%s_%s_%s%s' % \
                     (doc_type.replace('_', '-'), fn_companies, price_type, str(days_delay), const_boundaries[1], f_number)
+
         # Process all companies.
         for comp in self.db_model.get_selected_companies(companies_ids):
             print('===Company %d===') % comp[0]
             # Process and write data for one company.
-            new_docs_count = self.process_random_documents_for_company(
+            new_docs_count = self.process_daily_documents_for_company(
                 doc_type, comp[0], from_date, to_date, days_delay, price_type, const_boundaries,
                 balance_classes_for_company, docs_per_company, file_name)
             # Increment docs count.
@@ -93,34 +96,57 @@ class DocumentsExporter(object):
              (doc_type, files_count * docs_per_file + documents_count)
 
 
-    def process_random_documents_for_company(self, doc_type, company_id, from_date, to_date, days_delay, price_type,
-                                             const_boundaries, balance_classes, docs_per_company, total_file_name=False):
+    def process_daily_documents_for_company(self, doc_type, company_id, from_date, to_date, days_delay, price_type,
+                                            const_boundaries, balance_classes, docs_per_company, total_file_name=False):
         # Set stock prices for given company.
         prices = self.stock_processor.set_stock_prices(company_id, from_date, price_type)
         if not prices:
             return False
         # Calculate number of documents per day: n = docs_per_company / days(to_date - from_date)
         date_delta = to_date - from_date
-        docs_per_day = int(round(docs_per_company / float(date_delta.days))) * 2
+        docs_per_day = int(round(docs_per_company / float(date_delta.days)))
+        print ('>Docs per day: %d') % docs_per_day   # 25 000 docs per company / 241 days = 104 docs per day
+        docs_query_limit = 400
+        # For every day, get documents from DB.
+        total_doc_list = []
+        processed_date = from_date
+        day_plus = datetime.timedelta(days=1)
 
-        # Get documents from DB.
-        if doc_type == 'fb_post':
-            documents = self.db_model.get_random_fb_posts_for_company(company_id, from_date, to_date, docs_per_day)
-        elif doc_type == 'fb_comment':
-            documents = self.db_model.get_random_fb_comments_for_company(company_id, from_date, to_date, docs_per_day)
-        elif doc_type == 'article':
-            documents = self.db_model.get_random_articles_for_company(company_id, from_date, to_date, docs_per_day)
-        elif doc_type == 'tweet':
-            documents = self.db_model.get_random_tweets_for_company(company_id, from_date, to_date, docs_per_day)
-        # Process the documents.
-        d_list = self._process_given_documents(documents, doc_type, days_delay, price_type, const_boundaries, balance_classes)
-        # Check if there are were any documents.
-        if not d_list:
+        while processed_date <= to_date:
+            print processed_date
+            # Get documents for current date from DB.
+            if doc_type == 'fb_post':
+                daily_documents = self.db_model.get_daily_fb_posts_for_company(company_id, processed_date, docs_query_limit)
+            elif doc_type == 'fb_comment':
+                daily_documents = self.db_model.get_daily_fb_comments_for_company(company_id, processed_date, docs_query_limit)
+            elif doc_type == 'article':
+                daily_documents = self.db_model.get_daily_articles_for_company(company_id, processed_date, docs_query_limit)
+            elif doc_type == 'tweet':
+                daily_documents = self.db_model.get_daily_tweets_for_company(company_id, processed_date, docs_query_limit)
+            else:
+                raise ValueError('Unknown document type.')
+            # Process the documents.
+            d_list = self._process_given_documents(daily_documents, doc_type, days_delay, price_type, const_boundaries, balance_classes)
+            print ('Processed docs: %d') % len(d_list)
+            # Increment day.
+            processed_date += day_plus
+            # If there are no documents, continue with next date.
+            if not d_list:
+                continue
+            # Check and edit number of available documents.
+            if len(d_list) > docs_per_day:
+                d_list = d_list[0:docs_per_day]
+            print ('Saved docs: %d') % len(d_list)
+            # Add documents to total list.
+            total_doc_list.extend(d_list)
+
+        # Check if there are any documents.
+        if not total_doc_list:
             return False
-        # Write documents to correct file.
-        self._write_docs_to_file(d_list, doc_type, company_id, days_delay, price_type, const_boundaries, total_file_name)
+        # Write documents from all dates.
+        self._write_docs_to_file(total_doc_list, doc_type, company_id, days_delay, price_type, const_boundaries, total_file_name)
         # Return some information.
-        return len(d_list)
+        return len(total_doc_list)
 
 
     def process_documents_for_company(self, doc_type, company_id, from_date, days_delay, price_type,
@@ -138,6 +164,8 @@ class DocumentsExporter(object):
             documents = self.db_model.get_articles_for_company(company_id, from_date)
         elif doc_type == 'tweet':
             documents = self.db_model.get_tweets_for_company(company_id, from_date)
+        else:
+            raise ValueError('Unknown document type.')
         # Process the documents.
         d_list = self._process_given_documents(documents, doc_type, days_delay, price_type, const_boundaries, balance_classes)
         # Check if there are were any documents.
@@ -170,6 +198,8 @@ class DocumentsExporter(object):
                 doc_date = doc['published_date'].date()
             elif doc_type == 'tweet':
                 doc_date = doc['created_at'].date()
+            else:
+                raise ValueError('Unknown document type.')
             # Get stock price movement direction.
             movement_direction = self.stock_processor.get_price_movement_with_delay(doc_date, days_delay, const_boundaries)
             # If the company was not on the stock exchange on this date, skip the post.
