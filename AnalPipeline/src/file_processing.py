@@ -5,7 +5,6 @@ import datetime
 import socket
 
 
-
 def get_features_from_vector_filename(file_name):
     data_dict = OrderedDict()
     features = file_name.split('_')
@@ -60,15 +59,21 @@ def balance_files(input_dir, output_dir):
     for input_filename in sorted(os.listdir(input_dir)):
         if input_filename.endswith('.SVMlight.dat'):
             print input_filename
-            # Create path to file.
+            # Create path to input file.
             input_filepath = os.path.join(input_dir, input_filename)
+            # Create a new output file name.
+            base_filename = input_filename.replace('.SVMlight.dat', '')
+            output_filename = base_filename + '_balanced.SVMlight.dat'
             # Get class counts from STAT file.
             stat_filename = input_filename.replace('.SVMlight.dat', '.stat.txt')
             stat_filepath = os.path.join(input_dir, stat_filename)
             class_counts = _get_class_counts_from_stat_file(stat_filepath)
+            # If the file contains only one class, skip it.
+            if not class_counts:
+                continue
             # Balance DAT file.
             min_class_count = min(class_counts)
-            output_filepath = os.path.join(output_dir, input_filename)
+            output_filepath = os.path.join(output_dir, output_filename)
             _balance_given_file(input_filepath, output_filepath, min_class_count)
             # Copy STAT file to output dir.
             shutil.copy2(stat_filepath, output_dir)
@@ -103,8 +108,17 @@ def _balance_given_file(input_filepath, output_filepath, min_class_count):
 def _get_class_counts_from_stat_file(stat_filepath):
     file_stat = open(stat_filepath)
     f_lines = file_stat.readlines()
-    c_1 = int(f_lines[25].split(' ')[0])
-    c_2 = int(f_lines[31].split(' ')[0])
+    try:
+        c_1 = int(f_lines[25].split(' ')[0])
+        c_2 = int(f_lines[31].split(' ')[0])
+    except IndexError:
+        print('>>Only one class in file, skipping it.')
+        # There is only one class.
+        return False
     return [c_1, c_2]
 
 
+def get_or_create_directory(dir_path):
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    return dir_path

@@ -48,16 +48,16 @@ text_writer = TextWriter(output_dir)
 # Results file - one for every document type.
 # For every file, there is for every classifier one row in following format:
 header_str = 'timestamp,input_file,doc_type,company,variable_type,days_delay,const_border_top,vector_type,' \
-             'n_samples,n_features,class_1_test_samples,class_2_test_samples,' \
+             'total_samples,n_features,class_1_test_samples,class_2_test_samples,' \
              'algo_name,accuracy,precision,recall,f1_score,train_time,test_time'
 header_list = header_str.split(',')
 # Special results name (include underscore).
-r_description = ''
+r_description = '_unbalanced'
 
 #### Execution parameters.
 
 # Define processed folders.
-input_dir_names = ['article', 'fb_com_10pd', 'fb_post', 'twitter_4']
+input_dir_names = ['fb_com_10pd', 'fb_post', 'twitter_4', 'article']
 input_dir_names = ['xtest']
 input_directories = [os.path.join(base_input_dir, x) for x in input_dir_names]
 
@@ -103,7 +103,7 @@ for input_dir in input_directories:
             common_data.extend([n_samples, n_features])
             # Prepare data sets.
             X_train, X_test, y_train, y_test = cross_validation.train_test_split(data_matrix[0], data_matrix[1],
-                                                                                 test_size=0.35, random_state=47)
+                                                                                 test_size=0.35, random_state=38)
             # Update log file.
             my_clf.update_log_header(log_filepath, input_filename, n_samples, n_features)
             # Analyze data with all classifiers.
