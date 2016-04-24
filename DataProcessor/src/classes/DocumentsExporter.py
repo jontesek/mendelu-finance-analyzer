@@ -79,7 +79,7 @@ class DocumentsExporter(object):
         # Calculate number of documents per company.
         docs_per_company = int(round(docs_per_file / float(len(companies_ids))))
         if doc_type == 'fb_comment':
-            docs_per_company = 2500
+            docs_per_company = 10000
         # Choose file description string.
         if companies_filename:
             fs_comp = companies_filename
@@ -94,12 +94,12 @@ class DocumentsExporter(object):
 
         # Process all companies.
         for comp in self.db_model.get_selected_companies(companies_ids):
-            print('===Company %d===') % comp[0]
+            #print('===Company %d===') % comp[0]
             # Process and write data for one company.
             new_docs_count = self.process_daily_documents_for_company(
                 doc_type, comp[0], from_date, to_date, days_delay, price_type, const_boundaries,
                 balance_classes_for_company, docs_per_company, file_name)
-            print new_docs_count
+            #print new_docs_count
             # Increment docs count.
             documents_count += new_docs_count
             # Check if the file should be ended.
@@ -120,9 +120,9 @@ class DocumentsExporter(object):
         docs_per_day = int(round(max_docs_per_company / float(date_delta.days)))
         #docs_per_day *= 2   # To get more documents, increase the count.
         #docs_per_day = 200  # For Twitter and 4 companies.
-        docs_per_day = 10   # For Facebook
+        docs_per_day = 40   # For Facebook
         # Example: 25 000 docs per company / 241 days = 104 docs per day
-        print ('>>Docs per company/days/per day: %d, %d, %d') % (max_docs_per_company, date_delta.days, docs_per_day)
+        #print ('>>Docs per company/days/per day: %d, %d, %d') % (max_docs_per_company, date_delta.days, docs_per_day)
         # Define variables.
         docs_query_limit = 400  # Do not change -- cached queries won't work. Original value: 400.
         total_doc_list = []

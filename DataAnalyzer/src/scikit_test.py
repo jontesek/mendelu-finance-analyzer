@@ -32,7 +32,7 @@ classifiers = [
 
 # Load data file and print info.
 #data = load_svmlight_file("C:\\text_mining\outputs\\article_tp_15k_10df.dat")
-data = load_svmlight_file("C:\\text_mining\outputs\\tweet_100k_3gf.dat")
+data = load_svmlight_file("C:\\text_mining\outputs\\tweet_reduced.SVMlight.dat")
 print('===Dataset information===')
 print('Number of samples: %d, number of features: %d') % (data[0].shape[0], data[0].shape[1])
 # Create data sets.
@@ -51,8 +51,8 @@ for (name, clf) in classifiers:
     end_time = time.time()
     print('Runtime: %s seconds') % round(end_time - start_time, 3)
     # http://scikit-learn.org/stable/modules/model_evaluation.html
-    #print(metrics.classification_report(y_test, y_predicted, digits=4))
-    #print(metrics.confusion_matrix(y_test, y_predicted, [1, 2]))
+    print(metrics.classification_report(y_test, y_predicted, digits=4))
+    print(metrics.confusion_matrix(y_test, y_predicted, [1, 2]))
     accuracy = metrics.accuracy_score(y_test, y_predicted)
     f1_score = metrics.f1_score(y_test, y_predicted, average='weighted', pos_label=None)
     precision = metrics.precision_score(y_test, y_predicted, average='weighted', pos_label=None)

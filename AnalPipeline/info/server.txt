@@ -5,6 +5,8 @@ jobs -l
 
 kill PIP
 
+ps -aux ci top -u (user)
+
 ===mysql===
 SHOW STATUS LIKE 'Qcache%';
 
