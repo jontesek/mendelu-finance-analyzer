@@ -22,22 +22,23 @@ company_id = 1
 #tp.process_documents_for_company('article', company_id, from_date, delay, 'adjclose', (-2, 2), False)
 #tp.process_documents_for_company('tweet', company_id, from_date, delay, 'close')
 
-twc_ids = [44, 202, 233, 300]
-#
-# for c_id in c_ids:
-#     print ('====COMPANY %s====') % c_id
-#     tp.process_daily_documents_for_company('tweet', c_id, datetime(2015, 8, 5).date(), datetime(2016, 4, 2).date(),
-#                                             delay, 'adjclose', (-3, 3), False, 25000)
+#twc_ids = [44, 202, 233, 300]
+nonsearch_cids = [48, 217, 458, 479]
+
+for c_id in nonsearch_cids:
+    print ('====COMPANY %s====') % c_id
+    tp.process_daily_documents_for_company('tweet', c_id, datetime(2015, 8, 5).date(), datetime(2016, 4, 2).date(),
+                                            delay, 'adjclose', (-3, 3), False, 25000, False, nonsearch_cids)
 
 #### For selected Twitter companies.
 # tp.process_documents_for_selected_companies(twc_ids, 'tweet', datetime(2015, 8, 5).date(), datetime(2016, 4, 2).date(),
 #                                             2, 'adjclose', (-3, 3), False, 10000)
 
 #### For Facebook companies (comments)..
-from_date = datetime(2015, 8, 2).date()
-to_date = datetime(2016, 4, 2).date()
-
-tp.process_companies_by_source('all-fb', 'fb_comment', from_date, to_date, 2, 'adjclose', (-3, 3), False, 100000)
+# from_date = datetime(2015, 8, 2).date()
+# to_date = datetime(2016, 4, 2).date()
+#
+# tp.process_companies_by_source('all-fb', 'fb_comment', from_date, to_date, 2, 'adjclose', (-3, 3), False, 100000)
 
 #### Total files
 #tp.process_documents_for_all_companies('fb_post', from_date, delay, 'sma')

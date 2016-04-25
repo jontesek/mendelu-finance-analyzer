@@ -86,6 +86,23 @@ class DocumentsExporterDbModel(DbModel):
         #exit(cursor.statement)
         return cursor
 
+    def get_daily_nonsearch_tweets_for_company(self, company_id, for_date, docs_query_limit=1000):
+        """
+        Get tweets created on given day. Exclude duplicates - GROUP BY(text).
+
+        :param company_id:
+        :param for_date:
+        :param docs_query_limit:
+        :return:
+        """
+        cursor = self.dbcon.cursor(dictionary=True)
+        query = "SELECT SQL_CACHE created_at, text, retweet_count FROM tw_status " \
+                "WHERE DATE(created_at) = %s AND company_id = %s AND tweet_type <> 2 " \
+                "GROUP BY(text) ORDER BY retweet_count DESC LIMIT %s"
+        cursor.execute(query, [for_date, company_id, docs_query_limit])
+        #exit(cursor.statement)
+        return cursor
+
     #### READ companies
 
     def get_companies(self):

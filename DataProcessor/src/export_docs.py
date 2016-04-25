@@ -55,13 +55,13 @@ comp_ids_tw = [44, 202, 233, 300]
 from_date = datetime(2015, 8, 2).date()
 to_date = datetime(2016, 4, 2).date()
 # Set correct output directory.
-new_dir = os.path.abspath(d_exporter.file_paths['output_dir'] + '/fb_com_40pd')
+new_dir = os.path.abspath(d_exporter.file_paths['output_dir'] + '/twitter_4_emoticons')
 d_exporter.change_output_dir(new_dir)
 
 # Process all parameters and companies.
 for (n_price_type, n_delay, n_boundary) in params_combinations:
     print("===Companies %s: %s, %s, %s===") % (str(comp_ids_tw), n_price_type, str(n_delay), str(n_boundary))
-    # d_exporter.process_documents_for_selected_companies(
-    # comp_ids_tw, 'tweet', from_date, to_date, n_delay, n_price_type, n_boundary, False, 100000)
-    d_exporter.process_companies_by_source('all-fb-40pd', 'fb_comment', from_date, to_date, n_delay, n_price_type,
-                                           n_boundary, False, 1000000)
+    d_exporter.process_documents_for_selected_companies(
+    comp_ids_tw, 'tweet', from_date, to_date, n_delay, n_price_type, n_boundary, False, 100000)
+    # d_exporter.process_companies_by_source('all-fb-40pd', 'fb_comment', from_date, to_date, n_delay, n_price_type,
+    #                                        n_boundary, False, 1000000)

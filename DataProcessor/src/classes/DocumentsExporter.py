@@ -72,7 +72,7 @@ class DocumentsExporter(object):
 
     def process_documents_for_selected_companies(self, companies_ids, doc_type, from_date, to_date, days_delay,
                                                  price_type, const_boundaries, balance_classes_for_company,
-                                                 docs_per_file=100000, companies_filename=False):
+                                                 docs_per_file=100000, companies_filename=False, nonsearch_tweets_cids=False):
         print('===Processing %s===') % doc_type
         # Reset document counts.
         documents_count = 0
@@ -98,7 +98,7 @@ class DocumentsExporter(object):
             # Process and write data for one company.
             new_docs_count = self.process_daily_documents_for_company(
                 doc_type, comp[0], from_date, to_date, days_delay, price_type, const_boundaries,
-                balance_classes_for_company, docs_per_company, file_name)
+                balance_classes_for_company, docs_per_company, file_name, nonsearch_tweets_cids)
             #print new_docs_count
             # Increment docs count.
             documents_count += new_docs_count
@@ -110,7 +110,8 @@ class DocumentsExporter(object):
 
 
     def process_daily_documents_for_company(self, doc_type, company_id, from_date, to_date, days_delay, price_type,
-                                            const_boundaries, balance_classes, max_docs_per_company, total_file_name=False):
+                                            const_boundaries, balance_classes, max_docs_per_company,
+                                            total_file_name=False, nonsearch_tweets_cids=False):
         # Set stock prices for given company.
         prices = self.stock_processor.set_stock_prices(company_id, from_date, price_type)
         if not prices:
@@ -129,6 +130,9 @@ class DocumentsExporter(object):
         docs_counter = 0
         processed_date = from_date
         day_plus = datetime.timedelta(days=1)
+        # Choose if  get only non search tweets.
+        if company_id in nonsearch_tweets_cids:
+            doc_type = 'tweet_nonsearch'
         # For every day, get documents from DB.
         while processed_date <= to_date:
             #print processed_date
@@ -141,8 +145,13 @@ class DocumentsExporter(object):
                 daily_documents = self.db_model.get_daily_articles_for_company(company_id, processed_date, docs_query_limit)
             elif doc_type == 'tweet':
                 daily_documents = self.db_model.get_daily_tweets_for_company(company_id, processed_date, docs_query_limit)
+            elif doc_type == 'tweet_nonsearch':
+                daily_documents = self.db_model.get_daily_nonsearch_tweets_for_company(company_id, processed_date, docs_query_limit)
             else:
                 raise ValueError('Unknown document type.')
+            # Reset tweet doctype.
+            if company_id in nonsearch_tweets_cids:
+                doc_type = 'tweet'
             # Process the documents.
             d_list = self._process_given_documents(daily_documents, doc_type, days_delay, price_type, const_boundaries, False)
             #print('Processed docs: %d') % d_length

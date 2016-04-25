@@ -38,8 +38,9 @@ classifiers = [
     ['MaxEnt', LogisticRegression()],
     ['CART', tree.DecisionTreeClassifier()],
     ['RandForest', RandomForestClassifier()],
-    #['SVM', svm.SVC(verbose=False, kernel='rbf', cache_size=1024)],
-    #['SVM', svm.SVC(verbose=False, kernel='poly', degree=3)],
+    ['LinearSVC', svm.LinearSVC(random_state=47)],
+    ['SVM-rbf', svm.SVC(kernel='rbf', cache_size=1024, random_state=47)],
+    ['SVM-poly', svm.SVC(kernel='poly', degree=3, cache_size=1024, random_state=47)],
 ]
 
 # Create a Text writer object.
@@ -60,6 +61,9 @@ r_description = '_unbalanced'
 input_dir_names = ['fb_com_10pd', 'fb_post', 'twitter_4', 'article']
 input_dir_names = ['xtest']
 input_directories = [os.path.join(base_input_dir, x) for x in input_dir_names]
+
+# Define processed files.
+proc_files_features = ['tp-no-no', 'tf-idf-cos']
 
 # Save fitted model to disk?
 SAVE_CLF_MODEL_TO_DISK = False
