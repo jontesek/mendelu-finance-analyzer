@@ -16,15 +16,16 @@ class TotalMetricsCalculator(object):
         self.price_dir_indices = {-1: 14, 1: 15, 2: 16, 3: 17}
         self.day_delays = [-1, 1, 2, 3]
 
-    def calculate_total_metrics(self, company_id, total_data, file_name, write_header=False):
+    def calculate_total_metrics(self, company_id, total_data, file_name, price_type, write_header=False):
         # Calculate metrics
         results = self._evaluate_results_for_company(total_data)
         metrics = self._calc_metrics_from_results(results)
         # Save to file
-        m_list = [['<<<<<Company %d>>>>>' % company_id]]
-        m_list.extend(self._format_total_metrics_to_list(metrics))
+        m_list = self._format_total_metrics_to_list(company_id, price_type, metrics)
         if write_header:
-            self.text_writer.write_econometric_file(file_name, m_list, 'w')
+            w_list = [self.get_total_metrics_header()]
+            w_list.extend(m_list)
+            self.text_writer.write_econometric_file(file_name, w_list, 'w')
         else:
             self.text_writer.write_econometric_file(file_name, m_list, 'a')
 
@@ -64,15 +65,22 @@ class TotalMetricsCalculator(object):
                 precision = None
                 recall = None
             metrics[delay] = {'accuracy': accuracy, 'precision': precision, 'recall': recall}
-        # result
+        # Result
         return metrics
 
-    def _format_total_metrics_to_list(self, metrics):
+    def _format_total_metrics_to_list(self, company_id, price_type, metrics):
         ordered_keys = sorted(metrics.keys())
         lines = []
-        for key in ordered_keys:
-            m_line = 'delay %d: accuracy: %.4f, ' % (key, metrics[key]['accuracy'])
-            m_line += 'precision: ' + str(metrics[key]['precision']) + ', recall: ' + str(metrics[key]['recall'])
-            lines.append([m_line])
-        # result
+        for delay in ordered_keys:
+            d_line = [company_id, price_type, delay]
+            d_line.extend([metrics[delay]['accuracy'], metrics[delay]['precision'], metrics[delay]['recall']])
+            lines.append(d_line)
+        # Result
         return lines
+
+    def get_total_metrics_header(self):
+        header = [
+            'company_id', 'price_type', 'delay',
+            'accuracy', 'precision', 'recall',
+        ]
+        return header

@@ -62,7 +62,7 @@ class StockPriceProcessor(object):
         if days_delay > 0:
             reaction_date = document_date + datetime.timedelta(days=days_delay)
         else:
-            reaction_date = document_date - datetime.timedelta(days=days_delay)
+            reaction_date = document_date - datetime.timedelta(days=abs(days_delay))
         # Check if dates are present in DB.
         if reaction_date not in self.stock_prices or document_date not in self.stock_prices:
             return False

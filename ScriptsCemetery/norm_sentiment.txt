@@ -1,0 +1,19 @@
+from libs.vaderSentiment.vader import SentiText
+
+ if not split_sentences:
+            whole_text_sentiment = self.vader.polarity_scores(input_text)['compound']
+            # Get and find all sentiment tokens.
+            sentiment_tokens = SentiText(input_text).words_and_emoticons
+            lexicon_tokens = [x for x in sentiment_tokens if x in self.vader.lexicon]
+            try:
+                final_sent_value = whole_text_sentiment / float(len(lexicon_tokens))
+            except ZeroDivisionError:
+                final_sent_value = whole_text_sentiment
+            # Result
+            return final_sent_value
+
+
+  input_text = 'Liberty drives Sadly Brighten.'
+            sentiment_tokens = re.sub("[^\w]", " ", input_text).split()
+            lexicon_tokens = [x for x in sentiment_tokens if x in self.vader.lexicon]
+            print lexicon_tokens

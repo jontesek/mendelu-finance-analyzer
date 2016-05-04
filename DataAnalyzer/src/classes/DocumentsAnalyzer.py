@@ -40,33 +40,32 @@ class DocumentsAnalyzer(object):
         :param used_dict_name:
         :return:
         """
-        # Reset files
+        # Reset files.
         self.text_writer.write_econometric_file(file_name, [self._get_days_stats_header()], 'w')
-        self.text_writer.write_econometric_file(file_name + '_total-metrics', [['Metrics']], 'w')
-        header_metrics = self.source_metrics_calculator.generate_source_metrics_header()
-        self.text_writer.write_econometric_file(file_name + '_source-metrics', [header_metrics], 'w')
+        total_m_header = self.total_metrics_calculator.get_total_metrics_header()
+        self.text_writer.write_econometric_file(file_name + '_total-metrics', total_m_header, 'w')
+        source_m_header = self.source_metrics_calculator.get_source_metrics_header()
+        self.text_writer.write_econometric_file(file_name + '_source-metrics', [source_m_header], 'w')
         # Process companies
         companies = self.dbmodel.get_companies_order_by_total_documents(from_date, to_date)
         for comp in companies:
             print("<<<<<Company %d>>>>>") % comp['id']
             if not self.verbose:
                 with FaCommon.Helpers.suppress_stdout():
-                    self.analyze_company(comp['id'], from_date, to_date, file_name, price_type, const_boundaries, used_dict_name)
+                    self.analyze_company(comp['id'], from_date, to_date, file_name, price_type, const_boundaries, used_dict_name, False)
             else:
-                self.analyze_company(comp['id'], from_date, to_date, file_name, price_type, const_boundaries, used_dict_name)
+                self.analyze_company(comp['id'], from_date, to_date, file_name, price_type, const_boundaries, used_dict_name, False)
         print('>>>All stuff saved.')
 
     def analyze_company(self, company_id, from_date, to_date, file_name, price_type, const_boundaries, used_dict_name, write_header=False):
         """
         Analyze documents about company (from_date -> present date).
 
-        :param company_id: int
-        :param from_date: string
         :return: list of days, where every row contains information for documents for this day.
         """
         # Prepare variables.
-        examined_date = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
-        last_date = datetime.datetime.strptime(to_date, '%Y-%m-%d').date()
+        examined_date = from_date
+        last_date = to_date
         total_data = []
         max_sent = float('-inf')
 
@@ -127,11 +126,11 @@ class DocumentsAnalyzer(object):
 
         # Calculate metrics by source.
         m_filename = file_name + '_source-metrics'
-        self.source_metrics_calculator.calculate_metrics_by_source(company_id, total_data, m_filename, write_header)
+        self.source_metrics_calculator.calculate_metrics_by_source(company_id, total_data, m_filename, price_type, write_header)
 
         # Calculate total metrics.
         m_filename = file_name + '_total-metrics'
-        self.total_metrics_calculator.calculate_total_metrics(company_id, total_data, m_filename, write_header)
+        self.total_metrics_calculator.calculate_total_metrics(company_id, total_data, m_filename, price_type, write_header)
 
 
 
@@ -164,7 +163,7 @@ class DocumentsAnalyzer(object):
             com_text = TextProcessing.process_facebook_text(com['text'])
             if len(com_text) == 0:
                 continue    # skip empty comments
-            sent_value = self.s_analyzer.calculate_vader_sentiment(used_dict_name, com_text)
+            sent_value = self.s_analyzer.calculate_vader_sentiment(used_dict_name, com_text, False)
             polarity = self.s_analyzer.format_sentiment_value(sent_value)
             counter[polarity] += 1
             #print("| %s ... %s") % (str(round(sent_value, 4)), polarity)
@@ -181,7 +180,7 @@ class DocumentsAnalyzer(object):
             art_text = TextProcessing.process_article_text(art['text'])
             if len(art_text) == 0:
                 continue    # skip empty articles
-            sent_value = self.s_analyzer.calculate_vader_sentiment(used_dict_name, art_text)
+            sent_value = self.s_analyzer.calculate_vader_sentiment(used_dict_name, art_text, True)
             polarity = self.s_analyzer.format_sentiment_value(sent_value)
             counter[polarity] += 1
             #print("| %s ... %s") % (str(round(sent_value, 4)), polarity)
@@ -198,7 +197,7 @@ class DocumentsAnalyzer(object):
             tw_text = TextProcessing.process_facebook_text(tw['text'])
             if len(tw_text) == 0:
                 continue    # skip empty tweets
-            sent_value = self.s_analyzer.calculate_vader_sentiment(used_dict_name, tw_text)
+            sent_value = self.s_analyzer.calculate_vader_sentiment(used_dict_name, tw_text, False)
             polarity = self.s_analyzer.format_sentiment_value(sent_value)
             counter[polarity] += 1
             #print("| %s ... %s") % (str(round(sent_value, 4)), polarity)

@@ -14,7 +14,7 @@ class TextProcessing(object):
         # Remove whitespace.
         text = ' '.join(text.strip().split())
         # Lowercase the text.
-        text = text.lower()
+        #text = text.lower()
         # Result
         return text
 
@@ -25,6 +25,6 @@ class TextProcessing(object):
         # Remove paragraph tags.
         text = re.sub(r'<p>|</p>', '', text)
         # Lowercase the text.
-        text = text.lower()
+        #text = text.lower()
         # Result
         return text

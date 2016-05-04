@@ -1,6 +1,6 @@
-#from ...DataProcessor.src.classes.TextProcessor import TextProcessor
 import string
 import nltk
+import re
 
 from libs.vaderSentiment.vader import SentimentIntensityAnalyzer as VaderAnalyzer
 from LexiconReader import LexiconReader
@@ -8,7 +8,7 @@ from LexiconReader import LexiconReader
 
 class LexiconSentimentAnalyzer(object):
 
-    NEUTRAL_S_LIMIT = (-0.05, 0.05)
+    NEUTRAL_S_LIMIT = (-0.05, 0.10)
 
     def __init__(self):
         self.lex_reader = LexiconReader()
@@ -43,7 +43,7 @@ class LexiconSentimentAnalyzer(object):
         # result
         return round(sentiment_sum, 3), round(percent_tokens_found, 3)
 
-    def calculate_vader_sentiment(self, s_dictionary_name, input_text):
+    def calculate_vader_sentiment(self, s_dictionary_name, input_text, split_sentences=False):
         """
         Calculate text sentiment using VADER algorithm and selected dictionary.
 
@@ -58,7 +58,16 @@ class LexiconSentimentAnalyzer(object):
         if s_dictionary_name != self.vader.lexicon_name:
             self.vader = VaderAnalyzer(s_dictionary_name)
             self.vader.lexicon_name = s_dictionary_name
-        # Split text into sentences.
+            # test
+            #print('reload')
+            #print len(self.vader.lexicon.keys())
+            #print self.vader.lexicon['}:-)']
+
+        # Calculate sentiment for the whole text.
+        if not split_sentences:
+            return self.vader.polarity_scores(input_text)['compound']
+
+        # If desired, split text into sentences.
         sentences = nltk.tokenize.sent_tokenize(input_text)
         # Calc sentiment for every sentence.
         sentiment_sum = 0.0

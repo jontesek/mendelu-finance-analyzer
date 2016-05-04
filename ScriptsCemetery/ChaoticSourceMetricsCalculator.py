@@ -16,7 +16,7 @@ class SourceMetricsCalculator(object):
         self.price_dir_indices = {-1: 14, 1: 15, 2: 16, 3: 17}
         self.day_delays = [-1, 1, 2, 3]
 
-    def calculate_metrics_by_source(self, company_id, total_data, file_name, price_type, write_header=False):
+    def calculate_metrics_by_source(self, company_id, total_data, file_name, write_header=False):
         """
         Calculate metrics for one company (from all available days).
         :param company_id: int
@@ -27,11 +27,10 @@ class SourceMetricsCalculator(object):
         company_stats = self._prepare_matrices_for_sources()
         company_stats = self._fill_result_matrices(company_stats, total_data)
         metrics = self._calc_metrics_from_matrices(company_stats)
-        m_list = self._format_source_metrics_to_list(company_id, metrics, price_type)
+        m_list = self._format_source_metrics_to_list(company_id, metrics)
         # Write to file
         if write_header:
-            w_list = [self.get_source_metrics_header()]
-            w_list.extend(m_list)
+            w_list = [self.generate_source_metrics_header(), m_list]
             self.text_writer.write_econometric_file(file_name, w_list, 'w')
         else:
             self.text_writer.write_econometric_file(file_name, [m_list], 'a')
@@ -60,10 +59,10 @@ class SourceMetricsCalculator(object):
                 d_stats['precision_neg'] = None if pn == 0 else matrix['neg_down'] / pn
                 d_stats['precision_neu'] = None if pc == 0 else matrix['neu_const'] / pc
                 # Precision average
-                #weight_by = 3 if total_correct_count == 0 else total_correct_count
-                #weights = (matrix['pos_up'], matrix['neg_down'], matrix['neu_const'])
-                weight_by = 3
-                weights = (1, 1, 1)
+                weight_by = 3 if total_correct_count == 0 else total_correct_count
+                weights = (matrix['pos_up'], matrix['neg_down'], matrix['neu_const'])
+                #weight_by = 3
+                #weights = (1, 1, 1)
                 d_stats['precision_avg'] = (float(d_stats['precision_pos'] or 0) * weights[0] +
                                             float(d_stats['precision_neg'] or 0) * weights[1] +
                                             float(d_stats['precision_neu'] or 0) * weights[2]) / weight_by
@@ -75,10 +74,10 @@ class SourceMetricsCalculator(object):
                 d_stats['recall_neg'] = None if rn == 0 else matrix['neg_down'] / rn
                 d_stats['recall_neu'] = None if rc == 0 else matrix['neu_const'] / rc
                 # Recall average
-                #weight_by = 3 if total_correct_count == 0 else total_correct_count
-                #weights = (matrix['pos_up'], matrix['neg_down'], matrix['neu_const'])
-                weight_by = 3
-                weights = (1, 1, 1)
+                weight_by = 3 if total_correct_count == 0 else total_correct_count
+                weights = (matrix['pos_up'], matrix['neg_down'], matrix['neu_const'])
+                #weight_by = 3
+                #weights = (1, 1, 1)
                 d_stats['recall_avg'] = (float(d_stats['recall_pos'] or 0) * weights[0] +
                                          float(d_stats['recall_neg'] or 0) * weights[1] +
                                          float(d_stats['recall_neu'] or 0) * weights[2]) / weight_by
@@ -118,37 +117,42 @@ class SourceMetricsCalculator(object):
         # result
         return company_stats
 
-    def _format_source_metrics_to_list(self, company_id, metrics, price_type):
+    def _format_source_metrics_to_list(self, company_id, metrics):
         """
         Format metrics to one list (one line).
         :param metrics: dictionary of sources
         :return:
         """
-        company_rows = []
+        # company_id, source metrics * 4: <source>_<delay>_{accuracy,precision_avg,recall_avg,
+        # precision_pos,precision_neg,precision_neu,recall_pos,recall_neg,recall_neu}
+        company_data = [company_id]
         # For every source
         for source in sorted(metrics.keys()):
             # For every delay
             for delay in sorted(metrics[source].keys()):
-                row_data = [company_id, source, price_type, delay]
                 d_data = metrics[source][delay]
-                row_data.extend([
-                    d_data['accuracy'], d_data['precision_avg'], d_data['recall_avg'],
+                company_data.extend([
+                    d_data['accuracy'],
+                    d_data['precision_avg'], d_data['recall_avg'],
                     d_data['precision_pos'], d_data['precision_neg'], d_data['precision_neu'],
                     d_data['recall_pos'], d_data['recall_neg'], d_data['recall_neu'],
                 ])
-                company_rows.append(row_data)
-        # Result
-        return company_rows
+        # result
+        return company_data
 
-    def get_source_metrics_header(self):
-        """
-        One row ... one source and one delay.
-        """
-        header = [
-            'company_id', 'source', 'price_type', 'delay',
-            'accuracy', 'precision_avg', 'recall_avg',
-            'precision_pos', 'precision_neg', 'precision_neu',
-            'recall_pos', 'recall_neg', 'recall_neu',
-        ]
+    def generate_source_metrics_header(self):
+        # template: <source>_<delay>_{accuracy,precision_avg,recall_avg
+        # not necessary: precision_pos,precision_neg,precision_neu,recall_pos,recall_neg,recall_neu
+        sources = ['fb_comment', 'fb_post', 'twitter', 'yahoo']
+        metrics = ['accuracy', 'precision_avg', 'recall_avg',
+                   'precision_pos', 'precision_neg', 'precision_neu',
+                   'recall_pos', 'recall_neg', 'recall_neu',
+                   ]
+        header = ['company_id']
+        for source in sorted(sources):
+            for delay in self.day_delays:
+                for m in metrics:
+                    item = '%s_%d_%s' % (source, delay, m)
+                    header.append(item)
         # result
         return header

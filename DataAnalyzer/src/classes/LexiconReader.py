@@ -45,7 +45,7 @@ class LexiconReader(object):
         elif s_dictionary_name == 'micrownop':
             s_dict = self._get_micrownop_dictionary()
         else:
-            return False
+            raise ValueError('Unknown sentiment dictionary name entered.')
         # OK
         return s_dict
 

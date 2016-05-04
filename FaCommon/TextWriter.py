@@ -5,9 +5,7 @@ class TextWriter(object):
 
     def __init__(self, output_dir='.'):
         """
-        Constructor.
         :param output_dir: absolute filepath to output directory
-        :return:
         """
         self.output_dir = output_dir
 
@@ -39,4 +37,4 @@ class TextWriter(object):
         self.write_file(documents_list, file_name, 'txt', '\t', file_mode)
 
     def write_econometric_file(self, file_name, days_list, file_mode):
-        self.write_file(days_list, file_name, 'csv', ',', file_mode)
+        self.write_file(days_list, file_name, 'csv', ';', file_mode)
