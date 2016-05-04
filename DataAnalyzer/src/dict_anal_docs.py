@@ -10,27 +10,33 @@ from classes.DocumentsAnalyzer import DocumentsAnalyzer
 output_dir = os.path.abspath('../../outputs/dict_anal')
 da = DocumentsAnalyzer(output_dir, False)
 
-price_type = 'adjclose'
-dict_name = 'custom_dict_orig'
+price_type = 'sma'
+c_dicts = ['custom_dict_orig', 'custom_dict_fs_added', 'custom_dict_only_fs']
+#dict_name = c_dicts[2]
 const_boundaries = (-2.5, 2.5)
 
 from_date = datetime(2015, 8, 2).date()
 to_date = datetime(2016, 4, 2).date()
 
-base_filename = '_' + price_type + '_' + dict_name.replace('_', '-')
+#base_filename = '_' + price_type + '_' + dict_name.replace('_', '-')
 
 ####
-# Execution part.
+# Testing part
 ####
-start_time = time.time()
+# start_time = time.time()
+# print("TOTAL RUNTIME:")
+# print("--- %s seconds ---" % (time.time() - start_time))
 
-da.analyze_company(1, from_date, to_date, 'comp1' + base_filename, price_type, const_boundaries, dict_name, True)
-#da.analyze_company(217, '2016-1-1', '2016-1-14', 'econom-tw')
-#da.analyze_company(48, '2016-1-7', '2016-1-14', 'econom_att', 'close', True)
-#da.analyze_all_companies('2016-01-05', '2016-01-10', 'stats_all')
+#da.analyze_company(1, from_date, to_date, 'comp1' + base_filename, price_type, const_boundaries, dict_name, True)
+#da.analyze_company(217, from_date, to_date, 'comp1' + base_filename, price_type, const_boundaries, dict_name, True)
 
-#da.analyze_all_companies('2015-08-01', '2016-01-10', 'stats_sma', 'sma', const_boundaries, dict_name)
+#da.analyze_all_companies(from_date, to_date, 'daystats' + base_filename, 'sma', const_boundaries, dict_name)
+#exit()
 
+####
+# EXECUTION part
+####
 
-print("TOTAL RUNTIME:")
-print("--- %s seconds ---" % (time.time() - start_time))
+for d_name in c_dicts:
+    base_filename = '_' + price_type + '_' + d_name.replace('_', '-')
+    da.analyze_all_companies(from_date, to_date, 'daystats' + base_filename, price_type, const_boundaries, d_name)

@@ -428,10 +428,24 @@ class SentimentIntensityAnalyzer(object):
             punct_emph_amplifier = self._punctuation_emphasis(sum_s, text)
             if sum_s > 0:
                 sum_s += punct_emph_amplifier
-            elif  sum_s < 0:
+            elif sum_s < 0:
                 sum_s -= punct_emph_amplifier
 
-            compound = normalize(sum_s)
+            # ####
+            # # Take into accout number of sentiment values, so longer text has as well compound value <-1,1>.
+            # sent_items_c = sum(1 for x in sentiments if x)  # Count number of non-zero elements.
+            # norm_alpha = sent_items_c * 3   # For one sentence alpha is set to 15, so this might just work.
+            # # If alpha is too low or there are no sentiment items.
+            # if norm_alpha < 15:
+            #     norm_alpha = 15
+            # else:
+            #     pass#print text
+            #     #print sentiments
+            #     if norm_alpha > 50:
+            #         print norm_alpha
+            # ####
+
+            compound = normalize(sum_s, 20)
             # discriminate between positive, negative and neutral sentiment scores
             pos_sum, neg_sum, neu_count = self._sift_sentiment_scores(sentiments)
 

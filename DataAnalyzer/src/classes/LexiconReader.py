@@ -11,10 +11,8 @@ class LexiconReader(object):
     def get_dictionary(self, s_dictionary_name):
         """Read lexicon file to a dictionary: [word] -> [value]"""
         # CUSTOM DICTS
-        if s_dictionary_name == 'custom_dict_orig':
-            s_dict = self._get_custom_dict_orig()
-        elif s_dictionary_name == 'custom_dict_fs_added':
-            s_dict = self._get_custom_dict_fs_added()
+        if s_dictionary_name[0:7] == 'custom_':
+            s_dict = self._get_custom_dict(s_dictionary_name)
         # ORIGINAL DICTS
         elif s_dictionary_name == 'afinn':
             s_dict = self._get_afinn_dictionary()
@@ -51,13 +49,22 @@ class LexiconReader(object):
 
     #### CUSTOM DICTS
 
-    def _get_custom_dict_orig(self):
+    def _get_custom_dict(self, dict_name):
         """
-        Combined directory from McDonald, Henry, Hajek, VADER (duplicate removed in the order).
-        Contains only single words and some weights.
+        Custom directory. Contains only single words; most words have weights.
+
+        Args:
+            dict_name: possible options below
+                custom_dict_orig: Combined directory from McDonald, Henry, Hajek, VADER (duplicate removed in the order).
+                custom_dict_fs_added: Orig dict with words from feature selection.
+                custom_dict_only_fs: Only words from feature selection.
         """
         # Prepare variables.
-        dict_file = open(self.file_paths['input'] + "custom_dicts/custom_dict_orig.txt", 'r')
+        path_cdict = "custom_dicts/%s.txt" % dict_name
+        try:
+            dict_file = open(self.file_paths['input'] + path_cdict, 'r')
+        except IOError:
+            raise ValueError('Unknown custom dictionary name: ' + dict_name)
         custom_dict = {}
         # Skipt header line.
         dict_file.readline()

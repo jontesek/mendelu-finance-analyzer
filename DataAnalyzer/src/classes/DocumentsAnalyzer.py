@@ -146,7 +146,7 @@ class DocumentsAnalyzer(object):
             post_text = TextProcessing.process_facebook_text(post['text'])
             if len(post_text) == 0:
                 continue    # skip empty posts
-            sent_value = self.s_analyzer.calculate_vader_sentiment(used_dict_name, post_text)
+            sent_value = self.s_analyzer.calculate_vader_sentiment(used_dict_name, post_text, False)
             polarity = self.s_analyzer.format_sentiment_value(sent_value)
             counter[polarity] += 1
             #print("| %s ... %s") % (str(round(sent_value, 4)), polarity)
