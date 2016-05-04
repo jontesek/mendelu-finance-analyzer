@@ -11,7 +11,7 @@ class TotalMetricsCalculator(object):
         """
         self.output_dir = output_dir
         self.text_writer = TextWriter(output_dir)
-        # Set input data indices
+        # Set input data indices.
         self.source_sent_pos = {'fb_post': 18, 'fb_comment': 19, 'yahoo': 20, 'twitter': 21}
         self.price_dir_indices = {-1: 14, 1: 15, 2: 16, 3: 17}
         self.day_delays = [-1, 1, 2, 3]

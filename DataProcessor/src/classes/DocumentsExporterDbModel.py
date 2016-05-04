@@ -73,9 +73,9 @@ class DocumentsExporterDbModel(DbModel):
         """
         Get tweets created on given day. Exclude duplicates - GROUP BY(text).
 
-        :param company_id:
-        :param for_date:
-        :param docs_query_limit:
+        :param company_id (int)
+        :param for_date (Date)
+        :param docs_query_limit (int)
         :return:
         """
         cursor = self.dbcon.cursor(dictionary=True)

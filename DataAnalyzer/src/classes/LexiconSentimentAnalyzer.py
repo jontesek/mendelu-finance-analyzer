@@ -8,7 +8,7 @@ from LexiconReader import LexiconReader
 
 class LexiconSentimentAnalyzer(object):
 
-    NEUTRAL_S_LIMIT = (-0.05, 0.10)
+    NEUTRAL_S_LIMIT = (-0.05, 0.05)
 
     def __init__(self):
         self.lex_reader = LexiconReader()
@@ -66,7 +66,7 @@ class LexiconSentimentAnalyzer(object):
             values = self.vader.polarity_scores(sent)
             sentiment_sum += values['compound']
         # Calc sentiment for the whole text - normalize sum by number of sentences.
-        return float(sentiment_sum / len(sentences))
+        return sentiment_sum / float(len(sentences))
 
     def format_sentiment_value(self, sent_value):
         """

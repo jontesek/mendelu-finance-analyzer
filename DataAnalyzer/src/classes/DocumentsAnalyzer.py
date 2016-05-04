@@ -15,9 +15,8 @@ class DocumentsAnalyzer(object):
 
     def __init__(self, output_dir, verbose=False):
         """
-        Constructor.
-        :param output_dir: absolute filepath to output directory
-        :param verbose:
+        :param output_dir: Absolute filepath to output directory.
+        :param verbose: boolean: Write info to console.
         :return:
         """
         self.dbmodel = BasicDbModel()
@@ -30,43 +29,42 @@ class DocumentsAnalyzer(object):
 
     ## Analyze output file
 
-    def analyze_all_companies(self, from_date, to_date, file_name, price_type):
-        # Prepare headers
-        header_days = [
-            'company_id', 'date',
-            'fb_post_neutral', 'fb_post_positive', 'fb_post_negative',
-            'fb_comment_neutral', 'fb_comment_positive', 'fb_comment_negative',
-            'yahoo_neutral', 'yahoo_positive', 'yahoo_negative',
-            'twitter_neutral', 'twitter_positive', 'twitter_negative',
-            'stock_dir_-1', 'stock_dir_1', 'stock_dir_2', 'stock_dir_3',
-            'sentiment_fb_post', 'sentiment_fb_comment', 'sentiment_yahoo', 'sentiment_twitter',
-            'overall_sentiment',
-        ]
-        header_metrics = self.source_metrics_calculator.generate_source_metrics_header()
+    def analyze_all_companies(self, from_date, to_date, file_name, price_type, const_boundaries, used_dict_name='vader'):
+        """
+        Analyze all documents for all companies.
+
+        :param from_date:
+        :param to_date:
+        :param file_name:
+        :param price_type:
+        :param used_dict_name:
+        :return:
+        """
         # Reset files
-        self.text_writer.write_econometric_file(file_name, [header_days], 'w')
-        #self.text_writer.write_econometric_file('total_metrics', [['Metrics']], 'w')
-        m_filename = file_name + '-source_metrics'
-        self.text_writer.write_econometric_file(m_filename, [header_metrics], 'w')
+        self.text_writer.write_econometric_file(file_name, [self._get_days_stats_header()], 'w')
+        self.text_writer.write_econometric_file(file_name + '_total-metrics', [['Metrics']], 'w')
+        header_metrics = self.source_metrics_calculator.generate_source_metrics_header()
+        self.text_writer.write_econometric_file(file_name + '_source-metrics', [header_metrics], 'w')
         # Process companies
         companies = self.dbmodel.get_companies_order_by_total_documents(from_date, to_date)
         for comp in companies:
             print("<<<<<Company %d>>>>>") % comp['id']
             if not self.verbose:
                 with FaCommon.Helpers.suppress_stdout():
-                    self.analyze_company(comp['id'], from_date, to_date, file_name, price_type)
+                    self.analyze_company(comp['id'], from_date, to_date, file_name, price_type, const_boundaries, used_dict_name)
             else:
-                self.analyze_company(comp['id'], from_date, to_date, file_name, price_type)
+                self.analyze_company(comp['id'], from_date, to_date, file_name, price_type, const_boundaries, used_dict_name)
         print('>>>All stuff saved.')
 
-    def analyze_company(self, company_id, from_date, to_date, file_name, price_type, write_header=False):
+    def analyze_company(self, company_id, from_date, to_date, file_name, price_type, const_boundaries, used_dict_name, write_header=False):
         """
         Analyze documents about company (from_date -> present date).
+
         :param company_id: int
         :param from_date: string
         :return: list of days, where every row contains information for documents for this day.
         """
-        # Prepare variables
+        # Prepare variables.
         examined_date = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
         last_date = datetime.datetime.strptime(to_date, '%Y-%m-%d').date()
         total_data = []
@@ -81,10 +79,10 @@ class DocumentsAnalyzer(object):
         while examined_date <= last_date:
             print("===%s===") % examined_date
             # For every document type, process all documents and count number of neutral, positive, negative documents.
-            fb_p_values = self._process_fb_posts(company_id, examined_date)
-            fb_c_values = self._process_fb_comments(company_id, examined_date)
-            yahoo_values = self._process_yahoo(company_id, examined_date)
-            tw_values = self._process_tweets(company_id, examined_date)
+            fb_p_values = self._process_fb_posts(company_id, examined_date, used_dict_name)
+            fb_c_values = self._process_fb_comments(company_id, examined_date, used_dict_name)
+            yahoo_values = self._process_yahoo(company_id, examined_date, used_dict_name)
+            tw_values = self._process_tweets(company_id, examined_date, used_dict_name)
             # Save acquired data
             day_data = [
                 company_id,
@@ -95,10 +93,10 @@ class DocumentsAnalyzer(object):
                 tw_values['neu'], tw_values['pos'], tw_values['neg'],
             ]
             # Get stock price movement direction for 1,2,3 days from examined date. Also for previous day.
-            day_data.append(self.stock_processor.get_price_movement_with_delay(examined_date, -1))
-            day_data.append(self.stock_processor.get_price_movement_with_delay(examined_date, 1))
-            day_data.append(self.stock_processor.get_price_movement_with_delay(examined_date, 2))
-            day_data.append(self.stock_processor.get_price_movement_with_delay(examined_date, 3))
+            day_data.append(self.stock_processor.get_price_movement_with_delay(examined_date, -1, const_boundaries))
+            day_data.append(self.stock_processor.get_price_movement_with_delay(examined_date, 1, const_boundaries))
+            day_data.append(self.stock_processor.get_price_movement_with_delay(examined_date, 2, const_boundaries))
+            day_data.append(self.stock_processor.get_price_movement_with_delay(examined_date, 3, const_boundaries))
             # Calculate simple sentiment for all sources.
             fb_post_s = self._calc_source_sentiment(fb_p_values)
             fb_comment_s = self._calc_source_sentiment(fb_c_values)
@@ -121,25 +119,25 @@ class DocumentsAnalyzer(object):
 
         # Write results to file.
         if write_header:
-            total_data.insert(0, self._get_stats_header())
+            total_data.insert(0, self._get_days_stats_header())
             self.text_writer.write_econometric_file(file_name, total_data, 'w')
         else:
             self.text_writer.write_econometric_file(file_name, total_data, 'a')
         del(total_data[0])
 
         # Calculate metrics by source.
-        m_filename = file_name + '-source_metrics'
+        m_filename = file_name + '_source-metrics'
         self.source_metrics_calculator.calculate_metrics_by_source(company_id, total_data, m_filename, write_header)
 
-        # Calculate total metrics
-        #m_filename = file_name + '-total_metrics'
-        #self.total_metrics_calculator.calculate_total_metrics(company_id, total_data, m_filename, write_header)
+        # Calculate total metrics.
+        m_filename = file_name + '_total-metrics'
+        self.total_metrics_calculator.calculate_total_metrics(company_id, total_data, m_filename, write_header)
 
 
 
-    ## PRIVATE methods for processing documents
+    #### PRIVATE methods for processing documents
 
-    def _process_fb_posts(self, company_id, examined_date):
+    def _process_fb_posts(self, company_id, examined_date, used_dict_name='vader'):
         # Select all FB posts for given company created on given date.
         posts = self.dbmodel.get_daily_fb_posts(company_id, examined_date)
         counter = {'pos': 0, 'neu': 0, 'neg': 0}
@@ -149,14 +147,14 @@ class DocumentsAnalyzer(object):
             post_text = TextProcessing.process_facebook_text(post['text'])
             if len(post_text) == 0:
                 continue    # skip empty posts
-            sent_value = self.s_analyzer.calculate_vader_sentiment('vader', post_text)
+            sent_value = self.s_analyzer.calculate_vader_sentiment(used_dict_name, post_text)
             polarity = self.s_analyzer.format_sentiment_value(sent_value)
             counter[polarity] += 1
             #print("| %s ... %s") % (str(round(sent_value, 4)), polarity)
         # result
         return counter
 
-    def _process_fb_comments(self, company_id, examined_date):
+    def _process_fb_comments(self, company_id, examined_date, used_dict_name='vader'):
         # Select all FB comments.
         comments = self.dbmodel.get_daily_fb_comments(company_id, examined_date)
         counter = {'pos': 0, 'neu': 0, 'neg': 0}
@@ -166,14 +164,14 @@ class DocumentsAnalyzer(object):
             com_text = TextProcessing.process_facebook_text(com['text'])
             if len(com_text) == 0:
                 continue    # skip empty comments
-            sent_value = self.s_analyzer.calculate_vader_sentiment('vader', com_text)
+            sent_value = self.s_analyzer.calculate_vader_sentiment(used_dict_name, com_text)
             polarity = self.s_analyzer.format_sentiment_value(sent_value)
             counter[polarity] += 1
             #print("| %s ... %s") % (str(round(sent_value, 4)), polarity)
         # result
         return counter
 
-    def _process_yahoo(self, company_id, examined_date):
+    def _process_yahoo(self, company_id, examined_date, used_dict_name='vader'):
         # Select all Yahoo Finance articles.
         articles = self.dbmodel.get_daily_articles(company_id, examined_date)
         counter = {'pos': 0, 'neu': 0, 'neg': 0}
@@ -183,14 +181,14 @@ class DocumentsAnalyzer(object):
             art_text = TextProcessing.process_article_text(art['text'])
             if len(art_text) == 0:
                 continue    # skip empty articles
-            sent_value = self.s_analyzer.calculate_vader_sentiment('vader', art_text)
+            sent_value = self.s_analyzer.calculate_vader_sentiment(used_dict_name, art_text)
             polarity = self.s_analyzer.format_sentiment_value(sent_value)
             counter[polarity] += 1
             #print("| %s ... %s") % (str(round(sent_value, 4)), polarity)
         # result
         return counter
 
-    def _process_tweets(self, company_id, examined_date):
+    def _process_tweets(self, company_id, examined_date, used_dict_name='vader'):
         # Select all Yahoo Finance articles.
         tweets = self.dbmodel.get_daily_tweets(company_id, examined_date)
         counter = {'pos': 0, 'neu': 0, 'neg': 0}
@@ -200,7 +198,7 @@ class DocumentsAnalyzer(object):
             tw_text = TextProcessing.process_facebook_text(tw['text'])
             if len(tw_text) == 0:
                 continue    # skip empty tweets
-            sent_value = self.s_analyzer.calculate_vader_sentiment('vader', tw_text)
+            sent_value = self.s_analyzer.calculate_vader_sentiment(used_dict_name, tw_text)
             polarity = self.s_analyzer.format_sentiment_value(sent_value)
             counter[polarity] += 1
             #print("| %s ... %s") % (str(round(sent_value, 4)), polarity)
@@ -258,7 +256,7 @@ class DocumentsAnalyzer(object):
             return 'neg'
 
     @staticmethod
-    def _get_stats_header():
+    def _get_days_stats_header():
         header_days = [
             'company_id', 'date',
             'fb_post_neutral', 'fb_post_positive', 'fb_post_negative',
@@ -270,4 +268,3 @@ class DocumentsAnalyzer(object):
             'overall_sentiment',
         ]
         return header_days
-

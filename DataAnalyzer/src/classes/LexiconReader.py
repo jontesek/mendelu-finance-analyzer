@@ -10,7 +10,13 @@ class LexiconReader(object):
 
     def get_dictionary(self, s_dictionary_name):
         """Read lexicon file to a dictionary: [word] -> [value]"""
-        if s_dictionary_name == 'afinn':
+        # CUSTOM DICTS
+        if s_dictionary_name == 'custom_dict_orig':
+            s_dict = self._get_custom_dict_orig()
+        elif s_dictionary_name == 'custom_dict_fs_added':
+            s_dict = self._get_custom_dict_fs_added()
+        # ORIGINAL DICTS
+        elif s_dictionary_name == 'afinn':
             s_dict = self._get_afinn_dictionary()
         elif s_dictionary_name == 'wordstat':
             s_dict = self._get_wordstat_dictionary()
@@ -40,7 +46,32 @@ class LexiconReader(object):
             s_dict = self._get_micrownop_dictionary()
         else:
             return False
+        # OK
         return s_dict
+
+    #### CUSTOM DICTS
+
+    def _get_custom_dict_orig(self):
+        """
+        Combined directory from McDonald, Henry, Hajek, VADER (duplicate removed in the order).
+        Contains only single words and some weights.
+        """
+        # Prepare variables.
+        dict_file = open(self.file_paths['input'] + "custom_dicts/custom_dict_orig.txt", 'r')
+        custom_dict = {}
+        # Skipt header line.
+        dict_file.readline()
+        # For every line, read a word and its value and save it to dictionary.
+        for line in dict_file:
+            l_items = line.strip().split('\t')
+            word = l_items[0].strip()
+            polarity = float(l_items[1])
+            custom_dict[word] = polarity
+        # result
+        return custom_dict
+
+
+    #### ORIGINAL DICTS
 
     def _get_afinn_dictionary(self):
         """
@@ -58,7 +89,7 @@ class LexiconReader(object):
         """
         dict_file = open(self.file_paths['input']+"sentiment_dicts/WordStat Sentiments.CAT", 'r')
         wordstat = {}
-        for line_n, line_content in enumerate(dict_file.readlines(),1):
+        for line_n, line_content in enumerate(dict_file.readlines(), 1):
             line_value = line_content.strip().split(' ')[0].lower()
             # Save negative words
             if line_n > 61 and line_n < 9615:
@@ -391,3 +422,5 @@ class LexiconReader(object):
         # result
         dict_file.close()
         return micrownop
+
+

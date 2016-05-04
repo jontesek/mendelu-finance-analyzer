@@ -12,6 +12,7 @@ class StockPriceTransformer(object):
     def calculate_sma_for_company(self, company_id, period_length):
         """
         Calculate and save to DB simple moving average of adjclose company price.
+
         :param company_id (int)
         :param period_length (int): in days
         :return:

@@ -5,24 +5,26 @@ class TextProcessing(object):
 
     @staticmethod
     def process_facebook_text(text):
-        # Remove whitespace
-        text = ' '.join(text.strip().split())
-        # Remove hyper links
-        text = re.sub('https?:\/\/.* ?', '', text)
-        # Remove hash tag symbols
+        # Remove hash tag symbols.
         text = text.replace('#', '')
-        # Lowercase the text
+        # Remove at symbols.
+        text = text.replace('@', '')
+        # Remove URL links.
+        text = re.sub(r'https?://\S+', '', text)
+        # Remove whitespace.
+        text = ' '.join(text.strip().split())
+        # Lowercase the text.
         text = text.lower()
-        # result
+        # Result
         return text
 
     @staticmethod
     def process_article_text(text):
-        # Remove whitespace
-        text = ' '.join(text.strip().split())
-        # Remove paragraph tags
-        text = re.sub('<p>|</p>', '', text)
-        # Lowercase the text
+        # Remove URL links.
+        text = re.sub(r'https?://\S+', '', text)
+        # Remove paragraph tags.
+        text = re.sub(r'<p>|</p>', '', text)
+        # Lowercase the text.
         text = text.lower()
-        # result
+        # Result
         return text

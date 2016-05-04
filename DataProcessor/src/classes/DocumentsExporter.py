@@ -80,6 +80,8 @@ class DocumentsExporter(object):
         docs_per_company = int(round(docs_per_file / float(len(companies_ids))))
         if doc_type == 'fb_comment':
             docs_per_company = 10000
+        elif doc_type == 'tweet':
+            docs_per_company = 100000
         # Choose file description string.
         if companies_filename:
             fs_comp = companies_filename
@@ -119,9 +121,11 @@ class DocumentsExporter(object):
         # Calculate number of documents per day: n = docs_per_company / days(to_date - from_date)
         date_delta = to_date - from_date
         docs_per_day = int(round(max_docs_per_company / float(date_delta.days)))
-        #docs_per_day *= 2   # To get more documents, increase the count.
-        #docs_per_day = 200  # For Twitter and 4 companies.
-        docs_per_day = 40   # For Facebook
+        docs_per_day *= 2   # To get more documents, increase the count.
+        if doc_type == 'tweet':
+            docs_per_day = 200  # For Twitter
+        if doc_type == 'fb_comment':
+            docs_per_day = 40   # For Facebook
         # Example: 25 000 docs per company / 241 days = 104 docs per day
         #print ('>>Docs per company/days/per day: %d, %d, %d') % (max_docs_per_company, date_delta.days, docs_per_day)
         # Define variables.

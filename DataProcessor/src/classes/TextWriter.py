@@ -8,8 +8,7 @@ class TextWriter(object):
 
     def _write_file(self, data_lists, file_name, file_extension, items_delimiter, file_mode):
         """
-        Write lines of data to file. Check class balance.
-        For not checking class balance, enter a huge number in "min_class_count" parameter.
+        Write lines of data to file.
         """
         # Path to output file.
         file_path = '%s/%s.%s' % (self.output_dir, file_name, file_extension)

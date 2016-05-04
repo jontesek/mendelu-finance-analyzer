@@ -20,7 +20,7 @@ d_exporter = DocumentsExporter(file_paths)
 
 # Parameters lists
 delays = [1, 2, 3]
-price_types = ['adjclose', 'sma', 'ewma']
+price_types = ['adjclose', 'ewma', 'sma']
 const_boundaries = [(-1, 1), (-2, 2), (-3, 3), (-4, 4), (-5, 5)]
 
 # Create all combinations of parameters.
@@ -50,18 +50,20 @@ params_combinations = list(itertools.product(price_types, delays, const_boundari
 
 #### Process Facebook comments and tweets for multiple companies.
 # Define companies
-comp_ids_tw = [44, 202, 233, 300]
+comp_ids_tw = [44, 202, 233, 300, 193, 58]
+nonsearch_cids = [48, 217, 458, 479]
+total_tw_ids = comp_ids_tw + nonsearch_cids
 # Dates
 from_date = datetime(2015, 8, 2).date()
 to_date = datetime(2016, 4, 2).date()
 # Set correct output directory.
-new_dir = os.path.abspath(d_exporter.file_paths['output_dir'] + '/twitter_4_emoticons')
+new_dir = os.path.abspath(d_exporter.file_paths['output_dir'] + '/twitter_8')
 d_exporter.change_output_dir(new_dir)
 
 # Process all parameters and companies.
 for (n_price_type, n_delay, n_boundary) in params_combinations:
-    print("===Companies %s: %s, %s, %s===") % (str(comp_ids_tw), n_price_type, str(n_delay), str(n_boundary))
+    print("===Companies %s: %s, %s, %s===") % (str(total_tw_ids), n_price_type, str(n_delay), str(n_boundary))
     d_exporter.process_documents_for_selected_companies(
-    comp_ids_tw, 'tweet', from_date, to_date, n_delay, n_price_type, n_boundary, False, 100000)
+    total_tw_ids, 'tweet', from_date, to_date, n_delay, n_price_type, n_boundary, False, 1000000, False, nonsearch_cids)
     # d_exporter.process_companies_by_source('all-fb-40pd', 'fb_comment', from_date, to_date, n_delay, n_price_type,
     #                                        n_boundary, False, 1000000)
