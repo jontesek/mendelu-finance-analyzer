@@ -12,13 +12,13 @@ da = DocumentsAnalyzer(output_dir, False)
 
 price_type = 'sma'
 c_dicts = ['custom_dict_orig', 'custom_dict_fs_added', 'custom_dict_only_fs']
-#dict_name = c_dicts[2]
+dict_name = c_dicts[2]
 const_boundaries = (-2.5, 2.5)
 
 from_date = datetime(2015, 8, 2).date()
 to_date = datetime(2016, 4, 2).date()
 
-#base_filename = '_' + price_type + '_' + dict_name.replace('_', '-')
+base_filename = '_' + price_type + '_' + dict_name.replace('_', '-')
 
 ####
 # Testing part

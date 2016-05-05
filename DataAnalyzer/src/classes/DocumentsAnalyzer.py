@@ -43,7 +43,7 @@ class DocumentsAnalyzer(object):
         # Reset files.
         self.text_writer.write_econometric_file(file_name, [self._get_days_stats_header()], 'w')
         total_m_header = self.total_metrics_calculator.get_total_metrics_header()
-        self.text_writer.write_econometric_file(file_name + '_total-metrics', total_m_header, 'w')
+        self.text_writer.write_econometric_file(file_name + '_total-metrics', [total_m_header], 'w')
         source_m_header = self.source_metrics_calculator.get_source_metrics_header()
         self.text_writer.write_econometric_file(file_name + '_source-metrics', [source_m_header], 'w')
         # Process companies
@@ -120,9 +120,9 @@ class DocumentsAnalyzer(object):
         if write_header:
             total_data.insert(0, self._get_days_stats_header())
             self.text_writer.write_econometric_file(file_name, total_data, 'w')
+            del(total_data[0])
         else:
             self.text_writer.write_econometric_file(file_name, total_data, 'a')
-        del(total_data[0])
 
         # Calculate metrics by source.
         m_filename = file_name + '_source-metrics'

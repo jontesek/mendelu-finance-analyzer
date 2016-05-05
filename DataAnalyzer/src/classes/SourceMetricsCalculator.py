@@ -30,11 +30,12 @@ class SourceMetricsCalculator(object):
         m_list = self._format_source_metrics_to_list(company_id, metrics, price_type)
         # Write to file
         if write_header:
-            w_list = [self.get_source_metrics_header()]
-            w_list.extend(m_list)
-            self.text_writer.write_econometric_file(file_name, w_list, 'w')
+            m_list.insert(0, self.get_source_metrics_header())
+            self.text_writer.write_econometric_file(file_name, m_list, 'w')
+            del(m_list[0])
         else:
-            self.text_writer.write_econometric_file(file_name, [m_list], 'a')
+            self.text_writer.write_econometric_file(file_name, m_list, 'a')
+        # the end
 
     def _calc_metrics_from_matrices(self, company_stats):
         metrics = {}

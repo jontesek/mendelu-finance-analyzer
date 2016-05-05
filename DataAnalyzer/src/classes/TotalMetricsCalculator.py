@@ -57,8 +57,11 @@ class TotalMetricsCalculator(object):
         # Process all delays and calculate metrics.
         metrics = {}
         for delay, data in results.items():
-            try:
+            if total_values_count == 0:
+                accuracy = None
+            else:
                 accuracy = (data['pos_up'] + data['neg_down'] + data['neu_const']) / total_values_count
+            try:
                 precision = data['pos_up'] / (data['pos_up'] + data['pos_down'])
                 recall = data['pos_up'] / (data['pos_up'] + data['neg_up'])
             except ZeroDivisionError:
