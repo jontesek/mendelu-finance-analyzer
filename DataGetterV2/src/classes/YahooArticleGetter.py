@@ -118,7 +118,7 @@ class YahooArticleGetter(object):
             return self.article_parser.native_yahoo(html)
         else:
             #html = urllib2.urlopen(preview_link)
-             html = open('../test_data/yahoo_preview.htm')
+            html = open('../test_data/yahoo_preview.htm')
             return self.article_parser.parse_preview(html)
 
     def _prepare_article_data_for_db(self, list_data, parsed_data, share_data):
