@@ -445,7 +445,7 @@ class SentimentIntensityAnalyzer(object):
             #         print norm_alpha
             # ####
 
-            compound = normalize(sum_s, 20)
+            compound = normalize(sum_s)
             # discriminate between positive, negative and neutral sentiment scores
             pos_sum, neg_sum, neu_count = self._sift_sentiment_scores(sentiments)
 

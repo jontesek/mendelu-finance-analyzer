@@ -318,7 +318,7 @@ class DocumentsExporter(object):
         text = text.replace('#', '')
         # Remove at symbols.
         text = text.replace('@', '')
-        # Remove URL links.
+        # Replace URL links.
         text = re.sub(r'https?://\S+', 'XURL', text)
         # Replace emoticons with descriptions.
         text = re.sub(r':\)|:-\)|:D|=\)', ' XyzPosEmoticon ', text)

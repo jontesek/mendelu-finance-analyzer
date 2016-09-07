@@ -16,4 +16,4 @@ input_string4 = "Scientists are pioneers of products, technology & innovation. L
 
 sa = LexiconSentimentAnalyzer()
 #print sa.calculate_simple_sentiment('vader', input_string2)
-print sa.calculate_vader_sentiment('vader',input_string4)
+print sa.calculate_vader_sentiment('custom_dict_orig',input_string4)

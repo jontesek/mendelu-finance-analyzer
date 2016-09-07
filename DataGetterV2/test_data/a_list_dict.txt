@@ -1,0 +1,12 @@
+>publisher: 24/7 Wall St.
+>idPrefix: FIN-
+>title: 8 Big Dividend Hikes Expected Before Year-End
+>url: http://247wallst.com/investing/2016/09/07/8-big-dividend-hikes-expected-before-year-end/?yptr=yahoo
+>is_eligible: False
+>i13n: {u'bpos': 1, u'cposy': 1, u'cpos': 1}
+>summary: 24/7 Wall St. wanted to identify the companies from which we expect solid dividend news in the fourth quarter. We see at least these eight companies, mostly blue chip, announcing dividend hikes in the ...
+>link: /m/649e4b21-7676-3bec-8d61-3d0dbbdb957c/ss_8-big-dividend-hikes-expected.html
+>pubtime: 1473246911000
+>type: article
+>id: 649e4b21-7676-3bec-8d61-3d0dbbdb957c
+>off_network: True

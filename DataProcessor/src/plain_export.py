@@ -1,5 +1,5 @@
 from datetime import datetime
-from classes.Exports import PlainExport
+from classes.PlainExport import PlainExport
 
 exp = PlainExport('../../outputs/exports')
 

@@ -51,7 +51,8 @@ class BasicDbModel(DbModel):
 
     def get_articles(self, company_id, date_from, date_to):
         cursor = self.dbcon.cursor(dictionary=True)
-        query = "SELECT id, title, text FROM article WHERE company_id = %s AND published_date BETWEEN %s AND %s"
+        query = "SELECT id, title, text, published_date FROM article WHERE company_id = %s " \
+                "AND published_date BETWEEN %s AND %s ORDER BY id ASC"
         cursor.execute(query, [company_id, date_from, date_to])
         return cursor
 
@@ -59,7 +60,8 @@ class BasicDbModel(DbModel):
         cursor = self.dbcon.cursor(dictionary=True)
         start_ts = self._from_date_to_timestamp(date_from)
         end_ts = self._from_date_to_timestamp(date_to)
-        query = "SELECT id, text FROM fb_post WHERE company_id = %s AND created_timestamp BETWEEN %s AND %s"
+        query = "SELECT id, text, created_timestamp FROM fb_post WHERE company_id = %s " \
+                "AND created_timestamp BETWEEN %s AND %s ORDER BY id ASC"
         cursor.execute(query, [company_id, start_ts, end_ts])
         return cursor
 
@@ -67,13 +69,15 @@ class BasicDbModel(DbModel):
         cursor = self.dbcon.cursor(dictionary=True)
         start_ts = self._from_date_to_timestamp(date_from)
         end_ts = self._from_date_to_timestamp(date_to)
-        query = "SELECT id, text FROM fb_comment WHERE company_id = %s AND created_timestamp BETWEEN %s AND %s"
+        query = "SELECT id, text, created_timestamp FROM fb_comment WHERE company_id = %s " \
+                "AND created_timestamp BETWEEN %s AND %s ORDER BY id ASC"
         cursor.execute(query, [company_id, start_ts, end_ts])
         return cursor
 
     def get_tweets(self, company_id, date_from, date_to):
         cursor = self.dbcon.cursor(dictionary=True)
-        query = "SELECT tw_id, text FROM tw_status WHERE company_id = %s AND created_at BETWEEN %s AND %s"
+        query = "SELECT tw_id, text, created_at FROM tw_status WHERE company_id = %s " \
+                "AND created_at BETWEEN %s AND %s ORDER BY tw_id ASC"
         cursor.execute(query, [company_id, date_from, date_to])
         return cursor
 
@@ -106,8 +110,5 @@ class BasicDbModel(DbModel):
     def _from_date_to_timestamp(self, input_date):
         return long(time.mktime(input_date.timetuple()))
 
-
-
-
-
-
+    def from_timestamp_to_date(self, timestamp):
+        return datetime.datetime.utcfromtimestamp(timestamp)

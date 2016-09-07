@@ -3,6 +3,7 @@ import math
 
 from LexiconSentimentAnalyzer import LexiconSentimentAnalyzer
 from SourceMetricsCalculator import SourceMetricsCalculator
+from SourceMetricsCalculator2classes import SourceMetricsCalculator2classes
 from TotalMetricsCalculator import TotalMetricsCalculator
 from BasicDbModel import BasicDbModel
 from FaCommon.TextWriter import TextWriter
@@ -26,10 +27,11 @@ class DocumentsAnalyzer(object):
         self.stock_processor = StockPriceProcessor()    # Object for price movements
         self.source_metrics_calculator = SourceMetricsCalculator(output_dir)
         self.total_metrics_calculator = TotalMetricsCalculator(output_dir)
+        self.source_metrics_calculator_2_classes = SourceMetricsCalculator2classes(output_dir)
 
     ## Analyze output file
 
-    def analyze_all_companies(self, from_date, to_date, file_name, price_type, const_boundaries, used_dict_name='vader'):
+    def analyze_all_companies(self, from_date, to_date, file_name, price_type, const_boundaries, used_dict_name='vader', classes_count=3):
         """
         Analyze all documents for all companies.
 
@@ -52,12 +54,12 @@ class DocumentsAnalyzer(object):
             print("<<<<<Company %d>>>>>") % comp['id']
             if not self.verbose:
                 with FaCommon.Helpers.suppress_stdout():
-                    self.analyze_company(comp['id'], from_date, to_date, file_name, price_type, const_boundaries, used_dict_name, False)
+                    self.analyze_company(comp['id'], from_date, to_date, file_name, price_type, const_boundaries, used_dict_name, False, classes_count)
             else:
-                self.analyze_company(comp['id'], from_date, to_date, file_name, price_type, const_boundaries, used_dict_name, False)
+                self.analyze_company(comp['id'], from_date, to_date, file_name, price_type, const_boundaries, used_dict_name, False, classes_count)
         print('>>>All stuff saved.')
 
-    def analyze_company(self, company_id, from_date, to_date, file_name, price_type, const_boundaries, used_dict_name, write_header=False):
+    def analyze_company(self, company_id, from_date, to_date, file_name, price_type, const_boundaries, used_dict_name, write_header=False, classes_count=3):
         """
         Analyze documents about company (from_date -> present date).
 
@@ -78,10 +80,13 @@ class DocumentsAnalyzer(object):
         while examined_date <= last_date:
             print("===%s===") % examined_date
             # For every document type, process all documents and count number of neutral, positive, negative documents.
+            yahoo_values = self._process_yahoo(company_id, examined_date, used_dict_name)
             fb_p_values = self._process_fb_posts(company_id, examined_date, used_dict_name)
             fb_c_values = self._process_fb_comments(company_id, examined_date, used_dict_name)
-            yahoo_values = self._process_yahoo(company_id, examined_date, used_dict_name)
-            tw_values = self._process_tweets(company_id, examined_date, used_dict_name)
+            #tw_values = self._process_tweets(company_id, examined_date, used_dict_name)
+            tw_values = {'neu': 0, 'pos': 0, 'neg': 0}
+            #fb_p_values = {'neu': 0, 'pos': 0, 'neg': 0}
+            #fb_c_values = {'neu': 0, 'pos': 0, 'neg': 0}
             # Save acquired data
             day_data = [
                 company_id,
@@ -126,7 +131,10 @@ class DocumentsAnalyzer(object):
 
         # Calculate metrics by source.
         m_filename = file_name + '_source-metrics'
-        self.source_metrics_calculator.calculate_metrics_by_source(company_id, total_data, m_filename, price_type, write_header)
+        if classes_count == 3:
+            self.source_metrics_calculator.calculate_metrics_by_source(company_id, total_data, m_filename, price_type, write_header)
+        else:
+            self.source_metrics_calculator_2_classes.calculate_metrics_by_source(company_id, total_data, m_filename, price_type, write_header)
 
         # Calculate total metrics.
         m_filename = file_name + '_total-metrics'

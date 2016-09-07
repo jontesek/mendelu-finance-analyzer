@@ -8,7 +8,7 @@ from LexiconReader import LexiconReader
 
 class LexiconSentimentAnalyzer(object):
 
-    NEUTRAL_S_LIMIT = (-0.05, 0.10)
+    NEUTRAL_S_LIMIT = (-0.05, 0.05)
 
     def __init__(self):
         self.lex_reader = LexiconReader()
