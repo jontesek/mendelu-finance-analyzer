@@ -35,7 +35,7 @@ page_field = '%s.mega' % page_name
 
 articles = json_data['context']['dispatcher']['stores']['StreamStore']['streams'][page_field]['data']['stream_items']
 
-article = articles[1]
+article = articles[0]
 
 for key, value in article.iteritems():
     print('>%s: %s') % (key, value)

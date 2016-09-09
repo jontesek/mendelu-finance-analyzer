@@ -1,5 +1,7 @@
 from DbModel import DbModel
 
+import json
+
 
 
 class YahooDbModel(DbModel):
@@ -55,13 +57,17 @@ class YahooDbModel(DbModel):
 
     #### WRITE methods
     
-    def add_article(self, article, company_id, url, server_id):
+    def add_article(self, article, company_id, server_id):
         cursor = self.dbcon.cursor()
         # Insert article
-        query = "INSERT INTO article (company_id, published_date, title, text, url, server_id) VALUES (%s, %s, %s, %s, %s, %s)"
-        data = (company_id, article['datetime'], article['title'], article['text'], url, server_id)
+        query = "INSERT INTO article (company_id, server_id, published_date, title, text, url, summary, off_network, " \
+                "comment_count, doc_type, init_fb_shares_count, init_tw_shares_count, author_name, author_title, j_tags, j_entities) " \
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        data = (company_id, server_id, article['published_date'], article['title'], article['text'], article['url'], article['summary'], article['off_network'],
+                article['comment_count'], article['doc_type'], article['fb_shares'], article['tw_shares'],
+                article['author_name'], article['author_title'], json.dumps(article['j_tags']), json.dumps(article['j_entities']))
         cursor.execute(query, data)
-        # Return inserted ID for history.
+        # Return inserted ID (for history).
         return cursor.lastrowid
 
     

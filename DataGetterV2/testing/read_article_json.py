@@ -20,6 +20,8 @@ a_data = a_json['context']['dispatcher']['stores']['ContentStore']['uuidMap'].va
 for (key, value) in  a_data.iteritems():
     print(">>>%s: %s") % (key, value)
 
+print a_data['author']['name']
+
 quit()
 #print a_data['body']
 

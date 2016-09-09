@@ -1,0 +1,11 @@
+
+Yahoo download errors:
+====73: BMY====
+Traceback (most recent call last):
+  File "C:/Users/Jontes/Documents/programovani/PyCharmProjects/FinanceAnalyzer/DataGetterV2/src/run_yahoo_new.py", line 18, in <module>
+    ya_getter.get_new_articles()
+  File "C:\Users\Jontes\Documents\programovani\PyCharmProjects\FinanceAnalyzer\DataGetterV2\src\classes\YahooArticleGetter.py", line 32, in get_new_articles
+    self.get_headlines(company['ticker'], company['id'], company['article_newest_saved'])
+  File "C:\Users\Jontes\Documents\programovani\PyCharmProjects\FinanceAnalyzer\DataGetterV2\src\classes\YahooArticleGetter.py", line 75, in get_headlines
+    articles = json_data['context']['dispatcher']['stores']['StreamStore']['streams'][page_field]['data']['stream_items']
+KeyError: u'YFINANCE:BMY.mega'

@@ -8,7 +8,7 @@ config = {
                 'user': 'root',
                 'password': 'autobus',
                 'host': '127.0.0.1',
-                'database': 'fin_analyzer',
+                'database': 'fin_analyzer_v2',
                 'charset': 'utf8mb4',
                 'collation': 'utf8mb4_general_ci'
         }
