@@ -8,8 +8,9 @@ class StockPriceGetter(object):
 
     def __init__(self):
         self.dbmodel = StockPriceDbModel()
-        # example: http://real-chart.finance.yahoo.com/table.csv?s=INTC&d=3&e=9&f=2016&g=d&a=2&b=17&c=2000&ignore=.csv
-        self.price_url = 'http://real-chart.finance.yahoo.com/table.csv?s=%s&d=%d&e=%d&f=%d&g=d&a=%d&b=%d&c=%d&ignore=.csv'
+        # example: http://chart.finance.yahoo.com/table.csv?s=MSFT&a=7&b=9&c=2016&d=8&e=9&f=2016&g=d&ignore=.csv
+        self.price_url = 'http://chart.finance.yahoo.com/table.csv?s=%s&a=%d&b=%d&c=%d&d=%d&e=%d&f=%d&g=d&ignore=.csv'
+
 
     def get_prices_for_company_ticker(self, ticker, start_date, end_date):
         """
@@ -21,8 +22,8 @@ class StockPriceGetter(object):
         # The API has error - you must give the previous month.
         start_date = start_date - datetime.timedelta(days=33)
         # Build URL
-        target_url = self.price_url % (ticker, end_date.month, end_date.day, end_date.year,
-                                       start_date.month, start_date.day, start_date.year)
+        target_url = self.price_url % (ticker, start_date.month, start_date.day, start_date.year,
+                                       end_date.day, end_date.month, end_date.year)
         print target_url
         # Get CSV file and turn it into list. Data in format: Date,Open,High,Low,Close,Volume,Adj Close
         try:
@@ -46,6 +47,7 @@ class StockPriceGetter(object):
                     self.dbmodel.save_refilled_prices_for_company(new_data)
                 else:
                     self.dbmodel.save_prices_for_company(comp[0], data, stop_if_duplicate, insert_missing_days)
+            break
         # the end
         print('>>>New stock prices were saved into DB.')
 
@@ -54,12 +56,6 @@ class StockPriceGetter(object):
         """
         For every missing day (i) from start to end date, insert artificial value: d_i = (d_i-1 + d_i+1)/2
         If yahoo date do not go to end_date, end function prematurely.
-
-        :param company_id:
-        :param orig_yahoo_data:
-        :param start_date:
-        :param end_date:
-        :return:
         """
         # Prepare variables
         current_date = start_date

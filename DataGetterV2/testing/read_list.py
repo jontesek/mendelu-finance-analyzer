@@ -1,7 +1,7 @@
 import json
 
 #sample_page = '../test_data/ticker_not_found.htm'
-sample_page = '../test_data/mmm_list.html'
+sample_page = '../test_data/msft_list.htm'
 
 sample_file = open(sample_page, 'r')
 

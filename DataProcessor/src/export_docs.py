@@ -33,8 +33,8 @@ params_combinations = list(itertools.product(price_types, delays, const_boundari
 #### Process all Yahoo articles and Facebook posts.
 for (n_price_type, n_delay, n_boundary) in params_combinations:
     print("======All companies: %s, %s, %s======") % (n_price_type, str(n_delay), str(n_boundary))
-    d_exporter.process_documents_for_all_companies('article', from_date, n_delay, n_price_type, n_boundary, False, 50000, True)
-    #d_exporter.process_documents_for_all_companies('fb_post', from_date, n_delay, n_price_type, n_boundary, False, 100000, True)
+    #d_exporter.process_documents_for_all_companies('article', from_date, n_delay, n_price_type, n_boundary, False, 50000, True)
+    d_exporter.process_documents_for_all_companies('fb_post', from_date, n_delay, n_price_type, n_boundary, False, 100000, True)
 
 quit()
 

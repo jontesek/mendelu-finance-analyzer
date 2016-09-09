@@ -53,7 +53,7 @@ class YahooDbModel(DbModel):
         cursor.execute(query, (s_name, is_native))
         # Return new ID.
         return cursor.lastrowid
-    
+
 
     #### WRITE methods
     
@@ -63,9 +63,12 @@ class YahooDbModel(DbModel):
         query = "INSERT INTO article (company_id, server_id, published_date, title, text, url, summary, off_network, " \
                 "comment_count, doc_type, init_fb_shares_count, init_tw_shares_count, author_name, author_title, j_tags, j_entities) " \
                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        j_tags = json.dumps(article['j_tags'])
+        if j_tags == 'null':
+            j_tags = None
         data = (company_id, server_id, article['published_date'], article['title'], article['text'], article['url'], article['summary'], article['off_network'],
                 article['comment_count'], article['doc_type'], article['fb_shares'], article['tw_shares'],
-                article['author_name'], article['author_title'], json.dumps(article['j_tags']), json.dumps(article['j_entities']))
+                article['author_name'], article['author_title'], j_tags, json.dumps(article['j_entities']))
         cursor.execute(query, data)
         # Return inserted ID (for history).
         return cursor.lastrowid
@@ -78,11 +81,17 @@ class YahooDbModel(DbModel):
         cursor.close()
         
     
-    def update_last_download(self, company_id, newest_saved_date):
+    def update_last_download(self, company_id):
+        # Commit: add_article, add_article_history
+        self.dbcon.commit()
+        # Select the newest article in DB.
         cursor = self.dbcon.cursor()
+        query = "SELECT MAX(published_date) FROM article WHERE company_id = %s"
+        cursor.execute(query, [company_id])
+        newest_saved_date = cursor.fetchone()[0]
+        # Update!
         query = "UPDATE last_download SET article_newest_saved = %s WHERE company_id=%s"           
-        cursor.execute(query, (newest_saved_date, company_id)) 
-        # commit add_article, add_article_history inserts, this update
+        cursor.execute(query, (newest_saved_date, company_id))
         self.dbcon.commit()
         cursor.close()
 

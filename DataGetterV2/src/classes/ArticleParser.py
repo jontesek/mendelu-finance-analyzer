@@ -23,7 +23,7 @@ class ArticleParser(object):
         return {
             'text': text,
             'j_entities': article_data['entities'],
-            'j_tags': article_data['tags'],
+            'j_tags': article_data['tags'] if article_data['tags'] else None,
             'doc_type': article_data['type'],
             'author_name': author_name,
             'author_title': author_title,

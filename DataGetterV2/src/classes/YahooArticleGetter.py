@@ -20,7 +20,6 @@ class YahooArticleGetter(object):
         self.db_model = YahooDbModel()
         self.article_parser = ArticleParser()
         self.exec_error = False
-        self.newest_saved_date = None
 
     #### METHOD 1: get new articles
         
@@ -28,13 +27,13 @@ class YahooArticleGetter(object):
         """Main method for getting and saving new articles."""
         # Browse through all companies.
         for company in self.db_model.get_companies():
-            self.newest_saved_date = None
             print "====%d: %s====" % (company['id'], company['ticker'])
             # Get headlines and process so far unsaved articles.
             #self.get_headlines(company['ticker'], company['id'], company['article_newest_saved'])
             #continue
             try: 
                 self.get_headlines(company['ticker'], company['id'], company['article_newest_saved'])
+                time.sleep(random.uniform(3, 6))
             except Exception, e:
                 self.exec_error = True
                 print "serious error: "+repr(e)
@@ -79,26 +78,26 @@ class YahooArticleGetter(object):
         except KeyError, e:
             print str(e)
             return False
-        # Process all articles (from newest to oldest - 10 articles into history).
-        for art in articles:
-            if not self.__process_article_from_list(art, company_id, last_date_in_db):
-                break   # Article date is old.
-            time.sleep(random.uniform(0.2, 1))
-        # Update last saved article datetime.
-        print "NEWEST DATE: %s" % self.newest_saved_date
-        if self.newest_saved_date:
-            self.db_model.update_last_download(company_id, self.newest_saved_date)
+        # Process all articles (from oldest to newest, 10 articles into history).
+        for art in reversed(articles):
+            self.__process_article_from_list(art, company_id, last_date_in_db)
+        # Commit inserts and update newest saved article datetime.
+        self.db_model.update_last_download(company_id)
 
     
     def __process_article_from_list(self, list_data, company_id, last_date_in_db):
         try:
-            # Check if the article cannot be already in the database.
+            # Check if the article can be already in the database.
             article_date = datetime.datetime.utcfromtimestamp(list_data['pubtime'] / 1000.0)
+            print str(article_date),
             if article_date <= last_date_in_db:
+                print('not saving!')
                 return False
             # Check if the article is advertisement.
             if list_data['type'] == 'ad':
                 return False
+            # If the article should be parsed, wait some time.
+            time.sleep(random.uniform(2, 4))
             # Define some used variables.
             a_publisher = list_data['publisher']
             a_is_native = False if list_data['off_network'] else True
@@ -120,9 +119,6 @@ class YahooArticleGetter(object):
             # Save article share count.
             if share_data:
                 self.db_model.add_article_history(article_id, share_data['fb_shares'], share_data['tw_shares'])
-            # Update date of the newest succesfully saved article.
-            if not self.newest_saved_date:
-                self.newest_saved_date = final_data['published_date']
         except urllib2.URLError, e:
             print(e)     # Article URL is not accessible.
         except ParsingNotImplementedException, e:
@@ -156,7 +152,6 @@ class YahooArticleGetter(object):
         out_data['published_date'] = datetime.datetime.utcfromtimestamp(list_data['pubtime'] / 1000.0)
         out_data['off_network'] = list_data['off_network']
         out_data['comment_count'] = list_data['commentCount'] if 'commentCount' in list_data else 0
-        out_data['yahoo_id'] = list_data['id']
         # Parsed data from article.
         out_data['text'] = parsed_data['text'] if parsed_data else None
         out_data['author_name'] = parsed_data['author_name'] if parsed_data else None
@@ -195,7 +190,7 @@ class YahooArticleGetter(object):
 
     def __get_share_count(self, url):
         """Get number of shares for given URL on Facebook."""
-        #return {'fb_shares': None, 'tw_shares': None}
+        return False
         try: 
             # Get FB share count.
             fb_data = json.loads(urllib2.urlopen('http://graph.facebook.com/'+url).read())

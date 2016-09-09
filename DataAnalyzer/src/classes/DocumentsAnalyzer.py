@@ -83,10 +83,7 @@ class DocumentsAnalyzer(object):
             yahoo_values = self._process_yahoo(company_id, examined_date, used_dict_name)
             fb_p_values = self._process_fb_posts(company_id, examined_date, used_dict_name)
             fb_c_values = self._process_fb_comments(company_id, examined_date, used_dict_name)
-            #tw_values = self._process_tweets(company_id, examined_date, used_dict_name)
-            tw_values = {'neu': 0, 'pos': 0, 'neg': 0}
-            #fb_p_values = {'neu': 0, 'pos': 0, 'neg': 0}
-            #fb_c_values = {'neu': 0, 'pos': 0, 'neg': 0}
+            tw_values = self._process_tweets(company_id, examined_date, used_dict_name)
             # Save acquired data
             day_data = [
                 company_id,

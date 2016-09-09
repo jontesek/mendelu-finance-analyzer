@@ -43,8 +43,8 @@ class StockPriceDbModel(DbModel):
     def save_refilled_prices_for_company(self, in_data):
         cursor = self.dbcon.cursor()
         # Prepare query
-        query = 'REPLACE INTO stock_price (company_id, date, open, high, low, close, volume, adjclose) ' \
-                'VALUES (%s, %s, %s, %s, %s, %s, %s, %s) '
+        query = 'REPLACE INTO stock_price (company_id, date, open, high, low, close, volume, adj_close) ' \
+                'VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'
         # Execute query
         cursor.executemany(query, in_data)
         self.dbcon.commit()

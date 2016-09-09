@@ -7,7 +7,7 @@ from classes.DocumentsAnalyzer import DocumentsAnalyzer
 ####
 # Parameter definitions.
 ####
-output_dir = os.path.abspath('../../outputs/dict_anal_2/ewma')
+output_dir = os.path.abspath('../../outputs/dict_anal_2/ewma-all')
 da = DocumentsAnalyzer(output_dir, False)
 
 price_type = 'ewma'
