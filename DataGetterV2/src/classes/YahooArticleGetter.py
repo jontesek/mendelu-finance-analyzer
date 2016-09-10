@@ -33,7 +33,7 @@ class YahooArticleGetter(object):
             #continue
             try: 
                 self.get_headlines(company['ticker'], company['id'], company['article_newest_saved'])
-                time.sleep(random.uniform(3, 6))
+                time.sleep(10)
             except Exception, e:
                 self.exec_error = True
                 print "serious error: "+repr(e)
@@ -97,7 +97,7 @@ class YahooArticleGetter(object):
             if list_data['type'] == 'ad':
                 return False
             # If the article should be parsed, wait some time.
-            time.sleep(random.uniform(2, 4))
+            time.sleep(2)
             # Define some used variables.
             a_publisher = list_data['publisher']
             a_is_native = False if list_data['off_network'] else True

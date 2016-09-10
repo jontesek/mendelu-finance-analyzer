@@ -1,0 +1,4 @@
+
+===Partition tweet database by month===
+http://anothermysqldba.blogspot.cz/2014/04/mysql-partitions-timestamp-datetime.html
+http://code.openark.org/blog/mysql/your-magical-range-partitioning-maintenance-query

@@ -135,7 +135,7 @@ class DocumentsExporter(object):
         processed_date = from_date
         day_plus = datetime.timedelta(days=1)
         # Choose if  get only non search tweets.
-        if company_id in nonsearch_tweets_cids:
+        if doc_type == 'tweet' and company_id in nonsearch_tweets_cids:
             doc_type = 'tweet_nonsearch'
         # For every day, get documents from DB.
         while processed_date <= to_date:
@@ -154,7 +154,7 @@ class DocumentsExporter(object):
             else:
                 raise ValueError('Unknown document type.')
             # Reset tweet doctype.
-            if company_id in nonsearch_tweets_cids:
+            if doc_type == 'tweet' and company_id in nonsearch_tweets_cids:
                 doc_type = 'tweet'
             # Process the documents.
             d_list = self._process_given_documents(daily_documents, doc_type, days_delay, price_type, const_boundaries, False)

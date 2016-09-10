@@ -1,5 +1,6 @@
 import datetime
 import time
+import json
 
 from TwitterDbModel import TwitterDbModel
 from MyMailer import MyMailer
@@ -24,8 +25,11 @@ class TwitterGetter(object):
             try:
                 # If company has no Twitter name, use only search name field.
                 if not company['tw_name']:
+                    self.__get_search_tweets('ticker', company)
                     self.__get_search_tweets('search_name', company)
                     continue    # Skip other tweets types.
+                # Get tweets containing "ticker"
+                self.__get_search_tweets('ticker', company)
                 # Get tweets containing @companyUsername: @CocaCola
                 self.__get_search_tweets('mention', company)
                 # Get tweets containg "company name" but not containing @companyUsername: coco cola -@CocaCola
@@ -52,7 +56,7 @@ class TwitterGetter(object):
         # Download timestamp
         cur_timestamp = int(time.time()) 
         # Create a correct search query.
-        query = self.__create_query(tweet_type, company['tw_name'], company['tw_search_name'])
+        query = self.__create_query(tweet_type, company['tw_name'], company['tw_search_name'], company['ticker'])
         #print query
         # Send request to Twitter and get result.
         result = self.twitter_api.search(q=query, lang='en', result_type='mixed', count=100, since_id=last_id)
@@ -71,7 +75,7 @@ class TwitterGetter(object):
         self.db_model.update_last_id(tweet_type, max_id, company['id'])
         
 
-    def __create_query(self, tweet_type, comp_username, search_name):
+    def __create_query(self, tweet_type, comp_username, search_name, ticker):
         """Create a search query based on provided tweet type."""  
         if tweet_type == 'mention':
             return '@'+comp_username
@@ -82,6 +86,8 @@ class TwitterGetter(object):
                 return search_name + ' -@'+comp_username
         if tweet_type == 'reply':
             return 'to:'+comp_username
+        if tweet_type == 'ticker':
+            return ticker
 
 
     def __get_timeline_tweets(self, company):
@@ -115,6 +121,9 @@ class TwitterGetter(object):
 
     def __process_status(self, status, company_id, tweet_type, cur_timestamp):
         """Process tweet, get desired information and return list for writing to DB."""
+        # for key, value in status.iteritems():
+        #     print(">%s: %s") % (key, value)
+        # exit()
         data = []
         # Tweet data
         data.append(status['id'])                       # tweet id
@@ -129,7 +138,7 @@ class TwitterGetter(object):
         text = ' '.join(status['text'].strip().split())
         data.append(text)
         #=== Reply to
-        data.append(status['in_reply_to_status_id']) # reply to
+        data.append(status['in_reply_to_status_id'])  # reply to
         #=== Tweet place
         if status['place'] == None:
             data.append(None)
@@ -145,6 +154,15 @@ class TwitterGetter(object):
         data.append(status['user']['location'])              # location 
         # Download timestamp
         data.append(cur_timestamp)
+        # More stuff
+        data.append(json.dumps(status['entities']))
+        data.append(json.dumps(status['contributors']) if status['contributors'] else None)
+        data.append(1 if status['truncated'] else 0)
+        data.append(1 if status['is_quote_status'] else 0)
+        data.append(1 if status['retweeted'] else 0)  # Is it a retweet?
+        data.append(json.dumps(status['coordinates']) if status['coordinates'] else None)
+        data.append(status['in_reply_to_user_id'])
+        data.append(status['lang'])
         # result
         return data
     
@@ -158,6 +176,8 @@ class TwitterGetter(object):
             return 3
         elif tw_type == 'timeline':
             return 4
+        elif tw_type == 'ticker':
+            return 5
 
 
     # EMAILING

@@ -9,3 +9,7 @@ Traceback (most recent call last):
   File "C:\Users\Jontes\Documents\programovani\PyCharmProjects\FinanceAnalyzer\DataGetterV2\src\classes\YahooArticleGetter.py", line 75, in get_headlines
     articles = json_data['context']['dispatcher']['stores']['StreamStore']['streams'][page_field]['data']['stream_items']
 KeyError: u'YFINANCE:BMY.mega'
+
+
+Twitter
+HFU6418OIX_companydoesnotexist
