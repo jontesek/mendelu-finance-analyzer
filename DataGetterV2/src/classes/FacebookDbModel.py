@@ -18,7 +18,7 @@ class FacebookDbModel(DbModel):
     
     def get_companies_update(self):
         cursor = self.dbcon.cursor(dictionary=True)
-        cursor.execute("SELECT id, fb_page FROM company WHERE fb_page IS NOT NULL and id=479 ORDER BY id ASC")
+        cursor.execute("SELECT id, fb_page FROM company WHERE fb_page IS NOT NULL ORDER BY id ASC")
         return cursor.fetchall()
     
     

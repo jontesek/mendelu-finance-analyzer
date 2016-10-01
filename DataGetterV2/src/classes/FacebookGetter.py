@@ -145,7 +145,6 @@ class FacebookGetter(object):
         if comments_history:
             self.db_model.add_comments_history(comments_history)
         # Update last download
-        exit()
         self.db_model.update_last_download(company_id, current_timestamp)
         
     
@@ -174,22 +173,21 @@ class FacebookGetter(object):
         # History insert variables
         posts_history = []
         comments_history = []
-        # Fields for the FB query
-        my_fields = 'shares,likes.limit(0).summary(true),comments.limit(100).summary(true)'
         # Select posts for given company from last X days.
         for post_db in self.db_model.get_posts_since(days, company['id']):
             #print post_db['id']
             # Get post data from FB.
             try:
-                post_data = self.fb_api.get_object(id=post_db['fb_id'], date_format='U', fields=my_fields)
-            except Exception, e:
+                post_data = self.fb_api.get_object(id=post_db['fb_id'], date_format='U', fields=self.posts_query_fields)
+            except GraphAPIError, e:
                 self.exec_error = True
-                print repr(e)
+                print traceback.format_exc()
                 # Is it Invalid OAuth access token?
                 if int(e.result['error']['code']) == 190:
+                    self.__send_serious_error("Invalid access token. \n" + traceback.format_exc(),
+                                              company['fb_page'], 'update_posts')
                     raise e    # end script
                 # ELSE - skip the post
-                #self.__send_name_error(post_db['id'], e, '__update_posts_for')
                 continue
             # Skip weird posts (should not be necessary).
             if 'shares' not in post_data or 'likes' not in post_data:
@@ -200,6 +198,12 @@ class FacebookGetter(object):
                 post_data['likes']['summary']['total_count'],
                 post_data['shares']['count'],
                 post_data['comments']['summary']['total_count'],
+                post_data['reactions_love']['summary']['total_count'],
+                post_data['reactions_wow']['summary']['total_count'],
+                post_data['reactions_haha']['summary']['total_count'],
+                post_data['reactions_sad']['summary']['total_count'],
+                post_data['reactions_angry']['summary']['total_count'],
+                post_data['reactions_thankful']['summary']['total_count'],
             ])
             # Has post any comments?
             if not post_data['comments']['data']:
@@ -215,18 +219,24 @@ class FacebookGetter(object):
                 # Check if comment with the FB ID is already in DB.
                 if fb_com['id'] in db_com_dict:
                     # YES - only add item to history.
-                    comments_history.append((db_com_dict[fb_com['id']], fb_com['id'], company['id'], current_timestamp, int(fb_com['like_count'])))
+                    comments_history.append(
+                        (db_com_dict[fb_com['id']], fb_com['id'], company['id'], current_timestamp,
+                         fb_com['likes']['summary']['total_count'])
+                    )
                 else:
                     # NO - insert comment into DB, get ID and add item to history.
                     new_comment_id = self.db_model.add_comment(self.__process_comment(fb_com, post_db['id'], company['id']))
-                    comments_history.append((new_comment_id, fb_com['id'], company['id'], current_timestamp, int(fb_com['like_count'])))
+                    comments_history.append(
+                        (new_comment_id, fb_com['id'], company['id'], current_timestamp,
+                         fb_com['likes']['summary']['total_count'])
+                    )
         # Save history to DB and commit all.
         if posts_history:
             self.db_model.add_posts_history(posts_history)
         if comments_history:
             self.db_model.add_comments_history(comments_history)
         self.db_model.dbcon.commit()
-    
+
     
     #### PROCESSING methods
     
@@ -236,7 +246,7 @@ class FacebookGetter(object):
         a_name = comment['from']['name'] if 'name' in comment['from'] else None
         data = [
             comment['id'], post_db_id, company_id, comment['created_time'], c_text, comment['from']['id'], a_name,
-            int(comment['likes']['summary']['total_count']),
+            comment['likes']['summary']['total_count'],
         ]
         return data
     
