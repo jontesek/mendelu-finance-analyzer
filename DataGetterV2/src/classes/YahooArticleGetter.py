@@ -3,6 +3,7 @@ import json
 import time
 import datetime
 import random
+import traceback
 
 from ArticleParser import ArticleParser
 from YahooDbModel import YahooDbModel
@@ -29,26 +30,24 @@ class YahooArticleGetter(object):
         for company in self.db_model.get_companies():
             print "====%d: %s====" % (company['id'], company['ticker'])
             # Get headlines and process so far unsaved articles.
-            #self.get_headlines(company['ticker'], company['id'], company['article_newest_saved'])
-            #continue
-            try: 
+            try:
                 self.get_headlines(company['ticker'], company['id'], company['article_newest_saved'])
-                time.sleep(10)
-            except Exception, e:
+                time.sleep(random.uniform(10, 20))
+            except Exception:
                 self.exec_error = True
-                print "serious error: "+repr(e)
-                #self.__send_serious_error(repr(e))
+                print "serious error: {0}".format(traceback.format_exc())
+                self.__send_serious_error(traceback.format_exc())
                 #break   # end script
         # Log execution.
         self.db_model.add_log_exec(4, self.exec_error)
-        
+
     
     def get_headlines(self, ticker, company_id, last_date_in_db):
         """
         Get headlines and save articles for given company.
         """
         # Get ticker page.
-        page = urllib2.urlopen(self.headlines_url + ticker)
+        page = urllib2.urlopen(self.headlines_url + ticker, timeout=5)
         #page = open('../test_data/amd_list.html')
         # Check if ticker page exists.
         header_line = page.readline()
@@ -97,7 +96,7 @@ class YahooArticleGetter(object):
             if list_data['type'] == 'ad':
                 return False
             # If the article should be parsed, wait some time.
-            time.sleep(2)
+            time.sleep(random.uniform(2, 4))
             # Define some used variables.
             a_publisher = list_data['publisher']
             a_is_native = False if list_data['off_network'] else True
@@ -131,28 +130,26 @@ class YahooArticleGetter(object):
         """Parse the article (choose the right parser)."""
         if is_native:
             print('native'),
-            html = urllib2.urlopen(url)
+            html = urllib2.urlopen(url, timeout=5)
             #html = open('../test_data/ya.htm')
             return self.article_parser.parse_native_yahoo(html)
         else:
             print('preview'),
-            html = urllib2.urlopen('http://finance.yahoo.com'+preview_link)
+            html = urllib2.urlopen('http://finance.yahoo.com' + preview_link)
             #html = open('../test_data/yahoo_preview.htm')
             return self.article_parser.parse_yahoo_preview(html)
+
 
     def _prepare_article_data_for_db(self, list_data, parsed_data, share_data):
         out_data = {}
         # Data from news list
         out_data['title'] = list_data['title']
         out_data['url'] = list_data['url']
-        try:
-            out_data['summary'] = list_data['summary']
-        except KeyError, e:
-            out_data['summary'] = None
+        out_data['summary'] = list_data.get('summary', None)
         out_data['published_date'] = datetime.datetime.utcfromtimestamp(list_data['pubtime'] / 1000.0)
         out_data['off_network'] = list_data['off_network']
         out_data['comment_count'] = list_data['commentCount'] if 'commentCount' in list_data else 0
-        # Parsed data from article.
+        # Parsed data from article
         out_data['text'] = parsed_data['text'] if parsed_data else None
         out_data['author_name'] = parsed_data['author_name'] if parsed_data else None
         out_data['author_title'] = parsed_data['author_title'] if parsed_data else None
@@ -164,6 +161,7 @@ class YahooArticleGetter(object):
         out_data['tw_shares'] = share_data['tw_shares'] if share_data else 0
         # Final result
         return out_data
+
 
     #### METHOD 2: update article statistics
        
@@ -188,13 +186,13 @@ class YahooArticleGetter(object):
         # Log execution.
         self.db_model.add_log_exec(5, self.exec_error)
 
+
     def __get_share_count(self, url):
         """Get number of shares for given URL on Facebook."""
-        return False
-        try: 
+        return False    # after 20 articles it gives 403 forbidden error
+        try:
             # Get FB share count.
-            fb_data = json.loads(urllib2.urlopen('http://graph.facebook.com/'+url).read())
-            # Twitter share API does not work anymore (from 20.11.2015).
+            fb_data = json.loads(urllib2.urlopen('http://graph.facebook.com/' + url).read())
             # Check count
             fb_shares = int(fb_data['shares']) if 'shares' in fb_data else 0
             # Is it worth saving?

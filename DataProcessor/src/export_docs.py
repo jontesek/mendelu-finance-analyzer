@@ -11,7 +11,7 @@ from classes.DocumentsExporter import DocumentsExporter
 # Prepare exporter object
 file_paths = {
     'stopwords': '../input_sources/google_en_stopwords.txt',
-    'output_dir': os.path.abspath('../../outputs/class_text/sma20_ewma5/fb_comment'),
+    'output_dir': os.path.abspath('../../outputs/class_text/sma20_ewma5/twitter'),
 }
 d_exporter = DocumentsExporter(file_paths)
 # Set lowest published date.
@@ -61,8 +61,8 @@ to_date = datetime(2016, 4, 2).date()
 # d_exporter.change_output_dir(new_dir)
 # Process all parameters and companies.
 for (n_price_type, n_delay, n_boundary) in params_combinations:
-    print("===Companies %s: %s, %s, %s===") % (str(total_tw_ids), n_price_type, str(n_delay), str(n_boundary))
-    # d_exporter.process_documents_for_selected_companies(
-    # total_tw_ids, 'tweet', from_date, to_date, n_delay, n_price_type, n_boundary, False, 1000000, False, nonsearch_cids)
-    d_exporter.process_companies_by_source('all-fb-40pd', 'fb_comment', from_date, to_date, n_delay, n_price_type,
-                                           n_boundary, False, 1000000)
+    print("===%s, %s, %s===") % (n_price_type, str(n_delay), str(n_boundary))
+    d_exporter.process_documents_for_selected_companies(
+    total_tw_ids, 'tweet', from_date, to_date, n_delay, n_price_type, n_boundary, False, 1000000, False, nonsearch_cids)
+    # d_exporter.process_companies_by_source('all-fb-40pd', 'fb_comment', from_date, to_date, n_delay, n_price_type,
+    #                                        n_boundary, False, 1000000)

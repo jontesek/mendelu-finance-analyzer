@@ -151,11 +151,9 @@ class DocumentsExporter(object):
                 daily_documents = self.db_model.get_daily_tweets_for_company(company_id, processed_date, docs_query_limit)
             elif doc_type == 'tweet_nonsearch':
                 daily_documents = self.db_model.get_daily_nonsearch_tweets_for_company(company_id, processed_date, docs_query_limit)
+                doc_type = 'tweet'  # reset tweet doctype
             else:
                 raise ValueError('Unknown document type.')
-            # Reset tweet doctype.
-            if doc_type == 'tweet' and company_id in nonsearch_tweets_cids:
-                doc_type = 'tweet'
             # Process the documents.
             d_list = self._process_given_documents(daily_documents, doc_type, days_delay, price_type, const_boundaries, False)
             #print('Processed docs: %d') % d_length
