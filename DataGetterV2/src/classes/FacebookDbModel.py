@@ -45,7 +45,8 @@ class FacebookDbModel(DbModel):
     
     def add_post(self, post_data):
         cursor = self.dbcon.cursor()
-        query = "INSERT INTO fb_post (fb_id, company_id, created_timestamp, text, init_likes_count) VALUES (%s, %s, %s, %s, %s)"
+        query = "INSERT INTO fb_post (fb_id, company_id, created_timestamp, text, init_likes_count, object_type) " \
+                "VALUES (%s, %s, %s, %s, %s, %s)"
         cursor.execute(query, post_data)  
         #self.dbcon.commit()  
         return cursor.lastrowid
@@ -53,7 +54,8 @@ class FacebookDbModel(DbModel):
     
     def add_comment(self, com_data):
         cursor = self.dbcon.cursor()
-        query = "INSERT INTO fb_comment (fb_id, post_id, company_id, created_timestamp, text, author_fb_id, author_name, init_likes_count) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        query = "INSERT INTO fb_comment (fb_id, post_id, company_id, created_timestamp, text, author_fb_id, author_name, init_likes_count) " \
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
         cursor.execute(query, com_data)  
         #self.dbcon.commit()  
         return cursor.lastrowid           
@@ -61,7 +63,10 @@ class FacebookDbModel(DbModel):
     
     def add_posts_history(self, posts_history):
         cursor = self.dbcon.cursor()
-        query = "INSERT INTO fb_post_history (post_id, fb_post_id, company_id, download_timestamp, likes_count, shares_count, comments_count) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        query = ("INSERT INTO fb_post_history (post_id, fb_post_id, company_id, download_timestamp, "
+                 "likes_count, shares_count, comments_count, "
+                 "reactions_love, reactions_wow, reactions_haha, reactions_sad, reactions_angry, reactions_thankful)"
+                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
         cursor.executemany(query, posts_history)
         cursor.close()
         #self.dbcon.commit()
@@ -69,7 +74,8 @@ class FacebookDbModel(DbModel):
     
     def add_comments_history(self, comments_history):
         cursor = self.dbcon.cursor()
-        query = "INSERT INTO fb_comment_history (comment_id, fb_comment_id, company_id, download_timestamp, likes_count) VALUES (%s, %s, %s, %s, %s)"
+        query = "INSERT INTO fb_comment_history (comment_id, fb_comment_id, company_id, download_timestamp, likes_count) " \
+                "VALUES (%s, %s, %s, %s, %s)"
         cursor.executemany(query, comments_history)
         cursor.close()
         #self.dbcon.commit()
