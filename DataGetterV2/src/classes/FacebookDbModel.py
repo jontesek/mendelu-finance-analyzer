@@ -11,7 +11,8 @@ class FacebookDbModel(DbModel):
         
     def get_companies(self):
         cursor = self.dbcon.cursor(dictionary=True)
-        query = "SELECT id, fb_page, fb_post_timestamp FROM company JOIN last_download ON id=company_id WHERE fb_page IS NOT NULL ORDER BY id ASC"
+        query = "SELECT id, fb_page, fb_post_timestamp, fb_feed_timestamp FROM company " \
+                "JOIN last_download ON id=company_id WHERE fb_page IS NOT NULL ORDER BY id ASC"
         cursor.execute(query)
         return cursor.fetchall()
     
@@ -45,10 +46,9 @@ class FacebookDbModel(DbModel):
     
     def add_post(self, post_data):
         cursor = self.dbcon.cursor()
-        query = "INSERT INTO fb_post (fb_id, company_id, created_timestamp, text, init_likes_count, object_type) " \
-                "VALUES (%s, %s, %s, %s, %s, %s)"
+        query = "INSERT INTO fb_post (fb_id, company_id, created_timestamp, text, init_likes_count, object_type, status_type, story) " \
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
         cursor.execute(query, post_data)  
-        #self.dbcon.commit()  
         return cursor.lastrowid
     
     
@@ -57,8 +57,7 @@ class FacebookDbModel(DbModel):
         query = "INSERT INTO fb_comment (fb_id, post_id, company_id, created_timestamp, text, author_fb_id, author_name, init_likes_count) " \
                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
         cursor.execute(query, com_data)  
-        #self.dbcon.commit()  
-        return cursor.lastrowid           
+        return cursor.lastrowid
     
     
     def add_posts_history(self, posts_history):
@@ -80,13 +79,30 @@ class FacebookDbModel(DbModel):
         cursor.close()
         #self.dbcon.commit()
     
-    
-        
+
+    def add_feed_item(self, item_data):
+        cursor = self.dbcon.cursor()
+        query = ("INSERT INTO fb_feed (fb_id, company_id, created_timestamp, text,"
+                 "init_likes_count, downloaded_timestamp, shares_count, comments_count, object_type, status_type,"
+                 "from_name, from_id, story, link, mentioned_profiles, message_tags, place)"
+                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+        cursor.execute(query, item_data)
+        return cursor.lastrowid
+
+
     def update_last_download(self, company_id, last_timestamp):
         cursor = self.dbcon.cursor()
         query = "UPDATE last_download SET fb_post_timestamp = %s WHERE company_id = %s"
         cursor.execute(query, (last_timestamp, company_id))
         # The last statement in the whole transaction - commit changes.
         self.dbcon.commit()
-        cursor.close()    
+        cursor.close()
+
+    def update_last_download_feed(self, company_id, last_timestamp):
+        cursor = self.dbcon.cursor()
+        query = "UPDATE last_download SET fb_feed_timestamp = %s WHERE company_id = %s"
+        cursor.execute(query, (last_timestamp, company_id))
+        # The last statement in the whole transaction - commit changes.
+        self.dbcon.commit()
+        cursor.close()
         
