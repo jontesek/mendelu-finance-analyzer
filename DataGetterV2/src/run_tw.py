@@ -1,18 +1,17 @@
-########################################
-# Imports
-########################################
+import json
+
 from twython import Twython
+
 from classes.TwitterGetter import TwitterGetter
 
 ########################################
 # Twitter config 
 ########################################
-APP_KEY = 'YttP9JDT6Yh3NQmG2GGoVMRw7'
-APP_SECRET = '0H9LNpJD5ig4AFtToo5lZspU8nimPMKz2qVcotrMd4485Rpo9V'
-twitter_api = Twython(APP_KEY, APP_SECRET, oauth_version=2)
+tw_config = json.load(open('../configs/twitter.json'))
+
+#twitter_api = Twython(tw_config['app_key'], tw_config['app_secret'], oauth_version=2)
 #ACCESS_TOKEN = twitter_api.obtain_access_token()
-ACCESS_TOKEN = 'AAAAAAAAAAAAAAAAAAAAANczfQAAAAAAUiCzh70Gj7F61%2FTRcDJiqhGh4iY%3DFJSOFkkMfTey5RxFjQlx2ZKCbn3bVnEhZ4RL7LmHajiAKM3xhc'
-twitter_api = Twython(APP_KEY, access_token=ACCESS_TOKEN)
+twitter_api = Twython(app_key=tw_config['app_key'], access_token=tw_config['access_token'])
 
 ########################################
 # Create TwitterGetter 

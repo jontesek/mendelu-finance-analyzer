@@ -1,6 +1,3 @@
-########################################
-# Imports
-########################################
 import json
 
 import facebook
@@ -12,7 +9,8 @@ from classes.FacebookGetter import FacebookGetter
 ########################################
 
 fb_config = json.load(open('../configs/facebook.json'))
-#ACCES_TOKEN = facebook.get_app_access_token(APP_ID, APP_SECRET)
+#fb_api = facebook.GraphAPI()
+#ACCES_TOKEN = fb_api.get_app_access_token(fb_config['app_id'], fb_config['app_secret'])
 
 ########################################
 # Create FacebookGetter

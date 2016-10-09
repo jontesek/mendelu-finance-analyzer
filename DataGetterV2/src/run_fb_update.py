@@ -9,7 +9,6 @@ from classes.FacebookGetter import FacebookGetter
 ########################################
 
 fb_config = json.load(open('../configs/facebook.json'))
-#ACCES_TOKEN = facebook.get_app_access_token(APP_ID, APP_SECRET)
 
 ########################################
 # Create FacebookGetter
@@ -17,5 +16,5 @@ fb_config = json.load(open('../configs/facebook.json'))
 fb_api = facebook.GraphAPI(fb_config['access_token'], version='2.7')
 fb_getter = FacebookGetter(fb_api)
 
-# update post and comments stats. X ... posts from last X days.
+# Update post and comments stats. X ... posts from last X days.
 fb_getter.update_posts(14)
