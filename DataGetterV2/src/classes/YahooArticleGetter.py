@@ -189,20 +189,23 @@ class YahooArticleGetter(object):
                 com_ids_in_db = [x[0] for x in db_comments]
                 # Process comments
                 self._process_comments_in_article(comments_data, article, com_ids_in_db)
+
         # Log execution
         self.db_model.add_log_exec(7, False)
 
 
     def _process_comments_in_article(self, comments_data, article, com_ids_in_db):
         all_data = []
+        cur_timestamp = int(time.time())
+
         for com in comments_data['list']:
             yahoo_id = com['selfURI'].split('/')[-1]
             if yahoo_id in com_ids_in_db:
                 continue
-            # Prepare data
-            content = ''
-            for par in com['content']:
-                content += '<p>{0}</p>'.format(par.strip())
+
+            content = '<p>'.join(com['content'])
+            content = ' '.join(content.strip().split())
+
             save_data = [
                 article['id'],
                 article['company_id'],
@@ -214,6 +217,7 @@ class YahooArticleGetter(object):
                 com['thumbsUpCount'],
                 com['creator'],
                 com['userProfile']['nickName'],
+                cur_timestamp,
             ]
             # Add data
             all_data.append(save_data)

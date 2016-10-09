@@ -131,8 +131,8 @@ class YahooDbModel(DbModel):
     def add_comments(self, comments):
         cursor = self.dbcon.cursor()
         query = ("INSERT INTO article_comment (article_id, company_id, created_timestamp, yahoo_id, text, "
-                 "reply_count, down_count, up_count, creator_id, user_profile_name) "
-                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+                 "reply_count, down_count, up_count, creator_id, user_profile_name, downloaded_timestamp) "
+                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
         cursor.executemany(query, comments)
         cursor.close()
         self.dbcon.commit()
