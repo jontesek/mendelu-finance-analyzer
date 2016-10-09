@@ -35,6 +35,17 @@ class YahooDbModel(DbModel):
         query = 'SELECT id, url FROM article WHERE company_id = %s AND (published_date >= DATE_SUB(NOW(), INTERVAL %s DAY))'
         cursor.execute(query, (company_id, days))
         return cursor
+
+
+    def get_articles_in_interval(self, company_id, days_ago_from, days_ago_to):
+        cursor = self.dbcon.cursor(dictionary=True)
+        query = ('SELECT id, company_id, published_date, yahoo_uuid FROM article '
+                 'WHERE company_id = %s AND '
+                 'published_date BETWEEN DATE_SUB(NOW(), INTERVAL %s DAY) AND DATE_SUB(NOW(), INTERVAL %s DAY) AND '
+                 'yahoo_uuid IS NOT NULL '
+                 'ORDER BY id ASC')
+        cursor.execute(query, (company_id, days_ago_from, days_ago_to))
+        return cursor.fetchall()
     
     
     def get_server_id(self, s_name, is_native):
@@ -55,22 +66,35 @@ class YahooDbModel(DbModel):
         return cursor.lastrowid
 
 
+    def get_comments_for_article(self, article_id):
+        cursor = self.dbcon.cursor()
+        query = 'SELECT yahoo_id FROM article_comment WHERE article_id = %s'
+        cursor.execute(query, [article_id])
+        return cursor.fetchall()
+
+
     #### WRITE methods
     
     def add_article(self, article, company_id, server_id):
         cursor = self.dbcon.cursor()
-        # Insert article
-        query = "INSERT INTO article (company_id, server_id, published_date, title, text, url, summary, off_network, " \
-                "comment_count, doc_type, init_fb_shares_count, init_tw_shares_count, author_name, author_title, j_tags, j_entities) " \
-                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        j_tags = json.dumps(article['j_tags'])
-        if j_tags == 'null':
-            j_tags = None
-        data = (company_id, server_id, article['published_date'], article['title'], article['text'], article['url'], article['summary'], article['off_network'],
-                article['comment_count'], article['doc_type'], article['fb_shares'], article['tw_shares'],
-                article['author_name'], article['author_title'], j_tags, json.dumps(article['j_entities']))
+
+        query = ("INSERT INTO article (company_id, server_id, published_date, url, title, text, summary, off_network, "
+                 "doc_type, comment_count, yahoo_uuid, init_fb_shares_count, init_tw_shares_count, "
+                 "author_name, author_title, j_tags, j_entities) "
+                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                 )
+
+        j_tags = json.dumps(article['j_tags']) if article['j_tags'] else None
+        j_entities = json.dumps(article['j_entities']) if article['j_entities'] else None
+
+        data = (company_id, server_id, article['published_date'], article['url'], article['title'], article['text'],
+                article['summary'], article['off_network'], article['doc_type'],
+                article['comment_count'], article['yahoo_uuid'], article['fb_shares'], article['tw_shares'],
+                article['author_name'], article['author_title'], j_tags, j_entities
+                )
+
         cursor.execute(query, data)
-        # Return inserted ID (for history).
+
         return cursor.lastrowid
 
     
@@ -88,7 +112,7 @@ class YahooDbModel(DbModel):
         cursor = self.dbcon.cursor()
         query = "SELECT MAX(published_date) FROM article WHERE company_id = %s"
         cursor.execute(query, [company_id])
-        newest_saved_date = cursor.fetchone()[0]
+        newest_saved_date = cursor.fetchone()[0] or '1900-01-01 00:00:01'
         # Update!
         query = "UPDATE last_download SET article_newest_saved = %s WHERE company_id=%s"           
         cursor.execute(query, (newest_saved_date, company_id))
@@ -102,3 +126,13 @@ class YahooDbModel(DbModel):
         cursor.executemany(query, articles_history)
         self.dbcon.commit()
         cursor.close()
+
+
+    def add_comments(self, comments):
+        cursor = self.dbcon.cursor()
+        query = ("INSERT INTO article_comment (article_id, company_id, created_timestamp, yahoo_id, text, "
+                 "reply_count, down_count, up_count, creator_id, user_profile_name) "
+                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+        cursor.executemany(query, comments)
+        cursor.close()
+        self.dbcon.commit()

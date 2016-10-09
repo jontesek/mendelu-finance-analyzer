@@ -1,6 +1,7 @@
-from bs4 import BeautifulSoup
-
 import json
+import socket
+
+from bs4 import BeautifulSoup
 
 
 class ArticleParser(object):
@@ -12,7 +13,8 @@ class ArticleParser(object):
         """Parse a native yahoo finance article."""
         json_data = self._get_json_data(html)
         try:
-            article_data = json_data['context']['dispatcher']['stores']['ContentStore']['uuidMap'].values()[0]
+            uuid = json_data['context']['dispatcher']['stores']['ContentStore']['uuidMap'].keys()[0]
+            article_data = json_data['context']['dispatcher']['stores']['ContentStore']['uuidMap'][uuid]
         except TypeError, e:
             print str(e)
             return False
@@ -27,6 +29,7 @@ class ArticleParser(object):
             'doc_type': article_data['type'],
             'author_name': author_name,
             'author_title': author_title,
+            'yahoo_uuid': uuid,
         }
 
     def parse_yahoo_preview(self, html):

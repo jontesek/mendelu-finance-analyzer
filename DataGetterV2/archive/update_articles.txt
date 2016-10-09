@@ -1,0 +1,40 @@
+#### METHOD 2: update article statistics
+
+    def update_article_stats(self, days):
+        """Get and save actual number of shares for all articles."""
+        # Browse through all companies.
+        for company in self.db_model.get_companies_update():
+            print "====%s====" % company['id']
+            articles_history = []
+            cur_timestamp = int(time.time())
+            # Get articles and their share data.
+            for article in self.db_model.get_articles_since(days, company['id']):
+                #print article['id']
+                data = self.__get_share_count(article['url'])
+                if data:
+                    articles_history.append((article['id'], cur_timestamp, data['fb_shares'], data['tw_shares']))
+            # Save non-empty share data to DB.
+            if articles_history:
+                self.db_model.add_articles_history(articles_history)
+            # Wait some time.
+            time.sleep(1)
+        # Log execution.
+        self.db_model.add_log_exec(5, self.exec_error)
+
+
+    def __get_share_count(self, url):
+        """Get number of shares for given URL on Facebook."""
+        return False    # after 20 articles it gives 403 forbidden error
+        try:
+            # Get FB share count.
+            fb_data = json.loads(urllib2.urlopen('http://graph.facebook.com/' + url).read())
+            # Check count
+            fb_shares = int(fb_data['shares']) if 'shares' in fb_data else 0
+            # Is it worth saving?
+            if fb_shares == 0:
+                return False    # No, it isn't.
+            # Prepare result
+            return {'fb_shares': fb_shares, 'tw_shares': None}
+        except Exception, e:
+            print "FB share error: " + str(e)
+            return False
