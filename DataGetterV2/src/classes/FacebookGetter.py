@@ -34,15 +34,14 @@ class FacebookGetter(object):
     
     def get_new_posts(self):
         """Get new posts and their comments for every company."""
-        # Get posts for every company.
         for company in self.db_model.get_companies():
             try:
                 self.__get_posts_for(company)
             except Exception:
                 self.exec_error = True
                 print "serious error: {0}".format(traceback.format_exc())
-                #self.__send_serious_error(traceback.format_exc(), company['fb_page'], 'get_new_posts')
-                break   # end the cycle
+                self.__send_serious_error(traceback.format_exc(), company['fb_page'], 'get_new_posts')
+                #break
         # Log execution.
         self.db_model.add_log_exec(1, self.exec_error)
     
@@ -52,7 +51,7 @@ class FacebookGetter(object):
         print "====%d: %s====" % (company['id'], company['fb_page'])
         # Send request to FB.
         try: 
-            result = self.fb_api.get_connections(id=company['fb_page'], connection_name='posts', limit=90,
+            result = self.fb_api.get_connections(id=company['fb_page'], connection_name='posts', limit=50,
                                                  date_format='U', since=company['fb_post_timestamp'], fields='id')
             #result = json.load(open('../test_data/fb_posts.json'))
         # There was no or wrong response from FB.
@@ -70,13 +69,6 @@ class FacebookGetter(object):
                 print "Name problem with company %s" % company['fb_page']
                 self.__send_name_error(company['fb_page'], e.result['error'], 'get_new_posts')
                 return True     # skip company
-            # Limit error? Specific for cocacola.
-            if error_code == -3:
-                #return True
-                print "lower the limit please"
-                # Lower limit and continue below.
-                result = self.fb_api.get_connections(id=company['fb_page'], connection_name='posts', limit=30,
-                                                     date_format='U', since=company['fb_post_timestamp'], fields='id')
             # If other than OK errors, send serious message and end the script.
             if error_code not in [100, 1, -3]:
                 print "Serious problem with company %s" % company['fb_page']
@@ -90,10 +82,17 @@ class FacebookGetter(object):
         posts = result['data']
         if not posts:
             print "nothing new"
-            return True 
-        # If there are any new posts, send a new query.
+            return True
+        print('new posts: %d') % len(posts)
         post_ids = [p['id'] for p in posts]
-        posts_dict = self.fb_api.get_objects(ids=post_ids, date_format='U', fields=self.posts_query_fields)
+
+        try:
+            posts_dict = self.fb_api.get_objects(ids=post_ids, date_format='U', fields=self.posts_query_fields)
+        except GraphAPIError:
+            posts = sorted(posts, key=lambda x: x['created_time'])[:10]
+            post_ids = [p['id'] for p in posts]
+            posts_dict = self.fb_api.get_objects(ids=post_ids, date_format='U', fields=self.posts_query_fields)
+
         posts_list = sorted(posts_dict.values(), key=lambda x: x['created_time'])
         self.__process_new_posts(posts_list, company['id'])
 
@@ -145,7 +144,7 @@ class FacebookGetter(object):
         if comments_history:
             self.db_model.add_comments_history(comments_history)
         # Update last download
-        self.db_model.update_last_download(company_id, current_timestamp)
+        self.db_model.update_last_download(company_id, posts[-1]['created_time'])
 
     
     #### METHOD 2: check posts
@@ -160,7 +159,7 @@ class FacebookGetter(object):
                 self.exec_error = True
                 print "serious error: {0}".format(traceback.format_exc())
                 self.__send_serious_error(traceback.format_exc(), company['fb_page'], 'update_posts')
-                break   # end the cycle
+                #break
         # Log execution.
         self.db_model.add_log_exec(2, self.exec_error)
     
@@ -244,13 +243,11 @@ class FacebookGetter(object):
         for company in self.db_model.get_companies():
             try:
                 self.__get_feed_items_for(company)
-                if company['id'] == 4:
-                    break
             except Exception:
                 self.exec_error = True
                 print "serious error: {0}".format(traceback.format_exc())
-                #self.__send_serious_error(traceback.format_exc(), company['fb_page'], 'get_new_posts')
-                break   # end the cycle
+                self.__send_serious_error(traceback.format_exc(), company['fb_page'], 'get_new_posts')
+                #break
         # Log execution.
         self.db_model.add_log_exec(6, self.exec_error)
 
@@ -300,29 +297,32 @@ class FacebookGetter(object):
             print "nothing new"
             return True
         # If there are any new posts, send a new query.
-        self.__process_new_feed_items(items, company['id'])
+        self.__process_new_feed_items(reversed(items), company['id'])
 
 
     def __process_new_feed_items(self, items, company_id):
         current_timestamp = int(time.time())
         # Go through all items (from oldest to newest).
-        for item in reversed(items):
+        for item in items:
             self.db_model.add_feed_item([
                 item['id'], company_id, item['created_time'],
-                item['message'].strip() if item.get('message', None) else None,
-                item['likes']['summary']['total_count'],
+                item.get('message', None),
+                item['likes']['summary']['total_count'] if 'likes' in item else None,
                 current_timestamp,
                 item['shares']['count'] if item.get('shares') else None,
-                item['comments']['summary']['total_count'],
-                item['type'], item['status_type'],
-                item['from'].get('name', None), item['from'].get('id', None),
-                item.get('story', None), item.get('link', None),
-                json.dumps(item.get('to', None)) if item.get('to', None) else None,
-                json.dumps(item.get('message_tags', None)) if item.get('message_tags', None) else None,
-                json.dumps(item.get('place', None)) if item.get('place', None) else None,
+                item['comments']['summary']['total_count'] if 'comments' in item else None,
+                item.get('type', None),
+                item.get('status_type', None),
+                item['from'].get('name', None),
+                item['from'].get('id', None),
+                item.get('story', None),
+                item.get('link', None),
+                json.dumps(item.get('to', None)) if 'to' in item else None,
+                json.dumps(item.get('message_tags', None)) if 'message_tags' in item else None,
+                json.dumps(item.get('place', None)) if 'place' in item else None,
             ])
         # Update last download
-        self.db_model.update_last_download_feed(company_id, current_timestamp)
+        self.db_model.update_last_download_feed(company_id, items[-1]['created_time'])
 
     
     #### PROCESSING methods
