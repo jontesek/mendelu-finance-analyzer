@@ -18,7 +18,8 @@ class YahooDbModel(DbModel):
     
     def get_companies(self):
         cursor = self.dbcon.cursor(dictionary=True)
-        query = "SELECT id, ticker, article_newest_saved FROM company JOIN last_download ON id=company_id WHERE ticker IS NOT NULL ORDER BY id ASC"
+        query = "SELECT id, ticker, article_newest_saved FROM company JOIN last_download ON id=company_id " \
+                "WHERE ticker IS NOT NULL AND id > 500 ORDER BY id ASC"
         cursor.execute(query)
         return cursor.fetchall()
     
@@ -32,7 +33,7 @@ class YahooDbModel(DbModel):
     
     def get_articles_since(self, days, company_id):
         cursor = self.dbcon.cursor(dictionary=True)
-        query = 'SELECT id, url FROM article WHERE company_id = %s AND (published_date >= DATE_SUB(NOW(), INTERVAL %s DAY))'
+        query = 'SELECT id, url, yahoo_uuid FROM article WHERE company_id = %s AND (published_date >= DATE_SUB(NOW(), INTERVAL %s DAY))'
         cursor.execute(query, (company_id, days))
         return cursor
 
@@ -75,13 +76,13 @@ class YahooDbModel(DbModel):
 
     #### WRITE methods
     
-    def add_article(self, article, company_id, server_id):
+    def add_article(self, article, company_id, server_id, downloaded_ts):
         cursor = self.dbcon.cursor()
 
         query = ("INSERT INTO article (company_id, server_id, published_date, url, title, text, summary, off_network, "
                  "doc_type, comment_count, yahoo_uuid, init_fb_shares_count, init_tw_shares_count, "
-                 "author_name, author_title, j_tags, j_entities) "
-                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                 "author_name, author_title, j_tags, j_entities, downloaded_timestamp) "
+                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                  )
 
         j_tags = json.dumps(article['j_tags']) if article['j_tags'] else None
@@ -90,7 +91,7 @@ class YahooDbModel(DbModel):
         data = (company_id, server_id, article['published_date'], article['url'], article['title'], article['text'],
                 article['summary'], article['off_network'], article['doc_type'],
                 article['comment_count'], article['yahoo_uuid'], article['fb_shares'], article['tw_shares'],
-                article['author_name'], article['author_title'], j_tags, j_entities
+                article['author_name'], article['author_title'], j_tags, j_entities, downloaded_ts
                 )
 
         cursor.execute(query, data)
@@ -98,10 +99,11 @@ class YahooDbModel(DbModel):
         return cursor.lastrowid
 
     
-    def add_article_history(self, article_id, fb_shares, tw_shares):
+    def add_article_history(self, article_id, download_ts, fb_shares, tw_shares, yahoo_comments):
         cursor = self.dbcon.cursor()
-        query = "INSERT INTO article_history (article_id, download_timestamp, fb_shares, tw_shares) VALUES (%s, UNIX_TIMESTAMP(), %s, %s)"
-        cursor.execute(query, (article_id, fb_shares, tw_shares))
+        query = ("INSERT INTO article_history (article_id, downloaded_timestamp, fb_shares, tw_shares, yahoo_comments) "
+                 "VALUES (%s, %s, %s, %s, %s)")
+        cursor.execute(query, (article_id, download_ts, fb_shares, tw_shares, yahoo_comments))
         cursor.close()
         
     
@@ -122,17 +124,17 @@ class YahooDbModel(DbModel):
     
     def add_articles_history(self, articles_history):
         cursor = self.dbcon.cursor()
-        query = "INSERT INTO article_history (article_id, download_timestamp, fb_shares, tw_shares) VALUES (%s, %s, %s, %s)"
+        query = ("INSERT INTO article_history (article_id, downloaded_timestamp, fb_shares, tw_shares, yahoo_comments) "
+                 "VALUES (%s, %s, %s, %s, %s)")
         cursor.executemany(query, articles_history)
         self.dbcon.commit()
         cursor.close()
 
 
-    def add_comments(self, comments):
+    def add_comment(self, data):
         cursor = self.dbcon.cursor()
         query = ("INSERT INTO article_comment (article_id, company_id, created_timestamp, yahoo_id, text, "
                  "reply_count, down_count, up_count, creator_id, user_profile_name, downloaded_timestamp) "
                  "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
-        cursor.executemany(query, comments)
-        cursor.close()
-        self.dbcon.commit()
+        cursor.execute(query, data)
+        return cursor.lastrowid
