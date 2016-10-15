@@ -111,7 +111,7 @@ class YahooArticleGetter(object):
             if list_data['type'] == 'ad':
                 return False
             # If the article should be parsed, wait some time.
-            time.sleep(random.uniform(2, 4))
+            #time.sleep(random.uniform(2, 4))
             # Define some used variables.
             a_publisher = list_data['publisher'].strip()
             a_is_native = False if list_data['off_network'] else True

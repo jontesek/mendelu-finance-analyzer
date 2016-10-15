@@ -79,7 +79,7 @@ class TwitterGetter(object):
         result = self.tw_api.search(q=query, lang='en', result_type='mixed', count=100, since_id=last_id)
         # Check if there are any new tweets.
         if not result['statuses']:
-            #print "nothing new"
+            #print('nothing new')
             return True       # skip company
         # Prepare tweets.
         tw_data = []

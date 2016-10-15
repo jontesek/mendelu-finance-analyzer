@@ -41,7 +41,6 @@ class FacebookGetter(object):
                 self.exec_error = True
                 print "serious error: {0}".format(traceback.format_exc())
                 self.__send_serious_error(traceback.format_exc(), company['fb_page'], 'get_new_posts')
-                #break
         # Log execution.
         self.db_model.add_log_exec(1, self.exec_error)
     
@@ -52,42 +51,44 @@ class FacebookGetter(object):
         # Send request to FB.
         try: 
             result = self.fb_api.get_connections(id=company['fb_page'], connection_name='posts', limit=50,
-                                                 date_format='U', since=company['fb_post_timestamp'], fields='id')
+                                                 date_format='U', since=company['fb_post_timestamp'],
+                                                 fields='id,created_time')
             #result = json.load(open('../test_data/fb_posts.json'))
         # There was no or wrong response from FB.
         except GraphAPIError, e:
             self.exec_error = True
-            print "MYER", str(e)
+            print "FB error:", str(e)
             # Get error code
             error_code = int(e.result['error']['code'])
             # OK errors: unsupported get request, unknown error 
             if error_code in [100, 1]:
                 self.exec_error = False
-                return True     # skip company
+                return False     # skip company
             # Name error?
             if error_code == 803 or error_code == 21:
                 print "Name problem with company %s" % company['fb_page']
                 self.__send_name_error(company['fb_page'], e.result['error'], 'get_new_posts')
-                return True     # skip company
-            # If other than OK errors, send serious message and end the script.
+                return False     # skip company
+            # If other than OK errors, send serious message.
             if error_code not in [100, 1, -3]:
                 print "Serious problem with company %s" % company['fb_page']
                 self.__send_serious_error(e.result['error'], company['fb_page'], '__get_posts_for')
                 raise e
-        # Check if it was network unreachable error.
+        # Check for network error
         except URLError, e:
             print(repr(e))
-            return True     # skip company
+            return False    # skip company
         # Check if there is at least one new post.
         posts = result['data']
         if not posts:
-            print "nothing new"
+            print('nothing new')
             return True
         print('new posts: %d') % len(posts)
         post_ids = [p['id'] for p in posts]
 
         try:
             posts_dict = self.fb_api.get_objects(ids=post_ids, date_format='U', fields=self.posts_query_fields)
+        # Handle "too much requested data" error
         except GraphAPIError:
             posts = sorted(posts, key=lambda x: x['created_time'])[:10]
             post_ids = [p['id'] for p in posts]
@@ -130,14 +131,13 @@ class FacebookGetter(object):
                 post['reactions_angry']['summary']['total_count'],
                 post['reactions_thankful']['summary']['total_count'],
             ])
-            # Process and save comments to the post.
+            # Process and save comments of the post.
             for com in post['comments']['data']:
                 # Add comment
                 comment_db_id = self.db_model.add_comment(self.__process_comment(com, post_db_id, company_id))
                 # Save comments history
                 comments_history.append([
-                    comment_db_id, com['id'], company_id, current_timestamp,
-                    com['likes']['summary']['total_count'],
+                    comment_db_id, com['id'], company_id, current_timestamp, com['likes']['summary']['total_count'],
                 ])
         # Save history to DB
         self.db_model.add_posts_history(posts_history)
@@ -159,7 +159,6 @@ class FacebookGetter(object):
                 self.exec_error = True
                 print "serious error: {0}".format(traceback.format_exc())
                 self.__send_serious_error(traceback.format_exc(), company['fb_page'], 'update_posts')
-                #break
         # Log execution.
         self.db_model.add_log_exec(2, self.exec_error)
     
@@ -247,7 +246,6 @@ class FacebookGetter(object):
                 self.exec_error = True
                 print "serious error: {0}".format(traceback.format_exc())
                 self.__send_serious_error(traceback.format_exc(), company['fb_page'], 'get_new_posts')
-                #break
         # Log execution.
         self.db_model.add_log_exec(6, self.exec_error)
 
@@ -263,7 +261,7 @@ class FacebookGetter(object):
         # There was no or wrong response from FB.
         except GraphAPIError, e:
             self.exec_error = True
-            print "MYER", str(e)
+            print "FB error:", str(e)
             # Get error code
             error_code = int(e.result['error']['code'])
             # OK errors: unsupported get request, unknown error
@@ -297,32 +295,36 @@ class FacebookGetter(object):
             print "nothing new"
             return True
         # If there are any new posts, send a new query.
-        self.__process_new_feed_items(reversed(items), company['id'])
+        self.__process_new_feed_items(items, company['id'])
 
 
     def __process_new_feed_items(self, items, company_id):
         current_timestamp = int(time.time())
         # Go through all items (from oldest to newest).
-        for item in items:
-            self.db_model.add_feed_item([
-                item['id'], company_id, item['created_time'],
-                item.get('message', None),
-                item['likes']['summary']['total_count'] if 'likes' in item else None,
-                current_timestamp,
-                item['shares']['count'] if item.get('shares') else None,
-                item['comments']['summary']['total_count'] if 'comments' in item else None,
-                item.get('type', None),
-                item.get('status_type', None),
-                item['from'].get('name', None),
-                item['from'].get('id', None),
-                item.get('story', None),
-                item.get('link', None),
-                json.dumps(item.get('to', None)) if 'to' in item else None,
-                json.dumps(item.get('message_tags', None)) if 'message_tags' in item else None,
-                json.dumps(item.get('place', None)) if 'place' in item else None,
-            ])
+        for item in reversed(items):
+            try:
+                self.db_model.add_feed_item([
+                    item['id'], company_id, item['created_time'],
+                    item.get('message', None),
+                    item['likes']['summary']['total_count'] if 'likes' in item else None,
+                    current_timestamp,
+                    item['shares']['count'] if item.get('shares') else None,
+                    item['comments']['summary'].get('total_count', None) if 'comments' in item else None,
+                    item.get('type', None),
+                    item.get('status_type', None),
+                    item['from'].get('name', None),
+                    item['from'].get('id', None),
+                    item.get('story', None),
+                    item.get('link', None),
+                    json.dumps(item.get('to', None)) if 'to' in item else None,
+                    json.dumps(item.get('message_tags', None)) if 'message_tags' in item else None,
+                    json.dumps(item.get('place', None)) if 'place' in item else None,
+                ])
+            except KeyError:
+                print traceback.format_exc()
+                continue
         # Update last download
-        self.db_model.update_last_download_feed(company_id, items[-1]['created_time'])
+        self.db_model.update_last_download_feed(company_id, items[0]['created_time'])
 
     
     #### PROCESSING methods
