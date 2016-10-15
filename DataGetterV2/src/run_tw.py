@@ -18,4 +18,4 @@ twitter_api = Twython(app_key=tw_config['app_key'], access_token=tw_config['acce
 ########################################
 tw_getter = TwitterGetter(twitter_api)
 
-tw_getter.get_all_tweets(15)
+tw_getter.get_all_tweets()
