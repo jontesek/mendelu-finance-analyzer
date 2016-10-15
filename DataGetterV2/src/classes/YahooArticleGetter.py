@@ -5,6 +5,7 @@ import datetime
 import random
 import traceback
 import socket
+from httplib import IncompleteRead
 
 import facebook
 import twython
@@ -28,7 +29,6 @@ class YahooArticleGetter(object):
         # Share count
         self.fb_api = facebook.GraphAPI(fb_config['access_token'], version='2.7')
         self.tw_api = twython.Twython(app_key=tw_config['app_key'], access_token=tw_config['access_token'])
-        self.article_count = 0
         # Yahoo comments
         self.com_url_template = (
                 'http://finance.yahoo.com/_finance_doubledown/api/resource/CommentsService.comments;count=100;'
@@ -38,7 +38,7 @@ class YahooArticleGetter(object):
 
     #### METHOD 1: get new articles
         
-    def get_new_articles(self, company_sleep=(10, 20)):
+    def get_new_articles(self, company_sleep=(10, 15)):
         """Main method for getting and saving new articles for all companies."""
         for company in self.db_model.get_companies():
             print "====%d: %s====" % (company['id'], company['ticker'])
@@ -48,7 +48,7 @@ class YahooArticleGetter(object):
             except Exception:
                 self.exec_error = True
                 print "serious error: {0}".format(traceback.format_exc())
-                #self.__send_serious_error(traceback.format_exc())
+                self.__send_serious_error(traceback.format_exc())
         # Log execution
         self.db_model.add_log_exec(4, self.exec_error)
 
@@ -68,8 +68,8 @@ class YahooArticleGetter(object):
         header_line = page[0]
         if '<title></title>' in header_line:
             self.exec_error = True
-            self.__send_ticker_error(ticker)
             print("Ticker %s does not exist.") % ticker
+            self.__send_ticker_error(ticker)
             return False
         # Find JSON data.
         app_data = None
@@ -90,7 +90,7 @@ class YahooArticleGetter(object):
         try:
             articles = json_data['context']['dispatcher']['stores']['StreamStore']['streams'][page_field]['data']['stream_items']
         except KeyError, e:
-            print str(e)
+            print "Page key error:" + str(e)
             return False
         # Process all articles (from oldest to newest, 10 articles into history).
         for art in reversed(articles):
@@ -124,20 +124,18 @@ class YahooArticleGetter(object):
             final_data = self._prepare_article_data_for_db(list_data, parsed_data, share_data)
             print final_data['url']
             if not final_data:
-                return True
+                return False
             #return True
             # Get server ID or Save a new server to DB.
             server_id = self.db_model.get_server_id(a_publisher, a_is_native)
             # Save article to DB.
-            cur_ts = int(time.time())
-            article_id = self.db_model.add_article(final_data, company_id, server_id, cur_ts)
+            cur_timestamp = int(time.time())
+            article_id = self.db_model.add_article(final_data, company_id, server_id, cur_timestamp)
             # Save article share count.
             if share_data:
                 self.db_model.add_article_history(
-                    article_id, cur_ts, share_data['fb_shares'], share_data['tw_shares'], final_data['comment_count']
+                    article_id, cur_timestamp, share_data['fb_shares'], share_data['tw_shares'], final_data['comment_count']
                 )
-        except urllib2.URLError, e:
-            print(e)     # Article URL is not accessible.
         except ParsingNotImplementedException, e:
             print(e)
         # OK
@@ -156,7 +154,13 @@ class YahooArticleGetter(object):
                 html = urllib2.urlopen('http://finance.yahoo.com' + preview_link, timeout=10).readlines()
                 #html = open('../test_data/yahoo_preview.htm')
                 return self.article_parser.parse_yahoo_preview(html)
+        except urllib2.URLError as e:
+            print str(e)
+            return False
         except socket.timeout as e:
+            print str(e)
+            return False
+        except IncompleteRead as e:
             print str(e)
             return False
 
@@ -167,11 +171,11 @@ class YahooArticleGetter(object):
         out_data['title'] = list_data['title']
         out_data['url'] = list_data['url']
         out_data['summary'] = list_data.get('summary', None)
-        out_data['published_date'] = datetime.datetime.utcfromtimestamp(list_data['pubtime'] / 1000.0)
+        out_data['published_date'] = datetime.datetime.utcfromtimestamp(list_data['pubtime'] / 1000)
         out_data['off_network'] = list_data['off_network']
         out_data['comment_count'] = list_data['commentCount'] if 'commentCount' in list_data else 0
         # Parsed data from article
-        out_data['yahoo_uuid'] = parsed_data['yahoo_uuid'] if parsed_data and 'yahoo_uuid' in parsed_data else None
+        out_data['yahoo_uuid'] = parsed_data.get('yahoo_uuid', None) if parsed_data else None
         out_data['text'] = parsed_data['text'] if parsed_data else None
         out_data['author_name'] = parsed_data['author_name'] if parsed_data else None
         out_data['author_title'] = parsed_data['author_title'] if parsed_data else None
@@ -188,6 +192,9 @@ class YahooArticleGetter(object):
     #### METHOD 2: get article comments
 
     def get_article_comments(self, days_ago_from, days_ago_to, company_delay_secs=0):
+        """
+        Get TOP 100 comments for every article with published date in specified interval.
+        """
         for company in self.db_model.get_companies():
             articles = self.db_model.get_articles_in_interval(company['id'], days_ago_from, days_ago_to)
             for article in articles:
@@ -243,9 +250,9 @@ class YahooArticleGetter(object):
 
 
 
-    ### METHOD 3: article share count
+    ### METHOD 3: article share and comment count
 
-    def update_article_shares(self, days):
+    def update_article_stats(self, days):
         """Get and save actual number of shares for all articles."""
         # Browse through all companies.
         for company in self.db_model.get_companies_update():
