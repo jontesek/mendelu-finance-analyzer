@@ -44,8 +44,6 @@ class TwitterGetter(object):
                 self.exec_error = True
                 print "serious error: %s" % repr(e)
                 self.__send_serious_error(e)
-        # Log execution
-        self.db_model.add_log_exec(3, self.exec_error)
 
 
     def _get_tweets_for_company(self, company):
