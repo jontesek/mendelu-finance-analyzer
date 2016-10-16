@@ -1,5 +1,7 @@
-from classes.StockPriceGetter import StockPriceGetter
 import datetime
+import os.path
+
+from classes.StockPriceGetter import StockPriceGetter
 
 spg = StockPriceGetter()
 

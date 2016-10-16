@@ -21,5 +21,4 @@ end_time = datetime.datetime.now()
 script_name = os.path.basename(__file__).replace('.py', '')
 duration = end_time - start_time
 ya_getter.db_model.add_log_exec(script_name, ya_getter.exec_error, start_time, end_time, duration)
-
 print('>>>>Script duration: {0}'.format(str(duration)))
