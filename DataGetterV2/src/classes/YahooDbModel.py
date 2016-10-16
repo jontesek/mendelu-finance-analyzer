@@ -19,36 +19,39 @@ class YahooDbModel(DbModel):
     def get_companies(self):
         cursor = self.dbcon.cursor(dictionary=True)
         query = "SELECT id, ticker, article_newest_saved FROM company JOIN last_download ON id=company_id " \
-                "WHERE ticker IS NOT NULL AND id > 400 ORDER BY id ASC"
+                "WHERE ticker IS NOT NULL AND id = 21 ORDER BY id ASC"
         cursor.execute(query)
         return cursor.fetchall()
     
     
-    def get_companies_update(self):
+    def get_companies_for_update(self):
         cursor = self.dbcon.cursor(dictionary=True)
-        query = "SELECT id FROM company ORDER BY id ASC"
+        query = "SELECT id, ticker FROM company ORDER BY id ASC"
         cursor.execute(query)
         return cursor.fetchall()
     
     
-    def get_articles_since(self, days, company_id):
+    def get_articles_since(self, days, company_id, only_yahoo=True):
         cursor = self.dbcon.cursor(dictionary=True)
-        query = 'SELECT id, url, yahoo_uuid FROM article WHERE company_id = %s AND (published_date >= DATE_SUB(NOW(), INTERVAL %s DAY))'
+        query = ('SELECT id, company_id, published_date, url, yahoo_uuid FROM article '
+                 'WHERE company_id = %s AND (published_date >= DATE_SUB(NOW(), INTERVAL %s DAY)) ')
+        query += 'AND yahoo_uuid IS NOT NULL ' if only_yahoo else ''
+        query += 'ORDER BY id ASC'
         cursor.execute(query, (company_id, days))
-        return cursor
+        return cursor.fetchall()
 
 
-    def get_articles_in_interval(self, company_id, days_ago_from, days_ago_to):
+    def get_articles_in_interval(self, company_id, days_ago_from, days_ago_to, only_yahoo=True):
         cursor = self.dbcon.cursor(dictionary=True)
-        query = ('SELECT id, company_id, published_date, yahoo_uuid FROM article '
+        query = ('SELECT id, company_id, published_date, url, yahoo_uuid FROM article '
                  'WHERE company_id = %s AND '
-                 'published_date BETWEEN DATE_SUB(NOW(), INTERVAL %s DAY) AND DATE_SUB(NOW(), INTERVAL %s DAY) AND '
-                 'yahoo_uuid IS NOT NULL '
-                 'ORDER BY id ASC')
+                 'published_date BETWEEN DATE_SUB(NOW(), INTERVAL %s DAY) AND DATE_SUB(NOW(), INTERVAL %s DAY) ')
+        query += 'AND yahoo_uuid IS NOT NULL ' if only_yahoo else ''
+        query += 'ORDER BY id ASC'
         cursor.execute(query, (company_id, days_ago_from, days_ago_to))
         return cursor.fetchall()
-    
-    
+
+
     def get_server_id(self, s_name, is_native):
         # Select ID of the server name
         cursor = self.dbcon.cursor()
@@ -69,7 +72,7 @@ class YahooDbModel(DbModel):
 
     def get_comments_for_article(self, article_id):
         cursor = self.dbcon.cursor()
-        query = 'SELECT yahoo_id FROM article_comment WHERE article_id = %s'
+        query = 'SELECT id, yahoo_id FROM article_comment WHERE article_id = %s'
         cursor.execute(query, [article_id])
         return cursor.fetchall()
 
@@ -80,9 +83,10 @@ class YahooDbModel(DbModel):
         cursor = self.dbcon.cursor()
 
         query = ("INSERT INTO article (company_id, server_id, published_date, url, title, text, summary, off_network, "
-                 "doc_type, comment_count, yahoo_uuid, init_fb_shares_count, init_tw_shares_count, "
-                 "author_name, author_title, j_tags, j_entities, downloaded_timestamp) "
-                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                 "doc_type, init_comment_count, yahoo_uuid, init_fb_shares_count, init_tw_shares_count, "
+                 "author_name, author_title, j_tags, j_entities, downloaded_timestamp, created_timestamp_ms, "
+                 "article_body_data, paragraph_count, word_count) "
+                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                  )
 
         j_tags = json.dumps(article['j_tags']) if article['j_tags'] else None
@@ -91,7 +95,9 @@ class YahooDbModel(DbModel):
         data = (company_id, server_id, article['published_date'], article['url'], article['title'], article['text'],
                 article['summary'], article['off_network'], article['doc_type'],
                 article['comment_count'], article['yahoo_uuid'], article['fb_shares'], article['tw_shares'],
-                article['author_name'], article['author_title'], j_tags, j_entities, downloaded_ts
+                article['author_name'], article['author_title'], j_tags, j_entities,
+                downloaded_ts, article['created_timestamp'],
+                article['article_body_data'], article['paragraph_count'], article['word_count'],
                 )
 
         cursor.execute(query, data)
@@ -133,8 +139,19 @@ class YahooDbModel(DbModel):
 
     def add_comment(self, data):
         cursor = self.dbcon.cursor()
-        query = ("INSERT INTO article_comment (article_id, company_id, created_timestamp, yahoo_id, text, "
-                 "reply_count, down_count, up_count, creator_id, user_profile_name, downloaded_timestamp) "
-                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+        query = ("INSERT INTO article_comment (article_id, company_id, created_datetime, yahoo_id, text, "
+                 "reply_count, down_count, up_count, creator_id, user_profile_name, "
+                 "downloaded_timestamp, created_timestamp_ms, paragraph_count, word_count) "
+                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
         cursor.execute(query, data)
         return cursor.lastrowid
+
+
+    def add_comments_history(self, comments_history):
+        cursor = self.dbcon.cursor()
+        query = ("INSERT INTO article_comment_history (comment_id, article_id, company_id, yahoo_id, "
+                 "reply_count, down_count, up_count, downloaded_timestamp) "
+                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
+        cursor.executemany(query, comments_history)
+        self.dbcon.commit()
+        cursor.close()
