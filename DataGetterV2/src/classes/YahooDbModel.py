@@ -19,7 +19,7 @@ class YahooDbModel(DbModel):
     def get_companies(self):
         cursor = self.dbcon.cursor(dictionary=True)
         query = "SELECT id, ticker, article_newest_saved FROM company JOIN last_download ON id=company_id " \
-                "WHERE ticker IS NOT NULL AND id = 21 ORDER BY id ASC"
+                "WHERE ticker IS NOT NULL ORDER BY id ASC"
         cursor.execute(query)
         return cursor.fetchall()
     

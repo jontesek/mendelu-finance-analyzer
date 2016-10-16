@@ -109,7 +109,7 @@ class YahooArticleGetter(object):
             a_is_native = False if list_data['off_network'] else True
             a_url = list_data['url']
             # Parse the article.
-            parsed_data = self.__parse_article(a_url, a_is_native, list_data['link'], 3)
+            parsed_data = self._try_to_parse_article(a_url, a_is_native, list_data['link'], 3)
             # Get share data.
             share_data = self.__get_share_count(a_url, False)
             # Prepare data for saving to DB.
@@ -137,13 +137,13 @@ class YahooArticleGetter(object):
             print('native'),
             html = self._get_content_from_url(url, True, max_retries)
             #html = open('../test_data/ya.htm')
-            return self.article_parser.parse_native_yahoo(html)
+            return self.article_parser.parse_native_yahoo(html) if html else False
         else:
             print('preview'),
             get_url = 'http://finance.yahoo.com' + preview_link
             html = self._get_content_from_url(get_url, True, max_retries)
             #html = open('../test_data/yahoo_preview.htm')
-            return self.article_parser.parse_yahoo_preview(html)
+            return self.article_parser.parse_yahoo_preview(html) if html else False
 
 
     def _prepare_article_data_for_db(self, list_data, parsed_data, share_data):
@@ -175,6 +175,34 @@ class YahooArticleGetter(object):
 
     ## Reading methods
 
+    def _try_to_get_appdata(self, url, first_html, max_retries=3):
+        try:
+            return self._get_appdata_from_html(first_html)
+        except AppDataNotFoundRetryException as e:
+            print str(e)
+
+            while max_retries:
+                print "appdata_" + str(max_retries),
+                try:
+                    new_html = self._get_content_from_url(url, True)
+                    return self._get_appdata_from_html(new_html)
+                except AppDataNotFoundRetryException as e:
+                    print str(e)
+                    max_retries -= 1
+        return False
+
+
+    def _try_to_parse_article(self, url, is_native, preview_link, max_retries):
+        while max_retries:
+            print('parse_{0}'.format(max_retries)),
+            try:
+                return self.__parse_article(url, is_native, preview_link, max_retries)
+            except AppDataNotFoundRetryException as e:
+                print str(e)
+                max_retries -= 1
+        return False
+
+
     def _get_content_from_url(self, url, lines_to_list, max_retries=3):
         while max_retries:
             print ">>HTTP GET retry = {0}: {1}".format(max_retries, url)
@@ -190,22 +218,6 @@ class YahooArticleGetter(object):
             except IncompleteRead as e:
                 print str(e)
                 max_retries -= 1
-
-
-    def _try_to_get_appdata(self, url, first_html, max_retries=3):
-        try:
-            return self._get_appdata_from_html(first_html)
-        except AppDataNotFoundRetryException as e:
-            print str(e)
-
-            while max_retries:
-                print "jsonget_" + str(max_retries),
-                try:
-                    new_html = self._get_content_from_url(url, True)
-                    return self._get_appdata_from_html(new_html)
-                except AppDataNotFoundRetryException as e:
-                    print str(e)
-                    max_retries -= 1
         return False
 
 
@@ -377,8 +389,8 @@ class YahooArticleGetter(object):
                 'download_ts': int(time.time()),
                 'fb_shares': fb_shares, 'tw_shares': tw_shares, 'yahoo_comments': yahoo_comments
             }
-        except Exception:
-            print "Share error: " + traceback.format_exc()
+        except Exception as e:
+            print "Share error: " + e
             return False
 
 
