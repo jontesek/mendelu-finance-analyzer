@@ -49,8 +49,6 @@ class YahooArticleGetter(object):
                 self.exec_error = True
                 print "serious error: {0}".format(traceback.format_exc())
                 self.__send_serious_error(traceback.format_exc())
-        # Log execution
-        self.db_model.add_log_exec(4, self.exec_error)
 
     
     def get_headlines(self, ticker, company_id, last_date_in_db):
@@ -262,9 +260,6 @@ class YahooArticleGetter(object):
 
             time.sleep(company_delay_secs)
 
-        # Log execution
-        self.db_model.add_log_exec(7, False)
-
 
     def _process_comments_in_article(self, comments_data, article, db_com_dict):
         cur_timestamp = int(time.time())
@@ -348,8 +343,6 @@ class YahooArticleGetter(object):
                 self.db_model.add_articles_history(articles_history)
             # Wait some time.
             time.sleep(1)
-        # Log execution.
-        self.db_model.add_log_exec(5, self.exec_error)
 
 
     def __get_share_count(self, url, yahoo_id):

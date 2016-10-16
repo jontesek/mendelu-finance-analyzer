@@ -12,20 +12,17 @@ class DbModel(object):
         """
         self.dbcon = DbConnection.get_con()
 
-    def add_log_exec(self, script, exec_error):
+    def add_log_exec(self, script_name, exec_error, start_time, end_time, duration_hours):
         """
         Log execution of performing script and commit all changes to DB.
-        :param script: int
-        :param exec_error: boolean
-        :return:
         """
         # Prepare variables
         err_v = 1 if exec_error else 0
         # Insert log 
         cursor = self.dbcon.cursor()
-        query = "INSERT INTO log_exec (script, was_error) VALUES (%s, %s)"
-        cursor.execute(query, (script, err_v))
+        query = ("INSERT INTO log_exec (script_name, was_error, start_time, end_time, duration) "
+                 "VALUES (%s, %s, %s, %s, %s)")
+        cursor.execute(query, (script_name, err_v, start_time, end_time, duration_hours))
         # Commit remaining queries
         self.dbcon.commit()
         cursor.close()
-    

@@ -1,4 +1,6 @@
 import json
+import datetime
+import os.path
 
 from twython import Twython
 
@@ -18,4 +20,15 @@ twitter_api = Twython(app_key=tw_config['app_key'], access_token=tw_config['acce
 ########################################
 tw_getter = TwitterGetter(twitter_api)
 
-tw_getter.get_all_tweets()
+# Run the method
+start_time = datetime.datetime.now()
+#tw_getter.get_all_tweets()
+end_time = datetime.datetime.now()
+
+# Log execution
+script_name = os.path.basename(__file__).replace('.py', '')
+duration = end_time - start_time
+if duration:
+    tw_getter.db_model.add_log_exec(script_name, tw_getter.exec_error, start_time, end_time, duration)
+
+print('>>>>Script duration: {0}'.format(str(duration)))
