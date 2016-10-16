@@ -41,9 +41,7 @@ class FacebookGetter(object):
                 self.exec_error = True
                 print "serious error: {0}".format(traceback.format_exc())
                 self.__send_serious_error(traceback.format_exc(), company['fb_page'], 'get_new_posts')
-        # Log execution.
-        self.db_model.add_log_exec(1, self.exec_error)
-    
+
     
     def __get_posts_for(self, company):
         # Show company
@@ -159,9 +157,7 @@ class FacebookGetter(object):
                 self.exec_error = True
                 print "serious error: {0}".format(traceback.format_exc())
                 self.__send_serious_error(traceback.format_exc(), company['fb_page'], 'update_posts')
-        # Log execution.
-        self.db_model.add_log_exec(2, self.exec_error)
-    
+
     
     def __update_posts_for(self, company, days):
         print "====%d====" % company['id']
@@ -246,8 +242,6 @@ class FacebookGetter(object):
                 self.exec_error = True
                 print "serious error: {0}".format(traceback.format_exc())
                 self.__send_serious_error(traceback.format_exc(), company['fb_page'], 'get_new_posts')
-        # Log execution.
-        self.db_model.add_log_exec(6, self.exec_error)
 
 
     def __get_feed_items_for(self, company):
