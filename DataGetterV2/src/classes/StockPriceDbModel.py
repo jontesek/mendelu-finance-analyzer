@@ -22,8 +22,8 @@ class StockPriceDbModel(DbModel):
 
     def save_prices_for_company(self, company_id, data, stop_if_duplicate=True):
         cursor = self.dbcon.cursor()
-        query = 'INSERT INTO stock_price (company_id,date,open,high,low,close,volume,adj_close) ' \
-                'VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'
+        query = ('INSERT INTO stock_price (company_id,date,open,high,low,close,volume,adj_close) '
+                 'VALUES (%s, %s, %s, %s, %s, %s, %s, %s)')
         # Save prices for all days.
         for price_str in data:
             price_list = price_str.split(',')
@@ -31,14 +31,13 @@ class StockPriceDbModel(DbModel):
             try:
                 cursor.execute(query, price_list)
             except IntegrityError:
-                # The date is already in database.
+                # Price for combination (company_id, date) is already in database.
                 if stop_if_duplicate:
                     break
-                else:
-                    continue
         # Save changes
         self.dbcon.commit()
         cursor.close()
+
 
     def save_refilled_prices_for_company(self, in_data):
         cursor = self.dbcon.cursor()

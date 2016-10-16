@@ -7,9 +7,24 @@ from StockPriceDbModel import StockPriceDbModel
 class StockPriceGetter(object):
 
     def __init__(self):
-        self.dbmodel = StockPriceDbModel()
+        self.exec_error = False
+        self.db_model = StockPriceDbModel()
         # example: http://chart.finance.yahoo.com/table.csv?s=MSFT&a=7&b=9&c=2016&d=8&e=9&f=2016&g=d&ignore=.csv
         self.price_url = 'http://chart.finance.yahoo.com/table.csv?s=%s&a=%d&b=%d&c=%d&d=%d&e=%d&f=%d&g=d&ignore=.csv'
+
+
+    def save_prices_for_all_companies(self, start_date, end_date, stop_if_duplicate=True, insert_missing_days=True):
+        print('>>>Saving stock prices from %s to %s') % (start_date, end_date)
+        for comp in self.db_model.get_companies():
+            data = self.get_prices_for_company_ticker(comp[1], start_date, end_date)
+            if data:
+                if insert_missing_days:
+                    new_data = self._refill_yahoo_data(comp[0], data, start_date, end_date)
+                    self.db_model.save_refilled_prices_for_company(new_data)
+                else:
+                    self.db_model.save_prices_for_company(comp[0], data, stop_if_duplicate, insert_missing_days)
+        # the end
+        print('>>>New stock prices were saved into DB.')
 
 
     def get_prices_for_company_ticker(self, ticker, start_date, end_date):
@@ -29,6 +44,7 @@ class StockPriceGetter(object):
         try:
             data = urllib2.urlopen(target_url).read().split('\n')
         except Exception, e:
+            self.exec_error = True
             print('not found: ' + target_url)
             return False
         # Remove first line (labels) and last line (empty).
@@ -36,20 +52,6 @@ class StockPriceGetter(object):
         del(data[-1])
         # Return list
         return data
-
-    def save_prices_for_all_companies(self, start_date, end_date, stop_if_duplicate=True, insert_missing_days=True):
-        print('>>>Saving stock prices from %s to %s') % (start_date, end_date)
-        for comp in self.dbmodel.get_companies():
-            data = self.get_prices_for_company_ticker(comp[1], start_date, end_date)
-            if data:
-                if insert_missing_days:
-                    new_data = self._refill_yahoo_data(comp[0], data, start_date, end_date)
-                    self.dbmodel.save_refilled_prices_for_company(new_data)
-                else:
-                    self.dbmodel.save_prices_for_company(comp[0], data, stop_if_duplicate, insert_missing_days)
-            break
-        # the end
-        print('>>>New stock prices were saved into DB.')
 
 
     def _refill_yahoo_data(self, company_id, orig_yahoo_data, start_date, end_date):
