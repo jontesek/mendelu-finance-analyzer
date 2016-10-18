@@ -46,16 +46,16 @@ class FacebookDbModel(DbModel):
     
     def add_post(self, post_data):
         cursor = self.dbcon.cursor()
-        query = "INSERT INTO fb_post (fb_id, company_id, created_timestamp, text, init_likes_count, object_type, status_type, story) " \
-                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        query = "INSERT INTO fb_post (fb_id, company_id, created_timestamp, text, init_likes_count, object_type, status_type, story, downloaded_timestamp) " \
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
         cursor.execute(query, post_data)  
         return cursor.lastrowid
     
     
     def add_comment(self, com_data):
         cursor = self.dbcon.cursor()
-        query = "INSERT INTO fb_comment (fb_id, post_id, company_id, created_timestamp, text, author_fb_id, author_name, init_likes_count) " \
-                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        query = "INSERT INTO fb_comment (fb_id, post_id, company_id, created_timestamp, text, author_fb_id, author_name, init_likes_count, downloaded_timestamp) " \
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
         cursor.execute(query, com_data)  
         return cursor.lastrowid
     

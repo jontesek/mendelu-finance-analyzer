@@ -114,6 +114,7 @@ class FacebookGetter(object):
                 post['likes']['summary']['total_count'],
                 post['type'], post['status_type'],
                 post.get('story', None),
+                current_timestamp,
             ])
             #print "POST ID %s" % post_db_id
             # Save posts history
@@ -132,7 +133,7 @@ class FacebookGetter(object):
             # Process and save comments of the post.
             for com in post['comments']['data']:
                 # Add comment
-                comment_db_id = self.db_model.add_comment(self.__process_comment(com, post_db_id, company_id))
+                comment_db_id = self.db_model.add_comment(self.__process_comment(com, post_db_id, company_id, current_timestamp))
                 # Save comments history
                 comments_history.append([
                     comment_db_id, com['id'], company_id, current_timestamp, com['likes']['summary']['total_count'],
@@ -323,13 +324,13 @@ class FacebookGetter(object):
     
     #### PROCESSING methods
     
-    def __process_comment(self, comment, post_db_id, company_id):
+    def __process_comment(self, comment, post_db_id, company_id, downloaded_timestamp):
         #c_text = ' '.join(comment['message'].strip().split())
         c_text = comment['message'].strip()
         a_name = comment['from']['name'] if 'name' in comment['from'] else None
         data = [
             comment['id'], post_db_id, company_id, comment['created_time'], c_text, comment['from']['id'], a_name,
-            comment['likes']['summary']['total_count'],
+            comment['likes']['summary']['total_count'], downloaded_timestamp,
         ]
         return data
     

@@ -112,7 +112,7 @@ class YahooArticleGetter(object):
             share_data = self.__get_share_count(a_url, False)
             # Prepare data for saving to DB.
             final_data = self._prepare_article_data_for_db(list_data, parsed_data, share_data)
-            print final_data['url']
+            #print final_data['url']
             #return True
             # Get server ID or Save a new server to DB.
             server_id = self.db_model.get_server_id(a_publisher, a_is_native)
@@ -203,7 +203,7 @@ class YahooArticleGetter(object):
 
     def _get_content_from_url(self, url, lines_to_list, max_retries=3):
         while max_retries:
-            print ">>HTTP GET retry = {0}: {1}".format(max_retries, url)
+            print ">>HTTP GET r={0}: {1}".format(max_retries, url)
             try:
                 connection = urllib2.urlopen(url)
                 return connection.readlines() if lines_to_list else connection.read()
