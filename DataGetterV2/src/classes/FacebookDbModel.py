@@ -89,6 +89,13 @@ class FacebookDbModel(DbModel):
         cursor.execute(query, item_data)
         return cursor.lastrowid
 
+    def add_page_stats(self, data):
+        cursor = self.dbcon.cursor()
+        query = ("INSERT INTO fb_page_stats (downloaded_timestamp, company_id, fan_count, talking_about_count)"
+                 "VALUES (%s, %s, %s, %s)")
+        cursor.execute(query, data)
+        self.dbcon.commit()
+
 
     def update_last_download(self, company_id, last_timestamp):
         cursor = self.dbcon.cursor()
@@ -97,6 +104,7 @@ class FacebookDbModel(DbModel):
         # The last statement in the whole transaction - commit changes.
         self.dbcon.commit()
         cursor.close()
+
 
     def update_last_download_feed(self, company_id, last_timestamp):
         cursor = self.dbcon.cursor()

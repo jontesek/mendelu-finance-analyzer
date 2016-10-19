@@ -323,8 +323,34 @@ class FacebookGetter(object):
         # Update last download
         self.db_model.update_last_download_feed(company_id, items[0]['created_time'])
 
+
+    #### METHOD 4: company likes: fan_count, rating_count, talking_about_count, were_here_count
+    def get_page_stats(self):
+        """Get stats for every fan page"""
+        for company in self.db_model.get_companies():
+            try:
+                self._get_stats_for_company(company)
+            except Exception:
+                self.exec_error = True
+                print "serious error: {0}".format(traceback.format_exc())
+                self.__send_serious_error(traceback.format_exc(), company['fb_page'], 'get_page_stats')
+
+    def _get_stats_for_company(self, company):
+        print "====%d: %s====" % (company['id'], company['fb_page'])
+        current_timestamp = int(time.time())
+        # Send request to FB.
+        try:
+            result = self.fb_api.get_object(id=company['fb_page'], fields="fan_count,talking_about_count")
+        except (GraphAPIError, URLError):
+            print traceback.format_exc()
+            return False
+        # Process result
+        self.db_model.add_page_stats([
+            current_timestamp, company['id'], result['fan_count'], result['talking_about_count']
+        ])
+
     
-    #### PROCESSING methods
+    #### TEXT PROCESSING methods
     
     def __process_comment(self, comment, post_db_id, company_id, downloaded_timestamp):
         #c_text = ' '.join(comment['message'].strip().split())
@@ -357,4 +383,6 @@ class FacebookGetter(object):
         message += '\n\n The script was stopped before ending. Please edit the program.'
         message += '\n\nFinance DataGetter from sosna.mendelu.cz'
         MyMailer.send_error_email('Finance DataGetter Facebook SERIOUS error', message)
+
+
         
