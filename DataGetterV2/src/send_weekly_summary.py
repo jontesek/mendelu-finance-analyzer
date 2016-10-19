@@ -2,56 +2,37 @@ import json
 from collections import OrderedDict
 import datetime
 
-import mysql.connector
-
 from classes.MyMailer import MyMailer
-
+from classes.DbStats import DbStats
 
 ####
-# When to run: every Friday at 22:00
+# When to run: every Friday at 23:00
 ####
 
-# Create DB connection
-config = json.load(open('../configs/databases.json'))['dev']
-dbcon = mysql.connector.connect(**config)
-
-# Set interval
+dbstats = DbStats()
 days_ago = 7
 
 ####
 # Get number of documents: articles, article comments, fb posts, fb feed items, fb commments, tweets
 ####
-cursor = dbcon.cursor()
 dl_stats = OrderedDict()
 
-cursor.execute('SELECT COUNT(*) FROM article '
-               'WHERE published_date >= DATE_SUB(NOW(), INTERVAL %s DAY)', [days_ago])
-dl_stats['yahoo articles'] = cursor.fetchone()[0]
+dl_stats['yahoo articles'] = dbstats.count_yahoo_articles(days_ago)
 
-cursor.execute('SELECT COUNT(*) FROM article_comment '
-               'WHERE created_datetime >= DATE_SUB(NOW(), INTERVAL %s DAY)', [days_ago])
-dl_stats['yahoo comments'] = cursor.fetchone()[0]
+dl_stats['yahoo comments'] = dbstats.count_yahoo_comments(days_ago)
 
-cursor.execute('SELECT COUNT(*) FROM fb_post '
-               'WHERE FROM_UNIXTIME(created_timestamp) >= DATE_SUB(NOW(), INTERVAL %s DAY)', [days_ago])
-dl_stats['facebook posts'] = cursor.fetchone()[0]
+dl_stats['facebook posts'] = dbstats.count_facebook_posts(days_ago)
 
-cursor.execute('SELECT COUNT(*) FROM fb_comment '
-               'WHERE FROM_UNIXTIME(created_timestamp) >= DATE_SUB(NOW(), INTERVAL %s DAY)', [days_ago])
-dl_stats['facebook comments'] = cursor.fetchone()[0]
+dl_stats['facebook comments'] = dbstats.count_facebook_comments(days_ago)
 
-cursor.execute('SELECT COUNT(*) FROM fb_feed '
-               'WHERE FROM_UNIXTIME(created_timestamp) >= DATE_SUB(NOW(), INTERVAL %s DAY)', [days_ago])
-dl_stats['facebook feed items'] = cursor.fetchone()[0]
+dl_stats['facebook feed items'] = dbstats.count_facebook_feed_items(days_ago)
 
-cursor.execute('SELECT COUNT(*) FROM tw_status '
-               'WHERE created_at >= DATE_SUB(NOW(), INTERVAL %s DAY)', [days_ago])
-dl_stats['tweets'] = cursor.fetchone()[0]
+dl_stats['tweets'] = dbstats.count_tweets(days_ago)
 
 ####
 # Get script executions stats
 ####
-cursor = dbcon.cursor(dictionary=True)
+cursor = dbstats.dbcon.cursor(dictionary=True)
 cursor.execute('SELECT COUNT(*) as run_count, script_name, SEC_TO_TIME(AVG(TIME_TO_SEC(duration))) as avg_duration, '
                'SUM(TIME_TO_SEC(duration)) as total_duration '
                'FROM log_exec WHERE end_time >= DATE_SUB(NOW(), INTERVAL %s DAY)'

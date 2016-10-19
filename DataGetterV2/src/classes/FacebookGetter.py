@@ -219,7 +219,9 @@ class FacebookGetter(object):
                     )
                 else:
                     # NO - insert comment into DB, get ID and add item to history.
-                    new_comment_id = self.db_model.add_comment(self.__process_comment(fb_com, post_db['id'], company['id']))
+                    new_comment_id = self.db_model.add_comment(self.__process_comment(
+                        fb_com, post_db['id'], company['id'], current_timestamp)
+                    )
                     comments_history.append(
                         (new_comment_id, fb_com['id'], company['id'], current_timestamp,
                          fb_com['likes']['summary']['total_count'])

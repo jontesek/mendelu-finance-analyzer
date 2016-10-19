@@ -1,6 +1,8 @@
-import mysql.connector
+import json
 
+import mysql.connector
 import codecs
+
 codecs.register(lambda name: codecs.lookup('utf8') if name == 'utf8mb4' else None)
 
 
@@ -19,13 +21,6 @@ class DbConnection(object):
         if DbConnection.dbcon:
             return DbConnection.dbcon
         else:
-            config = {
-                'user': 'root',
-                'password': 'autobus',
-                'host': '127.0.0.1',
-                'database': 'fin_analyzer_v2',
-                'charset': 'utf8mb4',
-                'collation': 'utf8mb4_general_ci'
-            }
+            config = json.load(open('../configs/databases.json'))['dev']
             DbConnection.dbcon = mysql.connector.connect(**config)
             return DbConnection.dbcon
