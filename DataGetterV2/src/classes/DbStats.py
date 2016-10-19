@@ -32,7 +32,7 @@ class DbStats:
 
     def count_facebook_feed_items(self, days_ago):
         cursor = self.dbcon.cursor()
-        cursor.execute('SELECT COUNT(*) FROM fb_feed '
+        cursor.execute('SELECT COUNT(*) FROM fb_feed_item '
                        'WHERE FROM_UNIXTIME(created_timestamp) >= DATE_SUB(NOW(), INTERVAL %s DAY)', [days_ago])
         return cursor.fetchone()[0]
 

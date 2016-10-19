@@ -82,7 +82,7 @@ class FacebookDbModel(DbModel):
 
     def add_feed_item(self, item_data):
         cursor = self.dbcon.cursor()
-        query = ("INSERT INTO fb_feed (fb_id, company_id, created_timestamp, text,"
+        query = ("INSERT INTO fb_feed_item (fb_id, company_id, created_timestamp, text,"
                  "init_likes_count, downloaded_timestamp, shares_count, comments_count, object_type, status_type,"
                  "from_name, from_id, story, link, mentioned_profiles, message_tags, place)"
                  "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
