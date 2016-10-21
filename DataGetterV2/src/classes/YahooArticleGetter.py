@@ -9,6 +9,7 @@ from httplib import IncompleteRead
 
 import facebook
 import twython
+import requests.exceptions
 
 from ArticleParser import ArticleParser
 from YahooDbModel import YahooDbModel
@@ -348,13 +349,21 @@ class YahooArticleGetter(object):
             # Get Twitter share count
             try:
                 tw_data = self.tw_api.search(q=url, lang='en', result_type='mixed', count=100)
+                tw_shares = len(tw_data['statuses'])
             except twython.exceptions.TwythonRateLimitError:
                 reset_time = self.tw_api.get_application_rate_limit_status()['resources']['search']['/search/tweets']['reset']
                 wait_secs = reset_time - int(time.time()) + 5
                 print('Twitter API: need to wait {0} secs ({1} min)'.format(wait_secs, wait_secs / 60))
                 time.sleep(wait_secs)
                 tw_data = self.tw_api.search(q=url, lang='en', result_type='mixed', count=100)
-            tw_shares = len(tw_data['statuses'])
+                tw_shares = len(tw_data['statuses'])
+            except requests.exceptions.ConnectionError, e:
+                print('Twitter connection error: ' + str(e))
+                time.sleep(20)
+                tw_shares = None
+            except Exception, e:
+                print('Twitter share error: ' + str(e))
+                tw_shares = None
             # Get FB share count
             fb_data = self.fb_api.get_object(url)
             if 'share' in fb_data:
@@ -372,7 +381,7 @@ class YahooArticleGetter(object):
             else:
                 yahoo_comments = None
             # Is it worth saving?
-            if fb_shares == 0 and tw_shares == 0 and not yahoo_comments:
+            if fb_shares == 0 and not tw_shares and not yahoo_comments:
                 return False    # No, it isn't.
             # Prepare result
             return {

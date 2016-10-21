@@ -3,6 +3,7 @@ import time
 import json
 import socket
 
+import requests.exceptions
 from twython.exceptions import TwythonRateLimitError, TwythonError
 
 from TwitterDbModel import TwitterDbModel
@@ -28,10 +29,19 @@ class TwitterGetter(object):
                 self._get_tweets_for_company(company)
             except TwythonRateLimitError:
                 reset_time = self.tw_api.get_application_rate_limit_status()['resources']['search']['/search/tweets']['reset']
-                wait_secs = reset_time - int(time.time()) + 5
+                wait_secs = reset_time - int(time.time()) + 60
                 print('Twitter API: need to wait {0} sec ({1} min)'.format(wait_secs, wait_secs / 60))
                 time.sleep(wait_secs)
-                self._get_tweets_for_company(company)
+                try:
+                    self._get_tweets_for_company(company)
+                except TwythonError as e:
+                    print str(e)
+                    time.sleep(20)
+                    try:
+                        self._get_tweets_for_company(company)
+                    except Exception as e:
+                        print str(e)
+                        continue
             except TwythonError as e:
                 print str(e)
                 time.sleep(20)
@@ -40,6 +50,9 @@ class TwitterGetter(object):
                 print str(e)
                 time.sleep(20)
                 self._get_tweets_for_company(company)
+            except requests.exceptions.ConnectionError, e:
+                print('Twitter connection error: ' + str(e))
+                time.sleep(20)
             except Exception, e:
                 self.exec_error = True
                 print "serious error: %s" % repr(e)

@@ -31,7 +31,7 @@ class YahooDbModel(DbModel):
         return cursor.fetchall()
     
     
-    def get_articles_since(self, days, company_id, only_yahoo=True):
+    def get_articles_since(self, days, company_id, only_yahoo=False):
         cursor = self.dbcon.cursor(dictionary=True)
         query = ('SELECT id, company_id, published_date, url, yahoo_uuid FROM article '
                  'WHERE company_id = %s AND (published_date >= DATE_SUB(NOW(), INTERVAL %s DAY)) ')
@@ -41,7 +41,7 @@ class YahooDbModel(DbModel):
         return cursor.fetchall()
 
 
-    def get_articles_in_interval(self, company_id, days_ago_from, days_ago_to, only_yahoo=True):
+    def get_articles_in_interval(self, company_id, days_ago_from, days_ago_to, only_yahoo=False):
         cursor = self.dbcon.cursor(dictionary=True)
         query = ('SELECT id, company_id, published_date, url, yahoo_uuid FROM article '
                  'WHERE company_id = %s AND '
