@@ -2,3 +2,8 @@
 ===Partition tweet database by month===
 http://anothermysqldba.blogspot.cz/2014/04/mysql-partitions-timestamp-datetime.html
 http://code.openark.org/blog/mysql/your-magical-range-partitioning-maintenance-query
+
+
+reset dates:
+update last_download set fb_post_timestamp = 1, article_newest_saved = '1900-01-01 00:00:01', tw_mention_id = 1, tw_search_name_id = 1, tw_reply_id = 1, tw_timeline_id = 1, tw_ticker_id = 1, fb_feed_timestamp = 1
+where company_id <> 45498798

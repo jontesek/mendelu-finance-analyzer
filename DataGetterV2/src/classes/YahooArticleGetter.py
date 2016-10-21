@@ -57,7 +57,7 @@ class YahooArticleGetter(object):
         """
         # Get ticker page
         ticker_url = self.headlines_url + ticker
-        page_html = self._get_content_from_url(ticker_url, True, 3)
+        page_html = self._get_content_from_url(ticker_url, True, 5)
         #page = open('../test_data/ticker_not_found.htm').readlines()
         # Check if ticker page exists.
         header_line = page_html[0]
@@ -107,7 +107,7 @@ class YahooArticleGetter(object):
             a_is_native = False if list_data['off_network'] else True
             a_url = list_data['url']
             # Parse the article.
-            parsed_data = self._try_to_parse_article(a_url, a_is_native, list_data['link'], 3)
+            parsed_data = self._try_to_parse_article(a_url, a_is_native, list_data['link'], 5)
             # Get share data.
             share_data = self.__get_share_count(a_url, False)
             # Prepare data for saving to DB.
@@ -173,7 +173,7 @@ class YahooArticleGetter(object):
 
     ## Reading methods
 
-    def _try_to_get_appdata(self, url, first_html, max_retries=3):
+    def _try_to_get_appdata(self, url, first_html, max_retries=5):
         try:
             return self._get_appdata_from_html(first_html)
         except AppDataNotFoundRetryException as e:
@@ -201,7 +201,7 @@ class YahooArticleGetter(object):
         return False
 
 
-    def _get_content_from_url(self, url, lines_to_list, max_retries=3):
+    def _get_content_from_url(self, url, lines_to_list, max_retries=5):
         while max_retries:
             print ">>HTTP GET r={0}: {1}".format(max_retries, url)
             try:
@@ -244,7 +244,7 @@ class YahooArticleGetter(object):
                 # Get comments from Yahoo
                 get_url = self.com_url_template.format(yahoo_uuid=article['yahoo_uuid'], com_count=100)
                 try:
-                    json_com = self._get_content_from_url(get_url, False, 3)
+                    json_com = self._get_content_from_url(get_url, False, 5)
                 except Exception as e:
                     print str(e)
                     continue
@@ -368,7 +368,7 @@ class YahooArticleGetter(object):
             if yahoo_id:
                 get_url = self.com_url_template.format(yahoo_uuid=yahoo_id, com_count=1)
                 try:
-                    yahoo_comments = json.loads(self._get_content_from_url(get_url, False, 3))['data']['count']
+                    yahoo_comments = json.loads(self._get_content_from_url(get_url, False, 5))['data']['count']
                 except Exception as e:
                     print str(e)
                     yahoo_comments = None
