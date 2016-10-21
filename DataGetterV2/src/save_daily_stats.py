@@ -1,8 +1,10 @@
 from collections import OrderedDict
 import datetime
+import os.path
 
 from classes.DbStats import DbStats
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 ####
 # When to run: every day at 23:00

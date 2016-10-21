@@ -6,6 +6,8 @@ import facebook
 
 from classes.FacebookGetter import FacebookGetter
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 ########################################
 # FB config
 ########################################

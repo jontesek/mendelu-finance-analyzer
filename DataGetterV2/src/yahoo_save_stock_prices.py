@@ -3,6 +3,8 @@ import os.path
 
 from classes.StockPriceGetter import StockPriceGetter
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 # Create the object
 spg = StockPriceGetter()
 

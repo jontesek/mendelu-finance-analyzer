@@ -1,9 +1,11 @@
-import json
+import os.path
 from collections import OrderedDict
 import datetime
 
 from classes.MyMailer import MyMailer
 from classes.DbStats import DbStats
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 ####
 # When to run: every Friday at 23:00

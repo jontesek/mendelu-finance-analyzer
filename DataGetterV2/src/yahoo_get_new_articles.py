@@ -4,6 +4,8 @@ import os.path
 
 from classes.YahooArticleGetter import YahooArticleGetter
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 ########################################
 # Create YahooArticleGetter 
 ########################################

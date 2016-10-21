@@ -6,6 +6,8 @@ from twython import Twython
 
 from classes.TwitterGetter import TwitterGetter
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 ########################################
 # Twitter config 
 ########################################
