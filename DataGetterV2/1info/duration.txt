@@ -1,0 +1,14 @@
+==Facebook==
+fb_get_new_feed_items.py ... 12 mins
+fb_get_page_stats ... 3 mins
+fb_get_new_posts.py ... 25 mins
+fb_update_posts.py ... 14 mins
+
+==Yahoo==
+yahoo save stock prices ... 2 mins
+yahoo update comments ...
+yahoo article stats recent
+yahoo article stats older
+
+==Twitter==
+twitter get new tweets

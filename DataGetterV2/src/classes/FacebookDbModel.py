@@ -91,8 +91,8 @@ class FacebookDbModel(DbModel):
 
     def add_page_stats(self, data):
         cursor = self.dbcon.cursor()
-        query = ("INSERT INTO fb_page_stats (downloaded_timestamp, company_id, fan_count, talking_about_count)"
-                 "VALUES (%s, %s, %s, %s)")
+        query = ("INSERT INTO fb_page_stats (downloaded_timestamp, company_id, fb_page, fan_count, talking_about_count)"
+                 "VALUES (%s, %s, %s, %s, %s)")
         cursor.execute(query, data)
         self.dbcon.commit()
 

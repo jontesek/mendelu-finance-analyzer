@@ -341,12 +341,12 @@ class FacebookGetter(object):
         # Send request to FB.
         try:
             result = self.fb_api.get_object(id=company['fb_page'], fields="fan_count,talking_about_count")
-        except (GraphAPIError, URLError):
-            print traceback.format_exc()
+        except (GraphAPIError, URLError) as e:
+            print str(e)
             return False
         # Process result
         self.db_model.add_page_stats([
-            current_timestamp, company['id'], result['fan_count'], result['talking_about_count']
+            current_timestamp, company['id'], company['fb_page'], result['fan_count'], result['talking_about_count']
         ])
 
     

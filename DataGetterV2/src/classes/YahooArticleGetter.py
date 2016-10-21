@@ -13,7 +13,7 @@ import twython
 from ArticleParser import ArticleParser
 from YahooDbModel import YahooDbModel
 from MyMailer import MyMailer
-from my_exceptions import ParsingNotImplementedException, AppDataNotFoundRetryException
+from my_exceptions import AppDataNotFoundRetryException
 
 
 class YahooArticleGetter(object):
@@ -90,43 +90,40 @@ class YahooArticleGetter(object):
 
     
     def __process_article_from_list(self, list_data, company_id, last_date_in_db):
-        try:
-            # Check if the article can be already in the database.
-            article_date = datetime.datetime.utcfromtimestamp(list_data['pubtime'] / 1000)
-            print str(article_date),
-            if article_date <= last_date_in_db:
-                print('not saving!')
-                return False
-            # Check if the article is advertisement.
-            if list_data['type'] == 'ad':
-                return False
-            # If the article should be parsed, wait some time.
-            #time.sleep(random.uniform(2, 4))
-            # Define some used variables.
-            a_publisher = list_data['publisher'].strip()
-            a_is_native = False if list_data['off_network'] else True
-            a_url = list_data['url']
-            # Parse the article.
-            parsed_data = self._try_to_parse_article(a_url, a_is_native, list_data['link'], 5)
-            # Get share data.
-            share_data = self.__get_share_count(a_url, False)
-            # Prepare data for saving to DB.
-            final_data = self._prepare_article_data_for_db(list_data, parsed_data, share_data)
-            #print final_data['url']
-            #return True
-            # Get server ID or Save a new server to DB.
-            server_id = self.db_model.get_server_id(a_publisher, a_is_native)
-            # Save article to DB.
-            cur_timestamp = int(time.time())
-            article_id = self.db_model.add_article(final_data, company_id, server_id, cur_timestamp)
-            # Save to article history
-            if share_data:
-                self.db_model.add_article_history(
-                    article_id, cur_timestamp, share_data['fb_shares'], share_data['tw_shares'], final_data['comment_count']
-                )
-        except ParsingNotImplementedException, e:
-            print(e)
-        # OK
+        # Check if the article can be already in the database.
+        article_date = datetime.datetime.utcfromtimestamp(list_data['pubtime'] / 1000)
+        print str(article_date),
+        if article_date <= last_date_in_db:
+            print('not saving!')
+            return False
+        # Check if the article is advertisement.
+        if list_data['type'] == 'ad':
+            return False
+        # If the article should be parsed, wait some time.
+        #time.sleep(random.uniform(2, 4))
+        # Define some used variables.
+        a_publisher = list_data['publisher'].strip()
+        a_is_native = False if list_data['off_network'] else True
+        a_url = list_data['url']
+        # Parse the article.
+        parsed_data = self._try_to_parse_article(a_url, a_is_native, list_data['link'], 5)
+        # Get share data.
+        share_data = self.__get_share_count(a_url, False)
+        # Prepare data for saving to DB.
+        final_data = self._prepare_article_data_for_db(list_data, parsed_data, share_data)
+        #print final_data['url']
+        #return True
+        # Get server ID or Save a new server to DB.
+        server_id = self.db_model.get_server_id(a_publisher, a_is_native)
+        # Save article to DB.
+        cur_timestamp = int(time.time())
+        article_id = self.db_model.add_article(final_data, company_id, server_id, cur_timestamp)
+        # Save to article history
+        if share_data:
+            self.db_model.add_article_history(
+                article_id, cur_timestamp, share_data['fb_shares'], share_data['tw_shares'], final_data['comment_count']
+            )
+        # Everything OK
         return True
 
 
@@ -383,7 +380,7 @@ class YahooArticleGetter(object):
                 'fb_shares': fb_shares, 'tw_shares': tw_shares, 'yahoo_comments': yahoo_comments
             }
         except Exception as e:
-            print "Share error: " + e
+            print "Share error: " + str(e)
             return False
 
 

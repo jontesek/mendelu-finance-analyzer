@@ -10,13 +10,13 @@ spg = StockPriceGetter()
 #spg.save_prices_for_company(233, prices)
 
 # Prepare dates
-first_date = datetime.date(2008, 3, 3)
-#first_date = datetime.datetime.now() - datetime.timedelta(days=35)
-last_date = datetime.datetime.now() - datetime.timedelta(days=1)
+#first_date = datetime.date(2008, 3, 3)
+first_date = (datetime.datetime.now() - datetime.timedelta(days=35)).date()
+last_date = (datetime.datetime.now() - datetime.timedelta(days=1)).date()
 
 # Update prices
 start_time = datetime.datetime.now()
-spg.save_prices_for_all_companies(first_date, last_date.date(), True, True)
+spg.save_prices_for_all_companies(first_date, last_date, True, True)
 end_time = datetime.datetime.now()
 
 # Log execution
