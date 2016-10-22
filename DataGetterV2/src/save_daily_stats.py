@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import datetime
+import time
 import os.path
 
 from classes.DbStats import DbStats
@@ -24,11 +25,11 @@ dl_stats['tweets'] = dbstats.count_tweets(days_ago)
 
 # Insert data into DB
 cursor = dbstats.dbcon.cursor()
-prepared_sql = ("INSERT INTO stats_download (date_created, datetime_created, {columns}) "
-                "VALUES ('{day}', '{dt}', {values})"
+prepared_sql = ("INSERT INTO stats_download (created_timestamp, date_created, {columns}) "
+                "VALUES ({ts}, '{day}', {values})"
                 .format(
+                    ts=int(time.time()),
                     day=str(datetime.date.today()),
-                    dt=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                     columns=', '.join([str(x) for x in dl_stats.keys()]),
                     values=', '.join([str(x) for x in dl_stats.values()])
                 ))

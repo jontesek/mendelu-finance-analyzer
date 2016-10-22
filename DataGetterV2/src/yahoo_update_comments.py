@@ -16,7 +16,7 @@ ya_getter = YahooArticleGetter(fb_config, tw_config)
 
 # Get new comments and save comment history for articles from last X days.
 start_time = datetime.datetime.now()
-ya_getter.get_article_comments(7)
+ya_getter.get_article_comments(7, 2)
 end_time = datetime.datetime.now()
 
 # Log execution

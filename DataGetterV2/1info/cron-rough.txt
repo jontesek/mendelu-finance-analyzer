@@ -7,24 +7,24 @@
  *  *  *  *  *  command to be executed
 
 # Facebook
-0 2 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/fb_get_new_posts.py         # OK Every day at 6:00, runs 25 mins
-20 0 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/fb_update_posts.py         # OK Every dat at 0:20 (must be before)
-0 2 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/fb_get_new_feed_items.py    # OK Every day at 16:00, runs 12 mins
-0 23 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/fb_get_page_stats.py       # OK Every day at 23:00, runs 3 mins
+0 5 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/fb_get_new_posts.py         # Every day at 5:00, runs 25 mins
+20 3 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/fb_update_posts.py         # Every dat at 3:20 (must be before), runs 30 mins
+0 16 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/fb_get_new_feed_items.py   # Every day at 16:00, runs 12 mins
+20 23 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/fb_get_page_stats.py      # Every day at 23:20, runs 3 mins
 
 # Twitter
-0 12 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/twitter_get_new_tweets.py     # OK Every day at 12:00, runs 3 hours
+0 18 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/twitter_get_new_tweets.py     # Every day at 18:00, runs 2 hours
 
 # Yahoo
-0 /12 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/yahoo_get_new_articles.py        # OK Every 12 hours (0, 12)
-0 8 2 * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/yahoo_save_stock_prices.py         # OK Every month (second day) at 08:00
-0 12 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/yahoo_update_comments.py          # OK Every day at 12:00
-30 /6 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/yahoo_article_stats_recent.py    # OK Every 6 hours (0:30, 6:30, 12:30, 18:30)
-0 8 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/yahoo_article_stats_older.py       # OK Every day at 8:00
+59 */12 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/yahoo_get_new_articles.py       # Every 12 hours
+0 8 2 * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/yahoo_save_stock_prices.py          # Every month (second day) at 08:00
+0 9 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/yahoo_update_comments.py            # Every day at 9:00
+0 */12 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/yahoo_article_stats_recent.py    # Every 12 hours
+0 19 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/yahoo_article_stats_older.py       # Every day at 19:00
 
 # Statistics
-30 23 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/save_daily_stats.py          # Every day at 23:30
-15 23 * * fri /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/send_weekly_summary.py     # OK Every Friday at 23:15
+45 23 * * * /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/save_daily_stats.py          # Every day at 23:45
+30 23 * * fri /usr/local/bin/python2.7 /home/jonas/FinanceAnalyzer/DataGetterV2/src/send_weekly_summary.py     # Every Friday at 23:30
 
 
 
