@@ -62,9 +62,7 @@ class YahooArticleGetter(object):
         #page = open('../test_data/ticker_not_found.htm').readlines()
         # Check if ticker page exists.
         if not page_html:
-            self.exec_error = True
-            print("Ticker %s does not exist.") % ticker
-            self.__send_ticker_error(ticker)
+            print('Headlines for %s could not be loaded.') % ticker
             return False
         header_line = page_html[0]
         if '<title></title>' in header_line:
